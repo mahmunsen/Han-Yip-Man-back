@@ -28,7 +28,7 @@ public class SwaggerConfig {
                 .securityContexts(Arrays.asList(securityContext()))
                 .securitySchemes(Arrays.asList(apiKey()))
                 .select()
-                .apis(RequestHandlerSelectors.basePackage("com.supercoding.shoppingmallbackend.controller"))
+                .apis(RequestHandlerSelectors.basePackage("com.supercoding.hanyipman.controller"))
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo())

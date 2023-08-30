@@ -26,7 +26,7 @@ public class AwsS3Service {
     private String bucket;
 
     // MultipartFile을 전달받아 File로 전환한 후 S3에 업로드
-    public String memoryUpload(MultipartFile uploadFile, String fileName) throws IOException {
+    public String uploadImage(MultipartFile uploadFile, String fileName) throws IOException {
         try (InputStream inputStream = uploadFile.getInputStream()) {
             ObjectMetadata objectMetadata = new ObjectMetadata();
             objectMetadata.setContentLength(uploadFile.getSize());
@@ -47,15 +47,6 @@ public class AwsS3Service {
 //
 //        amazonS3Client.deleteObject(bucket, filePath);
 //    }
-
-    private String putS3(File uploadFile, String fileName) {
-        amazonS3Client.putObject(
-                new PutObjectRequest(bucket, fileName, uploadFile)
-                        .withCannedAcl(CannedAccessControlList.PublicRead)	// PublicRead 권한으로 업로드 됨
-        );
-        uploadFile.delete();
-        return amazonS3Client.getUrl(bucket, fileName).toString();
-    }
 
 
 }
