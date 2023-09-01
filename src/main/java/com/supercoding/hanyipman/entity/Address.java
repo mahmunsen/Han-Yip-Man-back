@@ -15,10 +15,10 @@ public class Address {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "buyer_id", nullable = false)
+    @Column(name = "buyer_id")
     private Long buyerId;
 
-    @Column(name = "shop_id", nullable = false)
+    @Column(name = "shop_id")
     private Long shopId;
 
     @Column(name = "address", nullable = false)
@@ -32,5 +32,8 @@ public class Address {
 
     @Column(name = "longitude", nullable = false)
     private Double longitude;
+
+    @Column(name = "is_default", nullable = false)
+    private Boolean isDefault;
 
 }

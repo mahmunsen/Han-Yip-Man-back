@@ -23,4 +23,7 @@ public class MenuGroup {
     @Column(name = "name", length = 50)
     private String name;
 
+    @Column(name = "sequence", nullable = false)
+    private Integer sequence;
+
 }
