@@ -2,6 +2,8 @@ package com.supercoding.hanyipman.entity;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -34,10 +36,12 @@ public class User {
     @Column(name = "auth_provider", length = 9)
     private String authProvider;
 
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    @Column(name = "updated_at")
+    @UpdateTimestamp
+    @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
 
     @Column(name = "is_deleted", nullable = false)

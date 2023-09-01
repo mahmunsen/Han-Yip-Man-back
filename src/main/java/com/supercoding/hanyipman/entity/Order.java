@@ -26,4 +26,13 @@ public class Order {
     @Column(name = "total_price", nullable = false)
     private Integer totalPrice;
 
+    @Column(name = "seller_id", nullable = false)
+    private Long sellerId;
+
+    @Column(name = "address_id", nullable = false)
+    private Long addressId;
+
+    @Column(name = "shop_id", nullable = false)
+    private Long shopId;
+
 }

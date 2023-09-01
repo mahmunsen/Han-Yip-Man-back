@@ -20,4 +20,7 @@ public class Category {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled;
+
 }

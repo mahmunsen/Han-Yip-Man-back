@@ -33,4 +33,10 @@ public class Payment {
     @Column(name = "cancellation_date")
     private Instant cancellationDate;
 
+    @Column(name = "seller_id", nullable = false)
+    private Long sellerId;
+
+    @Column(name = "buyer_id", nullable = false)
+    private Long buyerId;
+
 }
