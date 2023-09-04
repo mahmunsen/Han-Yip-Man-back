@@ -1,16 +1,24 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Entity
+@DynamicInsert
+@DynamicUpdate
 @Table(name = "shop")
 public class Shop {
     @Id
@@ -18,11 +26,13 @@ public class Shop {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "seller_id", nullable = false)
-    private Long sellerId;
+    @ManyToOne
+    @JoinColumn(name = "seller_id", nullable = false)
+    private Seller seller;
 
-    @Column(name = "category_id", nullable = false)
-    private Long categoryId;
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private Category category;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
@@ -41,15 +51,17 @@ public class Shop {
     private String description;
 
     @Lob
+    @Setter
     @Column(name = "thumbnail")
     private String thumbnail;
 
     @Lob
+    @Setter
     @Column(name = "banner")
     private String banner;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Byte isDeleted;
+    @Column(name = "is_deleted")
+    private Boolean isDeleted;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -58,5 +70,48 @@ public class Shop {
     @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
+
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MenuGroup> menuGroups = new ArrayList<>();
+
+    @OneToOne(mappedBy = "shop",cascade = CascadeType.ALL, orphanRemoval = true)
+    private Address address;
+
+    public void addMenuGroup(MenuGroup menuGroup) {
+        menuGroup.setShop(this);
+        menuGroups.add(menuGroup);
+    }
+
+    public void removeMenuGroup(MenuGroup menuGroup) {
+        menuGroups.remove(menuGroup);
+        menuGroup.setShop(null);
+    }
+
+    public MenuGroup getMenuGroupById(Long menuGroupId) {
+        return menuGroups.stream()
+                .filter(menuGroup -> menuGroup.getId().equals(menuGroupId))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void setAddress(Address address) {
+        if (address != null) {
+            address.setShop(this);
+            this.address = address;
+        }
+    }
+
+    public static Shop from(RegisterShopRequest registerShopRequest, Seller seller, Category category) {
+        return Shop.builder()
+                .category(category)
+                .seller(seller)
+                .name(registerShopRequest.getShopName())
+                .phoneNum(registerShopRequest.getShopPhone())
+                .minOrderPrice(registerShopRequest.getMinOrderPrice())
+                .defaultDeliveryPrice(2000)
+                .description(registerShopRequest.getShowDescription())
+                .build();
+    }
+
 
 }

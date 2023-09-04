@@ -25,4 +25,7 @@ public class BuyerCoupon {
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled;
+
 }

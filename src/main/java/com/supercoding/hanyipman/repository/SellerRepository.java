@@ -6,6 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public interface SellerRepository extends JpaRepository<Seller, Long> {
 
@@ -15,6 +17,7 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
             "where  u.email = :email")
     Boolean existSellerEmail(String email);
 
-    Seller findByUser(User user);
+
+    Optional<Seller> findByUser(User user);
 
 }

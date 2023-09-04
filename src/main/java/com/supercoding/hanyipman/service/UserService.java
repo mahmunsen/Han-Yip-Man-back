@@ -3,9 +3,9 @@ package com.supercoding.hanyipman.service;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.LoginRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
-import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.error.domain.LoginErrorCode;
+import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
@@ -16,11 +16,8 @@ import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
-import io.jsonwebtoken.Jwt;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -108,7 +105,7 @@ public class UserService {
         String jwtToken = JwtTokenProvider.createToken(loginUser);
 
         if (loginUser.getRole().equalsIgnoreCase("SELLER")) {
-            Seller getLoginUser = sellerRepository.findByUser(loginUser);
+            Seller getLoginUser = sellerRepository.findByUser(loginUser).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
             loginResponse = LoginResponse.toLoginSellerResponse(loginUser, jwtToken, getLoginUser);
         } else {
             Buyer getLoginUser = buyerRepository.findByUser(loginUser);

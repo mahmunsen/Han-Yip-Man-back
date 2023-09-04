@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
@@ -24,8 +25,9 @@ public class Address {
     @JoinColumn(name = "buyer_id")
     private Buyer buyerId;
 
-    @Column(name = "shop_id")
-    private Long shopId;
+    @OneToOne
+    @JoinColumn(name = "shop_id")
+    private Shop shop;
 
     @Column(name = "address", nullable = false)
     private String address;
@@ -50,6 +52,16 @@ public class Address {
                 .detailAddress(request.getAddressDetail())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
+                .build();
+    }
+
+    public static Address from(ShopAddressRequest shopAddressRequest) {
+        return Address.builder()
+                .address(shopAddressRequest.getAddress())
+                .detailAddress(shopAddressRequest.getAddressDetail())
+                .latitude(shopAddressRequest.getLatitude())
+                .longitude(shopAddressRequest.getLongitude())
+                .isDefault(true)
                 .build();
     }
 }

@@ -15,8 +15,9 @@ public class MenuGroup {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "shop_id", nullable = false)
-    private Long shopId;
+    @ManyToOne
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
 
     @Column(name = "name", length = 50)
     private String name;
