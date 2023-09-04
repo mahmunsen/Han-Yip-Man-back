@@ -3,10 +3,7 @@ package com.supercoding.hanyipman.entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.time.Instant;
 
 @Getter
@@ -15,6 +12,7 @@ import java.time.Instant;
 @Table(name = "buyer_coupon")
 public class BuyerCoupon {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 

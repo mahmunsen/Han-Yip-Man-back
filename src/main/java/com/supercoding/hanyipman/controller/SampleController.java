@@ -15,7 +15,7 @@ public class SampleController {
 
     @GetMapping("/success")
     public Response<String> successApiSample() {
-        return ApiUtils.success(HttpStatus.OK.value(), "응답 성공", "스트링 데이터");
+        return ApiUtils.success(HttpStatus.OK, "응답 성공", "스트링 데이터");
     }
 
     @GetMapping("/error")
