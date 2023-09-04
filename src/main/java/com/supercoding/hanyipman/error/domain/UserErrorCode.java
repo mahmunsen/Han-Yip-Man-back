@@ -1,11 +1,11 @@
 package com.supercoding.hanyipman.error.domain;
 
 import com.supercoding.hanyipman.error.ErrorCode;
-import lombok.Builder;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
+
 public enum UserErrorCode implements ErrorCode {
 
     // HTTP 상태 코드 400
@@ -32,8 +32,5 @@ public enum UserErrorCode implements ErrorCode {
         this.message = message;
     }
 
-    @Override
-    public HttpStatus getHttpStatus() {
-        return HttpStatus.valueOf(code);
-    }
+
 }

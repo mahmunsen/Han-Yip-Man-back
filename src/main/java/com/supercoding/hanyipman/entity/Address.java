@@ -1,13 +1,18 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
+import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@DynamicInsert
+@NoArgsConstructor
 @Table(name = "address")
 public class Address {
     @Id
@@ -15,8 +20,9 @@ public class Address {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "buyer_id")
-    private Long buyerId;
+    @ManyToOne
+    @JoinColumn(name = "buyer_id")
+    private Buyer buyerId;
 
     @Column(name = "shop_id")
     private Long shopId;
@@ -33,7 +39,17 @@ public class Address {
     @Column(name = "longitude", nullable = false)
     private Double longitude;
 
-    @Column(name = "is_default", nullable = false)
+    @Column(name = "is_default")
     private Boolean isDefault;
 
+
+    public static Address toBuyerAddress(BuyerSignUpRequest request, Buyer buyer) {
+        return Address.builder()
+                .buyerId(buyer)
+                .address(request.getAddress())
+                .detailAddress(request.getAddressDetail())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .build();
+    }
 }
