@@ -23,7 +23,7 @@ public class Address {
 
     @ManyToOne
     @JoinColumn(name = "buyer_id")
-    private Buyer buyerId;
+    private Buyer buyer;
 
     @OneToOne
     @JoinColumn(name = "shop_id")
@@ -47,7 +47,7 @@ public class Address {
 
     public static Address toBuyerAddress(BuyerSignUpRequest request, Buyer buyer) {
         return Address.builder()
-                .buyerId(buyer)
+                .buyer(buyer)
                 .address(request.getAddress())
                 .detailAddress(request.getAddressDetail())
                 .latitude(request.getLatitude())

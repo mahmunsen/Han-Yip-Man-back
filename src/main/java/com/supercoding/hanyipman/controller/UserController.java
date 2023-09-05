@@ -9,6 +9,7 @@ import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
 import com.supercoding.hanyipman.service.UserService;
 import com.supercoding.hanyipman.utils.ApiUtils;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api")
+@Api(tags = "회원 관리(유저, 점주)")
 public class UserController {
 
     private UserService userService;
