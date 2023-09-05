@@ -5,6 +5,8 @@ import com.supercoding.hanyipman.dto.user.response.LoginResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
 import com.supercoding.hanyipman.utils.ApiUtils;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/token-test")
+@Api(tags = "토큰 테스트")
 @Slf4j
 public class TokenTestController {
 
@@ -28,6 +31,7 @@ public class TokenTestController {
 
     @GetMapping("/parser")
 //    @PreAuthorize("hasRole('BUYERS')")
+    @ApiOperation(value = "토큰 테스트 API", nickname = "토큰 테스트 API")
     public Response<Object> tokenTest(@AuthenticationPrincipal CustomUserDetail customUserDetail) {
         log.info(customUserDetail.toString());
         Long userId = customUserDetail.getUserId();
