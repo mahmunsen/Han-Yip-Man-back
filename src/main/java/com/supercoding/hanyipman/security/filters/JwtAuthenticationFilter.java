@@ -4,6 +4,9 @@ import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.ErrorCode;
 import com.supercoding.hanyipman.error.domain.TokenErrorCode;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.SignatureException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -25,37 +28,34 @@ import java.io.IOException;
 @RequiredArgsConstructor
 @Configuration
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    public static final String AUTHORIZATION_HEADER = "Authorization";
     private final JwtTokenProvider jwtTokenProvider;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String jwtToken = resolveToken(request);
+//        String jwtToken = resolveToken(request);
         String requestURI = request.getRequestURI();
-        try {
-            // 유효성 검증
-            if (jwtToken != null && jwtTokenProvider.validateToken(jwtToken)) {
-                // 토큰 값 뽑아 스프링 시큐리티 유저를 만들어서 Authentication 반환
-                Authentication auth = jwtTokenProvider.getAuthentication(jwtToken);
-                // 해당 스프링 시큐리티 유저를 시큐리티 컨텍스트에 저장, 즉 디비를 거치지 않음
-                SecurityContextHolder.getContext().setAuthentication(auth);
-            }
-        } catch (Exception e) {
-            // 현재 사용자의 보안 컨텍스트를 초기화하고 사용자의 인증을 해제
-            SecurityContextHolder.clearContext();
-            throw new CustomException(TokenErrorCode.INVALID_TOKEN);
+
+        String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+        if (authorizationHeader == null) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        if (!authorizationHeader.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String jwtToken = authorizationHeader.substring(7);
+
+        jwtTokenProvider.validateToken(jwtToken);
+        Authentication auth = jwtTokenProvider.getAuthentication(jwtToken);
+                    // 해당 스프링 시큐리티 유저를 시큐리티 컨텍스트에 저장, 즉 디비를 거치지 않음
+        SecurityContextHolder.getContext().setAuthentication(auth);
+
+//        SecurityContextHolder.clearContext();
         // 다음 필터 체인 실행
         filterChain.doFilter(request, response);
     }
-
-    // 헤더에서 토큰 정보를 꺼내온다.
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-            return bearerToken.substring(7);
-        }
-        return null;
-    }
-
 }

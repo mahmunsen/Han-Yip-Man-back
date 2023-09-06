@@ -4,6 +4,7 @@ import com.supercoding.hanyipman.security.JwtAccessDeniedHandler;
 import com.supercoding.hanyipman.security.JwtAuthenticationEntryPoing;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
+import com.supercoding.hanyipman.security.filters.JwtExceptionFilter;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -23,7 +24,7 @@ import org.springframework.web.filter.CorsFilter;
 @AllArgsConstructor
 @EnableMethodSecurity // @PreAuthorize 어노테이션 사용 선언
 @EnableWebSecurity // 스프링 시큐리티 등등 기본적인 웹보안 활성화
-public class SecurityConfig {
+public class SecurityConfig  {
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoing jwtAuthenticationEntryPoing;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
@@ -40,32 +41,25 @@ public class SecurityConfig {
 
 
     @Bean
-    protected SecurityFilterChain filterChain(HttpSecurity httpSecurity, JwtAuthenticationFilter authenticationFilter) throws Exception {
+    protected SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
         httpSecurity
                 .cors().and() // 찾아보기
                 .csrf().disable() // token을 사용하는 방식이므로 csrf 해제
                 .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtExceptionFilter(), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+//                .anonymous().disable()
+                .authorizeHttpRequests()// 요청에 대한 권한 설정
+                .antMatchers("/**").permitAll()
+                .anyRequest().authenticated()
+                .and()
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoing)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
 
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-
-                .and()
-//                        .authorizeRequests()
-                .authorizeHttpRequests()// 요청에 대한 권한 설정
-                .antMatchers("/**").permitAll()
-//                .antMatchers("/swagger-ui").permitAll()
-//                .antMatchers("/api/**").permitAll()
-                .anyRequest().authenticated()
-//                .antMatchers("/**").permitAll()
-//                .anyRequest().permitAll()
-
-                .and()
-                .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
         ;
 
         return httpSecurity.build();
