@@ -13,6 +13,7 @@ public class ShopList {
 
     private Long shopId;
     private String shopName;
+    private String thumbnailUrl;
     private String shopDescription;
     private Integer minOrderPrice;
     private Double avgRating;
