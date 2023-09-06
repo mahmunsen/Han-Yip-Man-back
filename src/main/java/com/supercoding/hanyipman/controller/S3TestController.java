@@ -1,9 +1,9 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.vo.Response;
+import com.supercoding.hanyipman.enums.FilePath;
 import com.supercoding.hanyipman.service.AwsS3Service;
 import com.supercoding.hanyipman.utils.ApiUtils;
-import com.supercoding.hanyipman.utils.FilePath;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;

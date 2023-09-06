@@ -26,17 +26,11 @@ import java.util.Date;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenProvider {
-
-
     private static String secretKeySource;
-
     @Value("${secret-key-source}")
     public void setSecretKeySource(String value) {
         secretKeySource = value;
     }
-
-
-    private final UserDetailsService userDetailsService;
     private final CustomUserDetailService customUserDetailService;
 
     public static String createToken(User loginUser) {
@@ -58,27 +52,6 @@ public class JwtTokenProvider {
         UserDetails userDetails = customUserDetailService.loadUserByUsername(userEmail);
         return new UsernamePasswordAuthenticationToken(userDetails, jwtToken, userDetails.getAuthorities());
     }
-
-    public String getEmail(String jwtToken) {
-        return Jwts.parser().setSigningKey(secretKeySource).parseClaimsJws(jwtToken).getBody().get("email", String.class);
-    }
-
-    public Claims getJwtParser(String jwtToken) {
-        return Jwts.parser().setSigningKey(secretKeySource).parseClaimsJwt(jwtToken).getBody();
-    }
-
-    public AuthenticationTestDto getAuthenticationTest(String token) {
-        String userEmail = Jwts.parser().setSigningKey(secretKeySource).parseClaimsJws(token).getBody().get("email").toString();
-        UserDetails userDetails = customUserDetailService.loadUserByUsername(userEmail);
-
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, "", userDetails.getAuthorities());
-
-        AuthenticationTestDto authenticationTestDto = new AuthenticationTestDto();
-        AuthenticationTestDto authentication = authenticationTestDto.toAuthentication(usernamePasswordAuthenticationToken);
-
-        return authentication;
-    }
-
 
     // 토큰을 검증함
     public boolean validateToken(String token) {

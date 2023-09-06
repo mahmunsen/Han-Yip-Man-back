@@ -9,6 +9,7 @@ import com.supercoding.hanyipman.error.domain.LoginErrorCode;
 import com.supercoding.hanyipman.error.domain.TokenErrorCode;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.UserRepository;
+import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.MyInfoService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
@@ -36,8 +37,8 @@ public class MyInfoController {
 
     @GetMapping("/users/my-info")
     @Operation(summary = "구매자 마이페이지 API", description = "회원의 정보와 회원에 등록어 주소 리스트가 출력됩니다.")
-    public Response<MyInfoResponse> buyerUserMyInfo(@AuthenticationPrincipal CustomUserDetail userDetail) {
-        return ApiUtils.success(HttpStatus.OK, "유저 마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(findUserByUserId(userDetail)));
+    public Response<MyInfoResponse> buyerUserMyInfo() {
+        return ApiUtils.success(HttpStatus.OK, "유저 마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
     }
 
     public User findUserByUserId(CustomUserDetail userDetail) {

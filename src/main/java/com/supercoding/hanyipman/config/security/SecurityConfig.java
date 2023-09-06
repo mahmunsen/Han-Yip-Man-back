@@ -42,12 +42,12 @@ public class SecurityConfig {
         httpSecurity
                 .cors().and() // 찾아보기
                 .csrf().disable() // token을 사용하는 방식이므로 csrf 해제
+//                .anonymous().disable() // "anonymousUser" 비활성화
                 .addFilterBefore(new JwtExceptionFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
-//                .anonymous().disable()
                 .authorizeHttpRequests()// 요청에 대한 권한 설정
                 .antMatchers("/**").permitAll()
                 .anyRequest().authenticated()
