@@ -23,13 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@Api(tags = "가게 관리")
+@Api(tags = "사장님 가게 관련 API")
 public class SellerShopController {
 
     private final SellerShopService sellerShopService;
 
     @Operation(summary = "가게 등록", description = "가게 정보를 입력하여 가게 레코드를 생성합니다.")
-    @PostMapping(value = "", consumes = "multipart/form-data")
+    @PostMapping(value = "", consumes = "multipart/form-data", headers="X-API-VERSION=1")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "multipart/form-data",
             schema = @Schema(implementation = MultipartFile.class)))
     public Response<Object> registerShop(@ModelAttribute RegisterShopRequest registerShopRequest,
