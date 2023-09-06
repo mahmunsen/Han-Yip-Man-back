@@ -7,6 +7,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -40,25 +43,25 @@ public class Cart {
     private Order order;
 
     //TODO: 외래키 걸면 해제
-//    @OneToMany(mappedBy = "cart")
-//    private final ArrayList<CartOptionItem> cartOptionItems = new ArrayList<>();
+    @OneToMany(mappedBy = "cart")
+    private List<CartOptionItem> cartOptionItems = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
-    private Timestamp updatedAt;
+    private Instant updatedAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
     //TODO: 외래키 걸면 해제
-//    public void add(CartOptionItem cartOptionItem){
-//        cartOptionItems.add(cartOptionItem);
-//        cartOptionItem.setCart(this);
-//    }
+    public void add(CartOptionItem cartOptionItem){
+        cartOptionItems.add(cartOptionItem);
+        cartOptionItem.setCart(this);
+    }
     public static Cart from(Buyer buyer, Menu menu, Long amount){
         return Cart.builder()
                 .buyer(buyer)

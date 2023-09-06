@@ -7,6 +7,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -47,11 +48,11 @@ public class Order {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
-    private Timestamp updatedAt;
+    private Instant updatedAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
