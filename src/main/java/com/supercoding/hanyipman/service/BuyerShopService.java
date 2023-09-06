@@ -7,6 +7,7 @@ import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
+import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.BuyerRepository;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,7 +38,7 @@ public class BuyerShopService {
 
         Buyer buyer = validBuyerUser(customUserDetail);
 
-        Address address = buyer.getDefaultAddress();
+        Address address = Optional.ofNullable(buyer.getDefaultAddress()).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_FOUNT_ADDRESS)) ;
 
         return shopCustomRepository.findShopListWithNextCursor(viewShopListRequest, address.getLatitude(), address.getLongitude());
     }

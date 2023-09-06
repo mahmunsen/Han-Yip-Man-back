@@ -105,13 +105,7 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                 .limit(request.getSize())
                 .fetch();
 
-        Long nextCursor = jpaQueryFactory
-                .select(shop.id.min()) // 최소 ID를 선택
-                .from(shop)
-                .where(whereConditions)
-                .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
-                .limit(request.getSize())
-                .fetchOne();
+        Long nextCursor = result.isEmpty() ? null : result.get(result.size() - 1).getShopId();
 
         return new ViewShopListResponse(result, nextCursor);
     }
