@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum CouponErrorCode implements ErrorCode {
 
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 유저 찾을 수 없습니다."),
+    NOT_PROPER_USER(HttpStatus.FORBIDDEN.value(), "해당 유저는 쿠폰 조회 및 등록이 불가합니다."),
     COUPON_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 쿠폰 코드에 맞는 쿠폰이 존재하지 않습니다."),
 
     REGISTERED_BEFORE(HttpStatus.CONFLICT.value(), "해당 쿠폰은 이미 등록된 적이 있어, 등록이 불가합니다.");
