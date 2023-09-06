@@ -50,3 +50,8 @@ cloud:
     credentials:
       accessKey: ENC(v/XXXBJ6PNUic4BRkRUvAH5nYMKaaze4OQi5GeISRoE=)
       secretKey: ENC(6JGcCqgnKhFH+ei+LagYDH4Hx+4tShwZcErvNnApfuPhiPfHDLB8SNmEhYie19sVnEYg8K/hXBQ=)
+
+#iamport
+imp_key: ENC(Q5lR5+Q/SjYwyGZSKKBAgdQs3kqk9hv5dn5dueyUZtM=)
+imp_secret: ENC(N8pL9GLWYo0bk/YZLya5Ey5hwF4ZTZdjPOWKq2MiC4F9CP/1iICWLtB49AYUYYy5tpPI1ZPkiuYFonVhTqYwwgs5xWL9IRpbBUJQ1mB7oFbgwysBq4/KQg611hkMI+mN)
+

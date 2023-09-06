@@ -16,4 +16,6 @@ public interface BuyerRepository extends JpaRepository<Buyer, Long> {
 
     @Query("SELECT b from Buyer b JOIN fetch b.user u where u.id =:userId")
     Optional<Buyer> findBuyerByUserId(@Param("userId") Long userId);
+    Boolean existsByUser(User user);
+
 }
