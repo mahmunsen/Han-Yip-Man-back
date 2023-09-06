@@ -26,8 +26,10 @@ public enum TokenErrorCode implements ErrorCode {
     UNSUPPORTED_JWT_TOKEN(HttpStatus.UNAUTHORIZED.value(), "지원되지 않는 JWT 토큰입니다."),
 
     // HTTP 상태 코드 401
-    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED.value(), "JWT 토큰이 잘못되었습니다.")
+    INVALID_JWT_TOKEN(HttpStatus.UNAUTHORIZED.value(), "JWT 토큰이 잘못되었습니다."),
 
+    // HTTP 상태 코드 403 (Forbidden)
+    ACCESS_DENIED(HttpStatus.FORBIDDEN.value(), "로그인 후 이용하실 수 있습니다."),
 
     ;
 

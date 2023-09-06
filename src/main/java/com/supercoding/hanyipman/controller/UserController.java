@@ -34,7 +34,7 @@ public class UserController {
         LoginResponse loginResponse = userService.tokenGenerator(loginUser);
         // response header 에도 넣고 응답 객체에도 넣는다.
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.add(JwtAuthenticationFilter.AUTHORIZATION_HEADER, "Bearer " + loginResponse.getAccessToken());
+        httpHeaders.add(HttpHeaders.AUTHORIZATION, "Bearer " + loginResponse.getAccessToken());
 
         return ApiUtils.success(HttpStatus.OK, "로그인 성공", loginResponse);
     }

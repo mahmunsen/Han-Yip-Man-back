@@ -29,10 +29,13 @@ public class TokenTestController {
     private final JwtTokenProvider jwtTokenProvider;
     Authentication auth;
 
+    private final MyInfoController myInfoController;
+
     @GetMapping("/parser")
 //    @PreAuthorize("hasRole('BUYERS')")
     @ApiOperation(value = "토큰 테스트 API", nickname = "토큰 테스트 API")
     public Response<Object> tokenTest(@AuthenticationPrincipal CustomUserDetail customUserDetail) {
+        myInfoController.findUserByUserId(customUserDetail);
         log.info(customUserDetail.toString());
         Long userId = customUserDetail.getUserId();
         String email = customUserDetail.getEmail();
