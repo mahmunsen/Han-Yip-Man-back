@@ -3,6 +3,7 @@ package com.supercoding.hanyipman.service;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.LoginRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
+import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.error.domain.LoginErrorCode;
 import com.supercoding.hanyipman.error.domain.SellerErrorCode;
@@ -76,8 +77,8 @@ public class UserService {
         Buyer buyer = Buyer.tobuyer(savedUser, request);
         Buyer savedBuyUser = buyerRepository.save(buyer);
 //      주소 지움
-//        Address address = Address.toBuyerAddress(request, savedBuyUser);
-//        addressRepository.save(address);
+        Address address = Address.toBuyerAddress(request, savedBuyUser);
+        addressRepository.save(address);
         return savedUser.getEmail();
     }
 

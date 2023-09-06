@@ -77,6 +77,9 @@ public class Shop {
     @OneToOne(mappedBy = "shop",cascade = CascadeType.ALL, orphanRemoval = true)
     private Address address;
 
+    @OneToMany(mappedBy = "shop",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Review> reviews;
+
     public void addMenuGroup(MenuGroup menuGroup) {
         menuGroup.setShop(this);
         menuGroups.add(menuGroup);

@@ -14,7 +14,9 @@ public enum BuyerErrorCode implements ErrorCode {
     INVALID_SELLER(HttpStatus.UNAUTHORIZED.value(), "점주로 등록되어 결과가 없습니다."),
 
 
-    NOT_BUYER(HttpStatus.FORBIDDEN.value(), "구매자 회원이 아닙니다.");
+    NOT_BUYER(HttpStatus.FORBIDDEN.value(), "구매자 회원이 아닙니다."),
+
+    NOT_FOUNT_ADDRESS(HttpStatus.NOT_FOUND.value(), "구매자에게 등록된 주소가 없습니다");
 
 
     private final int code;

@@ -52,6 +52,7 @@ public class Address {
                 .detailAddress(request.getAddressDetail())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
+                .isDefault(true)
                 .build();
     }
 

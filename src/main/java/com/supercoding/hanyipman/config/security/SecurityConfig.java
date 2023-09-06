@@ -6,7 +6,6 @@ import com.supercoding.hanyipman.security.JwtTokenProvider;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
 import com.supercoding.hanyipman.security.filters.JwtExceptionFilter;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +14,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CorsFilter;
@@ -24,8 +22,7 @@ import org.springframework.web.filter.CorsFilter;
 @AllArgsConstructor
 @EnableMethodSecurity // @PreAuthorize 어노테이션 사용 선언
 @EnableWebSecurity // 스프링 시큐리티 등등 기본적인 웹보안 활성화
-public class SecurityConfig  {
-    private final CorsFilter corsFilter;
+public class SecurityConfig {
     private final JwtAuthenticationEntryPoing jwtAuthenticationEntryPoing;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
@@ -45,7 +42,6 @@ public class SecurityConfig  {
         httpSecurity
                 .cors().and() // 찾아보기
                 .csrf().disable() // token을 사용하는 방식이므로 csrf 해제
-                .addFilterBefore(corsFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtExceptionFilter(), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
                 .sessionManagement()

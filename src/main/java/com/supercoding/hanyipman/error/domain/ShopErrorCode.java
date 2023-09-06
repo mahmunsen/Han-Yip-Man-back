@@ -7,7 +7,8 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum ShopErrorCode implements ErrorCode {
 
-    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND.value(), "카테고리가 존재하지 않습니다.");
+    NOT_FOUND_CATEGORY(HttpStatus.NOT_FOUND.value(), "카테고리가 존재하지 않습니다."),
+    NOT_FOUND_SORT_TYPE(HttpStatus.BAD_REQUEST.value(), "존재하지 않는 정렬 타입입니다.");
 
 
     private final int code;

@@ -5,6 +5,7 @@ import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -26,6 +27,23 @@ public class Buyer {
     @Lob
     @Column(name = "profile")
     private String profile;
+
+    @OneToMany(mappedBy = "buyer",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Address> addresses;
+
+    public Address getDefaultAddress() {
+        return addresses.stream()
+                .filter(address -> address.getIsDefault().equals(true))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void setAddress(Address address) {
+        if (address != null) {
+            address.setBuyer(this);
+            addresses.add(address);
+        }
+    }
 
     public static Buyer tobuyer(User user, BuyerSignUpRequest request) {
         return Buyer.builder()

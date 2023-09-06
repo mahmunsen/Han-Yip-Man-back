@@ -11,16 +11,15 @@ import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.CategoryRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
-import com.supercoding.hanyipman.repository.ShopRepository;
+import com.supercoding.hanyipman.repository.Shop.ShopRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
-import com.supercoding.hanyipman.utils.FilePath;
+import com.supercoding.hanyipman.enums.FilePath;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
