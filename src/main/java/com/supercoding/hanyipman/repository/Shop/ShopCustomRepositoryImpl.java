@@ -1,7 +1,6 @@
 package com.supercoding.hanyipman.repository.Shop;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
@@ -75,16 +74,16 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                 break;
             default:
                 // 기본 정렬 설정: 거리, 평균 별점이 같은 경우 최신 순으로
-                orderSpecifiers.add(shop.createdAt.desc());
                 break;
         }
 
-        orderSpecifiers.add(shop.id.asc()); //최신 순으로 추가 정렬
+        orderSpecifiers.add(shop.id.desc()); //최신 순으로 추가 정렬
 
         List<ShopList> result = jpaQueryFactory
                                     .select(Projections.constructor(ShopList.class,
                                             shop.id,
                                             shop.name,
+                                            shop.thumbnail,
                                             shop.description,
                                             shop.minOrderPrice,
                                             JPAExpressions

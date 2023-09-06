@@ -11,6 +11,7 @@ public enum ShopSortType {
 
     public static ShopSortType fromString(String value) {
         try {
+            if (value == null || "".equals(value)) value = "CREATED_AT";
             return ShopSortType.valueOf(value.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new CustomException(ShopErrorCode.NOT_FOUND_SORT_TYPE);
