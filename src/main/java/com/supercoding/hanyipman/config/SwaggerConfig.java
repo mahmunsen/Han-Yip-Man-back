@@ -1,9 +1,11 @@
 package com.supercoding.hanyipman.config;
 
 import com.fasterxml.classmate.TypeResolver;
+import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.PathSelectors;
 import springfox.documentation.builders.RequestHandlerSelectors;
@@ -33,7 +35,8 @@ public class SwaggerConfig {
                 .build()
                 .apiInfo(apiInfo())
                 .consumes(Collections.singleton("multipart/form-data"))
-                .produces(Collections.singleton(MediaType.APPLICATION_JSON_VALUE));
+                .produces(Collections.singleton(MediaType.APPLICATION_JSON_VALUE))
+                .ignoredParameterTypes(CustomUserDetail.class);
     }
 
     private ApiInfo apiInfo() {
