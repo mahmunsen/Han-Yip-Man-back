@@ -2,24 +2,24 @@ package com.supercoding.hanyipman.repository;
 
 import com.supercoding.hanyipman.entity.CartOptionItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
 
-@RequiredArgsConstructor
 @Repository
-public class CartOptionItemRepository {
-    private final EntityManager em;
-    public void saveCartOptionItems(List<CartOptionItem> cartOptionItems) {
-        cartOptionItems.forEach(this::save);
-    }
+public interface CartOptionItemRepository extends JpaRepository<CartOptionItem, Long> {
 
-    public void save(CartOptionItem cartOptionItem){
-        if(cartOptionItem.getId() == null) {
-            em.persist(cartOptionItem);
-        }else{
-            em.merge(cartOptionItem);
-        }
-    }
+    @Query("SELECT coi FROM CartOptionItem coi WHERE coi.id =:cartId")
+    List<CartOptionItem> findCartOptionItemsByCartId(@Param("cartId") Long cartId);
+
+    @Query("SELECT coi " +
+            "FROM CartOptionItem coi " +
+            "JOIN fetch coi.optionItem " +
+            "JOIN fetch coi.cart " +
+            "WHERE coi.cart.id in :cartIds")
+    List<CartOptionItem> findCartOptionItemsByCartIds(List<Long> cartIds);
 }
