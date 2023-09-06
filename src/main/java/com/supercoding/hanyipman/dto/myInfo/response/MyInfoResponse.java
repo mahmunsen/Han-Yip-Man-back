@@ -15,20 +15,28 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class MyInfoResponse {
+    private Long userNumber;
+    private Long buyNumber;
     private String email;
     private String phoneNumber;
     private String nickName;
     private String profileImageUrl;
-    private List<Address> address;
+    private String role;
+    private List<MyInfoAddressResponse> addressList;
 
-    public static MyInfoResponse toMyInfoResponse(User user, Buyer buyer, List<Address> addressList) {
+
+    public static MyInfoResponse toMyInfoResponse(User user, Buyer buyer, List<MyInfoAddressResponse> addressList) {
         return MyInfoResponse.builder()
+                .userNumber(user.getId())
+                .buyNumber(buyer.getId())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNum())
                 .nickName(user.getNickname())
                 .profileImageUrl(buyer.getProfile())
-                .address(addressList)
+                .role(user.getRole())
+                .addressList(addressList)
                 .build();
-
     }
+
+
 }
