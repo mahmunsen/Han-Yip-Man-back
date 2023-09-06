@@ -32,17 +32,16 @@ public class CouponService {
         Long userId = userDetail.getUserId();
         String couponCode = request.getCouponCode();
 
-        Buyer buyer =  validateUser(userId);
+        Buyer buyer = validateUser(userId);
 
         //코드에 해당하는 쿠폰이 존재하는가?
         Coupon coupon = validateCoupon(couponCode);
 
-        // 해당 쿠폰 코드가 등록 된 적이 있나? 없으면 새로운 쿠폰 저장, 있으면 에러 발생
-        if(!buyerCouponRepository.existsBuyerCouponByCoupon(coupon)){
+        // 해당 쿠폰 코드가 등록 된 적이 있나? 있으면 에러 발생, 없으면 새로운 쿠폰 저장,
+        if (buyerCouponRepository.existsBuyerCouponByCoupon(coupon))
+            throw new CustomException(CouponErrorCode.REGISTERED_BEFORE);
 
-            buyerCouponRepository.save(BuyerCoupon.from(coupon, buyer));
-
-        } else throw new CustomException(CouponErrorCode.REGISTERED_BEFORE);
+        buyerCouponRepository.save(BuyerCoupon.from(coupon, buyer));
 
     }
 
