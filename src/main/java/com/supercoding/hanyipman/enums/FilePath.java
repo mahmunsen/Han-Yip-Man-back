@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.utils;
+package com.supercoding.hanyipman.enums;
 
 public enum FilePath {
     TEST_DIR("user/image/"),
