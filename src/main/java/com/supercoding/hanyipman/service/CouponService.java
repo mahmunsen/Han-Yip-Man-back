@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.dto.coupon.request.RegisterCouponRequest;
+import com.supercoding.hanyipman.dto.coupon.response.ViewCouponsResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.entity.BuyerCoupon;
@@ -10,17 +11,18 @@ import com.supercoding.hanyipman.error.domain.CouponErrorCode;
 import com.supercoding.hanyipman.repository.BuyerCouponRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.CouponRepository;
-import com.supercoding.hanyipman.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class CouponService {
 
-    private final UserRepository userRepository;
     private final CouponRepository couponRepository;
     private final BuyerRepository buyerRepository;
     private final BuyerCouponRepository buyerCouponRepository;
@@ -42,6 +44,15 @@ public class CouponService {
 
         } else throw new CustomException(CouponErrorCode.REGISTERED_BEFORE);
 
+    }
+
+    public List<ViewCouponsResponse> viewCoupons(CustomUserDetail userDetail) {
+        Long userId = userDetail.getUserId();
+
+        Buyer buyer = validateUser(userId);
+
+        return buyerCouponRepository.findBuyerCouponsByBuyer(buyer).stream()
+                .map(buyerCoupon -> ViewCouponsResponse.from(buyerCoupon)).collect(Collectors.toList());
     }
 
     private Buyer validateUser(Long userId) {
