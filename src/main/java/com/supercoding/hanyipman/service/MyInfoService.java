@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.dto.myInfo.response.MyInfoAddressResponse;
 import com.supercoding.hanyipman.dto.myInfo.response.MyInfoResponse;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
@@ -13,8 +14,10 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,7 +39,9 @@ public class MyInfoService {
         }
 
         List<Address> addressList = addressRepository.findAllByBuyer(buyer);
-        MyInfoResponse myInfoResponse = MyInfoResponse.toMyInfoResponse(user, buyer, addressList);
+        List<MyInfoAddressResponse> myInfoAddressResponses = addressList.stream().map(MyInfoAddressResponse::toMyAddressResponse).collect(Collectors.toList());
+
+        MyInfoResponse myInfoResponse = MyInfoResponse.toMyInfoResponse(user, buyer, myInfoAddressResponses);
         return myInfoResponse;
     }
 }
