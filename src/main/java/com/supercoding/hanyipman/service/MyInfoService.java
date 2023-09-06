@@ -10,9 +10,11 @@ import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
+import com.supercoding.hanyipman.security.JwtToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +30,8 @@ public class MyInfoService {
 
     private final BuyerRepository buyerRepository;
 
+    @Transactional
     public MyInfoResponse getUserInfoForMyPage(User user) {
-        user.getRole();
         if (Objects.equals(user.getRole(), "SELLER")) {
             throw new CustomException(BuyerErrorCode.INVALID_SELLER);
         }
