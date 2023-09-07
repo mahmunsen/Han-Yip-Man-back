@@ -85,6 +85,11 @@ public class ReviewService {
                 .build();
     }
 
+    public Double viewShopReviewAverage(String shopId) {
+        Double reviewScoreAverage = reviewRepository.findAll().stream().map(review -> review.getScore()).mapToInt(Integer::intValue).average().orElse(0.0);
+        return Math.round(reviewScoreAverage)+0.5;
+    }
+
     private Buyer validateUser(Long userId) {
         return buyerRepository.findBuyerByUserId(userId)
                 .orElseThrow(() -> new CustomException(ReviewErrorCode.NOT_PROPER_USER));

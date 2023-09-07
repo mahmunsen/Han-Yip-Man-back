@@ -34,10 +34,17 @@ public class BuyerShopController {
         return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findShopList(viewShopListRequest, customUserDetail));
     }
 
-    @GetMapping(value = "/{shopId}/reviews", headers ="X-API-VERSION=1")
+    @GetMapping(value = "/{shopId}/reviews", headers = "X-API-VERSION=1")
     public Response<ViewShopReviewsResponse> viewShopReviews(@PathVariable String shopId,
                                                              @RequestBody ViewShopReviewsRequest viewShopReviewsRequest) {
 
         return ApiUtils.success(HttpStatus.OK, "해당 가게에 대한 리뷰 조회에 성공했습니다.", reviewService.viewShopReviews(shopId, viewShopReviewsRequest));
     }
+
+    @GetMapping(value = "/{shopId}/review-average", headers = "X-API-VERSION=1")
+    public Response<Double> viewShopReviewAverage(@PathVariable String shopId) {
+
+        return ApiUtils.success(HttpStatus.OK, "해당 가게의 평균 리뷰 별점 조회에 성공했습니다.", reviewService.viewShopReviewAverage(shopId));
+    }
+
 }
