@@ -12,16 +12,11 @@ import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.Shop.ShopCustomRepositoryImpl;
-import com.supercoding.hanyipman.repository.Shop.ShopRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -29,7 +24,6 @@ import java.util.Optional;
 public class BuyerShopService {
 
     private final UserRepository userRepository;
-    private final ShopRepository shopRepository;
     private final BuyerRepository buyerRepository;
     private final ShopCustomRepositoryImpl shopCustomRepository;
 

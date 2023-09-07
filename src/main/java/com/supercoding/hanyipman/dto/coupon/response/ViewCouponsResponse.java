@@ -1,7 +1,5 @@
 package com.supercoding.hanyipman.dto.coupon.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.supercoding.hanyipman.entity.BuyerCoupon;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -12,7 +10,6 @@ import java.time.Instant;
 @Getter
 @AllArgsConstructor
 @Builder
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class ViewCouponsResponse {
     private Long buyerCouponId;
     private Long couponId;
