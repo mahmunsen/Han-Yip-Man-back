@@ -10,6 +10,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Entity
@@ -53,6 +54,9 @@ public class User {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
+    private Buyer buyer;
 
     public static User toSellerSignup(SellerSignUpRequest request, String password) {
         return User.builder()

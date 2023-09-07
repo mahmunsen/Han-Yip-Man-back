@@ -3,6 +3,7 @@ package com.supercoding.hanyipman.entity;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
 import java.util.List;
@@ -20,7 +21,7 @@ public class Buyer {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
