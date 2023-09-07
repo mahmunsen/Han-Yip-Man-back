@@ -20,7 +20,7 @@ import java.util.List;
 @DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
-@SQLDelete(sql = "UPDATE Cart SET is_deleted = true WHERE id = ?")
+@SQLDelete(sql = "UPDATE cart SET is_deleted = true WHERE id = ?")
 @Table(name = "cart")
 public class Cart {
 

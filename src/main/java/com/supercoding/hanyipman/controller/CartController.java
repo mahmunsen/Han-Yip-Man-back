@@ -63,5 +63,20 @@ public class CartController {
         return ApiUtils.success(HttpStatus.OK, "장바구니 수량을 성공적으로 변경했습니다.", null);
     }
 
+    @Operation(summary = "장바구니 단건 삭제", description = "기존에 장바구니를 삭제한다.")
+    @DeleteMapping("/{cart_id}")
+    public Response<Void> deleteCart(@PathVariable("cart_id") Long cartId,
+                                     @AuthenticationPrincipal CustomUserDetail auth){
+        cartService.deleteCart(auth.getUserId(), cartId);
+        return ApiUtils.success(HttpStatus.OK, String.format("장바구니 %d 를 제거했습니다.", cartId), null);
+    }
+
+    @Operation(summary = "장바구니 전체 삭제", description = "구매자의 기존 장바구니를 모두 삭제한다.")
+    @DeleteMapping
+    public Response<Void> deleteCarts(@AuthenticationPrincipal CustomUserDetail auth){
+        cartService.deleteCarts(auth.getUserId());
+        return ApiUtils.success(HttpStatus.OK, "장바구니가 모두 제거했습니다.", null);
+    }
+
 
 }
