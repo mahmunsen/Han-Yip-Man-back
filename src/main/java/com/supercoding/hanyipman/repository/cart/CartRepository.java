@@ -23,7 +23,10 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "and b.id =:buyerId")
     Page<Cart> findCartsByUnpaidCart(@Param("buyerId") Long buyerId, Pageable pageable);
 
-    @Query("SELECT c FROM Cart c where c.id =:cartId")
+    @Query("SELECT c FROM Cart c " +
+            "JOIN fetch c.shop s " +
+            "JOIN fetch c.buyer b " +
+            "WHERE c.id =:cartId")
     Optional<Cart> findCartByCartId(@Param("cartId") Long cartId);
 
     @Query("SELECT c FROM Cart c " +

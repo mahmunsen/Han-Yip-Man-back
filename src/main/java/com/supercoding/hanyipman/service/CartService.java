@@ -149,4 +149,13 @@ public class CartService {
         return cartRepository.findCartByCartId(cartId)
                 .orElseThrow(() -> new CustomException(CartErrorCode.NOT_FOUND_CART));
     }
+
+    @Transactional
+    public void deleteCart(Long userId, Long cartId) {
+        Buyer buyer = findBuyerByUserId(userId);
+        Cart cart = getCart(cartId);
+        if(!buyer.equals(cart.getBuyer())) throw new CustomException(BuyerErrorCode.NOT_SAME_BUYER);
+
+        cartRepository.delete(cart);
+    }
 }
