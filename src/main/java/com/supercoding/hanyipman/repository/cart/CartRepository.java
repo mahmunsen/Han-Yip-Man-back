@@ -26,12 +26,14 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
     @Query("SELECT c FROM Cart c " +
             "JOIN fetch c.shop s " +
             "JOIN fetch c.buyer b " +
-            "WHERE c.id =:cartId")
+            "WHERE c.id =:cartId " +
+            "and (c.isDeleted is null or c.isDeleted is false )")
     Optional<Cart> findCartByCartId(@Param("cartId") Long cartId);
 
     @Query("SELECT c FROM Cart c " +
             "JOIN fetch c.shop s " +
             "JOIN fetch c.buyer b " +
-            "WHERE b.id =:buyerId")
+            "WHERE b.id =:buyerId " +
+            "AND (c.isDeleted is null or c.isDeleted is false)")
     List<Cart> findCartsByBuyerId(@Param("buyerId") Long buyerId);
 }

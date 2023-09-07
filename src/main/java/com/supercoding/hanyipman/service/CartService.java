@@ -158,4 +158,11 @@ public class CartService {
 
         cartRepository.delete(cart);
     }
+
+    @Transactional
+    public void deleteCarts(Long userId) {
+        Buyer buyer = findBuyerByUserId(userId);
+        List<Cart> carts = cartRepository.findCartsByBuyerId(buyer.getId());
+        cartRepository.deleteAll(carts);
+    }
 }
