@@ -39,7 +39,7 @@ public class BuyerShopService {
 
     private Buyer validBuyerUser(CustomUserDetail customUserDetail) {
         User validUser = userRepository.findById(customUserDetail.getUserId()).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
-        return buyerRepository.findBuyerByUserId(validUser.getId()).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
+        return buyerRepository.findBuyerByUserId(validUser.getId()).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
     }
 
 }
