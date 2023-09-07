@@ -52,6 +52,7 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             whereConditions.and(shop.name.contains(searchKeyword));
         }
+        whereConditions.and(shop.isDeleted.eq(false));
 
         ShopSortType shopSortType = ShopSortType.fromString(request.getSortType());
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
