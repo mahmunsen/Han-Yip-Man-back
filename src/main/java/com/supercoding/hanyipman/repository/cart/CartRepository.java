@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository;
+package com.supercoding.hanyipman.repository.cart;
 
 import com.supercoding.hanyipman.entity.Cart;
 import org.springframework.data.domain.Page;
@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
@@ -22,4 +23,12 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "and b.id =:buyerId")
     Page<Cart> findCartsByUnpaidCart(@Param("buyerId") Long buyerId, Pageable pageable);
 
+    @Query("SELECT c FROM Cart c where c.id =:cartId")
+    Optional<Cart> findCartByCartId(@Param("cartId") Long cartId);
+
+    @Query("SELECT c FROM Cart c " +
+            "JOIN fetch c.shop s " +
+            "JOIN fetch c.buyer b " +
+            "WHERE b.id =:buyerId")
+    List<Cart> findCartsByBuyerId(@Param("buyerId") Long buyerId);
 }
