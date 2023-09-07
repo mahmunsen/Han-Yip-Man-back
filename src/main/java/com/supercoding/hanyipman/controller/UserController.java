@@ -27,7 +27,7 @@ public class UserController {
 
     private UserService userService;
 
-    @PostMapping(value = "/users/login")
+    @PostMapping(value = "/users/login",headers = "X-API-VERSION=1")
     @ApiOperation(value = "유저,업주 로그인 API", nickname = "유저,업주 로그인 API")
     public Response<LoginResponse> allLogin(@RequestBody LoginRequest request) {
         User loginUser = userService.login(request);
@@ -39,14 +39,14 @@ public class UserController {
         return ApiUtils.success(HttpStatus.OK, "로그인 성공", loginResponse);
     }
 
-    @PostMapping(value = "/sellers/signup")
+    @PostMapping(value = "/sellers/signup",headers = "X-API-VERSION=1")
     @ApiOperation(value = "업주 회원가입 API", nickname = "업주 회원가입 API")
     public Response sellersSignup(@RequestBody SellerSignUpRequest request) {
         String signupEmail = userService.sellerSignup(request);
         return ApiUtils.success(HttpStatus.CREATED, signupEmail + "업주 등록 성공", null);
     }
 
-    @PostMapping(value = "/buyers/signup")
+    @PostMapping(value = "/buyers/signup",headers = "X-API-VERSION=1")
     @ApiOperation(value = "유저 회원가입 API", nickname = "유저 회원가입 API")
     public Response buyersSignup(@RequestBody BuyerSignUpRequest request) {
         String signupEmail = userService.buyersSignup(request);
