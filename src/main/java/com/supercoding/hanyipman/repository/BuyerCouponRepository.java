@@ -11,5 +11,5 @@ public interface BuyerCouponRepository extends JpaRepository<BuyerCoupon, Long> 
 
     boolean existsBuyerCouponByCoupon(Coupon coupon);
 
-    List<BuyerCoupon> findBuyerCouponsByBuyer(Buyer buyer);
+    List<BuyerCoupon> findBuyerCouponsByBuyerOrderByEnabledDescCreatedAtDesc(Buyer buyer);
 }

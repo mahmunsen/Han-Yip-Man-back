@@ -22,8 +22,10 @@ public class ViewCouponsResponse {
     private String couponCode;
     @ApiModelProperty(value="쿠폰 할인 금액 필드", dataType = "Integer")
     private Integer discountPrice;
-    @ApiModelProperty(value="쿠폰 등록 시점", dataType = "Instant")
+    @ApiModelProperty(value="쿠폰 등록 시점 필드", dataType = "Instant")
     private Instant createdAt;
+    @ApiModelProperty(value="사용 여부 필드", dataType = "Boolean")
+    private Boolean enabled;
 
     public static ViewCouponsResponse from(BuyerCoupon buyerCoupon) {
         return ViewCouponsResponse.builder()
@@ -32,6 +34,7 @@ public class ViewCouponsResponse {
                 .couponCode(buyerCoupon.getCoupon().getCode())
                 .discountPrice(buyerCoupon.getCoupon().getDiscountPrice())
                 .createdAt(buyerCoupon.getCreatedAt())
+                .enabled(buyerCoupon.getEnabled())
                 .build();
     }
 
