@@ -1,23 +1,21 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
-import com.supercoding.hanyipman.dto.cart.request.RegisterCartRequest;
 import com.supercoding.hanyipman.dto.cart.response.OptionItemResponse;
 import com.supercoding.hanyipman.dto.cart.response.ViewCartResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
-import com.supercoding.hanyipman.error.domain.MenuErrorCode;
-import com.supercoding.hanyipman.error.domain.OptionErrorCode;
+import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.*;
+import com.supercoding.hanyipman.repository.Shop.ShopRepository;
+import com.supercoding.hanyipman.repository.cart.CartRepository;
+import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.security.JwtToken;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +30,7 @@ import java.util.stream.IntStream;
 @Service
 public class CartService {
     private final BuyerRepository buyerRepository;
+    private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
     private final OptionItemRepository optionItemRepository;
     private final CartOptionItemRepository cartOptionItemRepository;
@@ -40,19 +39,27 @@ public class CartService {
 
     @TimeTrace
     @Transactional
-    public void registerCart(Long userId, RegisterCartRequest request) {
+    public void registerCart(Long userId, Long shopId, Long menuId, List<Long> optionIds, Long amount) {
         // 구매자 찾기
-        Buyer buyer = findBuyerByUserId(userId);
+        Buyer buyer = findBuyerByUserId(userId); //TODO: query 개선할 것
+        // 기존 담은 장바구니 가져오기
+        List<Cart> carts = cartRepository.findCartsByBuyerId(buyer.getId());
+        // 기존 장바구니와 다른 가게인지 확인
+        carts.stream().filter(cart -> !cart.getShop().getId().equals(shopId))
+                .findAny()
+                .ifPresent((i) -> {throw new CustomException(ShopErrorCode.DIFFERENT_SHOP);});
+        // 가게 찾기
+        Shop shop = shopRepository.findShopByShopId(shopId).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
         // 담으려는 메뉴 찾기
-        Menu menu = findMenuByMenuId(request);
+        Menu menu = findMenuByMenuId(menuId);
         // 장바구니 생성
-        Cart cart = Cart.from(buyer, menu, request.getAmount());
+        Cart cart = Cart.from(buyer, shop, menu, amount);
         // 생성된 엔티티 저장
         cartRepository.save(cart);
         // 선택한 옵션 아이템 찾기
-        List<OptionItem> optionItems = optionItemRepository.findByOptionItemIds(request.getOptions());
+        List<OptionItem> optionItems = optionItemRepository.findByOptionItemIds(optionIds);
         //옵션 유효성 검사
-        isValidOptions(request.getOptions().stream().sorted().collect(Collectors.toList()), optionItems);
+        isValidOptions(optionIds.stream().sorted().collect(Collectors.toList()), optionItems);
         // 장바구니에 <-> 옵션 아이템 중간객체 생성
         List<CartOptionItem> cartOptionItems = createCartOptionItems(cart, optionItems);
         // 생성된 엔티티 저장
@@ -76,8 +83,8 @@ public class CartService {
                 .collect(Collectors.toList());
     }
 
-    private Menu findMenuByMenuId(RegisterCartRequest request) {
-        return menuRepository.findMenuByMenuId(request.getMenuId()).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
+    private Menu findMenuByMenuId(Long menuId) {
+        return menuRepository.findMenuByMenuId(menuId).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
     }
 
     private Buyer findBuyerByUserId(Long userId) {
@@ -86,7 +93,7 @@ public class CartService {
 
 
     @Transactional(readOnly = true)
-    public Page<ViewCartResponse> findUnpaidCartsV1(Pageable pageable) {
+    public Page<ViewCartResponse> findUnpaidCartsAndOptionItemsV1(Pageable pageable) {
         //구매자 찾기
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //coptions, totalPrice 제외 가져오기
@@ -109,7 +116,7 @@ public class CartService {
     }
     @TimeTrace
     @Transactional(readOnly = true)
-    public List<ViewCartResponse> findUnpaidCartsV2(CustomPageable pageable) {
+    public List<ViewCartResponse> findUnpaidCartsAndOptionItemsV2(CustomPageable pageable) {
         //구매자 찾기
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //options, totalPrice 제외 가져오기
@@ -129,5 +136,17 @@ public class CartService {
         carts.forEach(ViewCartResponse::calTotalPrice);
 
         return carts;
+    }
+
+    @Transactional
+    public void updateCart(Long cartId, Long amount, Long userId) {
+        findBuyerByUserId(userId);
+        Cart cart = getCart(cartId);
+        cart.setAmount(amount);
+    }
+
+    private Cart getCart(Long cartId) {
+        return cartRepository.findCartByCartId(cartId)
+                .orElseThrow(() -> new CustomException(CartErrorCode.NOT_FOUND_CART));
     }
 }

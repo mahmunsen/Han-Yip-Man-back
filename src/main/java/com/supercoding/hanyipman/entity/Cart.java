@@ -3,6 +3,7 @@ package com.supercoding.hanyipman.entity;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -15,9 +16,11 @@ import java.util.List;
 @Setter
 @Entity
 @Builder
+
 @DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
+@SQLDelete(sql = "UPDATE Cart SET is_deleted = true WHERE id = ?")
 @Table(name = "cart")
 public class Cart {
 
@@ -32,6 +35,10 @@ public class Cart {
     private Buyer buyer;
 
     @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
+
+    @ManyToOne(fetch=FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
     private Menu menu;
 
@@ -42,7 +49,6 @@ public class Cart {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    //TODO: 외래키 걸면 해제
     @OneToMany(mappedBy = "cart")
     private List<CartOptionItem> cartOptionItems = new ArrayList<>();
 
@@ -57,14 +63,11 @@ public class Cart {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
-    //TODO: 외래키 걸면 해제
-    public void add(CartOptionItem cartOptionItem){
-        cartOptionItems.add(cartOptionItem);
-        cartOptionItem.setCart(this);
-    }
-    public static Cart from(Buyer buyer, Menu menu, Long amount){
+
+    public static Cart from(Buyer buyer, Shop shop, Menu menu, Long amount){
         return Cart.builder()
                 .buyer(buyer)
+                .shop(shop)
                 .menu(menu)
                 .amount(amount)
                 .build();

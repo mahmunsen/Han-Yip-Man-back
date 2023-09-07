@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository;
+package com.supercoding.hanyipman.repository.cart;
 
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.entity.Cart;

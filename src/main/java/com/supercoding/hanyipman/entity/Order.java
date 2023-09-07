@@ -3,6 +3,7 @@ package com.supercoding.hanyipman.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
@@ -14,6 +15,7 @@ import java.util.LinkedList;
 @Getter
 @Setter
 @Entity
+@SQLDelete(sql = "UPDATE Cart SET is_deleted = true WHERE id = ?")
 @Table(name = "`order`")
 public class Order {
     @Id
