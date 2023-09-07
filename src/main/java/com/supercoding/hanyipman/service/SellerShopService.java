@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,7 +45,14 @@ public class SellerShopService {
         shop.setBanner(uploadImageFile(bannerFile, shop));
         shop.setThumbnail(uploadImageFile(thumbnailFile, shop));
         shop.setAddress(Address.from(shopAddressRequest));
+    }
 
+    public void deleteShop(Long shopId, User user) {
+
+        Seller seller = validSellerUser(user);
+        Shop shop = shopRepository.findShopByShopId(shopId).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
+        if (!Objects.equals(shop.getSeller().getId(), seller.getId())) throw new CustomException(ShopErrorCode.DIFFERENT_SELLER);
+        shopRepository.deleteById(shop.getId());
     }
 
     private String uploadImageFile(MultipartFile multipartFile, Shop shop) {
@@ -62,7 +70,7 @@ public class SellerShopService {
     public List<ShopManagementListResponse> findManagementList(User user) {
         Seller seller = validSellerUser(user);
 
-        List<Shop> shopList = shopRepository.findAllBySeller(seller);
+        List<Shop> shopList = shopRepository.findAllBySellerAndIsDeletedFalse(seller);
 
         return shopList.stream().map(ShopManagementListResponse::from).collect(Collectors.toList());
     }
@@ -70,5 +78,6 @@ public class SellerShopService {
     private Seller validSellerUser(User user) {
         return sellerRepository.findByUser(user).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
     }
+
 
 }

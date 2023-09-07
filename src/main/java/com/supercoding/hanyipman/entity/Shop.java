@@ -2,12 +2,12 @@ package com.supercoding.hanyipman.entity;
 
 import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +19,7 @@ import java.util.List;
 @Entity
 @DynamicInsert
 @DynamicUpdate
+@SQLDelete(sql = "UPDATE shop SET is_deleted = true WHERE id = ?")
 @Table(name = "shop")
 public class Shop {
     @Id
