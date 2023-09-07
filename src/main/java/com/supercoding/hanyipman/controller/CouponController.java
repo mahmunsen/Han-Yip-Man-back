@@ -26,7 +26,7 @@ public class CouponController {
 
     @PostMapping(value = "", headers = "X-API-VERSION=1")
     @Operation(summary = "쿠폰 등록", description = "쿠폰에 맞는 코드를 입력할 경우, 해당 쿠폰이 등록된다.")
-    public Response<?> registerCoupon(@RequestBody RegisterCouponRequest request,
+    public Response<Void> registerCoupon(@RequestBody RegisterCouponRequest request,
                                       @AuthenticationPrincipal CustomUserDetail userDetail){
 
         couponService.registerCoupon(request, userDetail);
@@ -36,7 +36,7 @@ public class CouponController {
 
     @GetMapping(value = "", headers = "X-API-VERSION=1")
     @Operation(summary = "등록된 쿠폰 조회", description = "고객이 등록한 쿠폰 목록을 조회합니다.")
-    public Response<?> viewCoupons(@AuthenticationPrincipal CustomUserDetail userDetail) {
+    public Response<List<ViewCouponsResponse>> viewCoupons(@AuthenticationPrincipal CustomUserDetail userDetail) {
         List<ViewCouponsResponse> coupons = couponService.viewCoupons(userDetail);
 
         return ApiUtils.success(HttpStatus.OK, "고객이 등록한 쿠폰 목록 조회에 성공했습니다.", coupons);
