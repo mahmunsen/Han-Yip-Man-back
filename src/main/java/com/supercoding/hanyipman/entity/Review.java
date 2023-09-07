@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.reivew.response.ShopReview;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -49,5 +50,17 @@ public class Review {
 
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    public static ShopReview toShopReview(Review review) {
+
+        return ShopReview.builder()
+                .userId(review.getBuyer().getUser().getId())
+                .nickName(review.getBuyer().getUser().getNickname())
+                .reviewContent(review.getContent())
+                .reviewScore(review.getScore())
+                .createdAt(review.getCreatedAt())
+                .reviewImageUrl(review.getImageUrl())
+                .build();
+    }
 
 }
