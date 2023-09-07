@@ -19,12 +19,12 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @Slf4j
-@Api("쿠폰 관리")
+@Api(tags="쿠폰 관리")
 @RequestMapping("/api/coupons")
 public class CouponController {
     private final CouponService couponService;
 
-    @PostMapping
+    @PostMapping(value = "", headers = "X-API-VERSION=1")
     @Operation(summary = "쿠폰 등록", description = "쿠폰에 맞는 코드를 입력할 경우, 해당 쿠폰이 등록된다.")
     public Response<?> registerCoupon(@RequestBody RegisterCouponRequest request,
                                       @AuthenticationPrincipal CustomUserDetail userDetail){
@@ -34,7 +34,7 @@ public class CouponController {
         return ApiUtils.success(HttpStatus.CREATED, request.getCouponCode() + " 쿠폰 등록에 성공했습니다.", null);
     }
 
-    @GetMapping
+    @GetMapping(value = "", headers = "X-API-VERSION=1")
     @Operation(summary = "등록된 쿠폰 조회", description = "고객이 등록한 쿠폰 목록을 조회합니다.")
     public Response<?> viewCoupons(@AuthenticationPrincipal CustomUserDetail userDetail) {
         List<ViewCouponsResponse> coupons = couponService.viewCoupons(userDetail);
