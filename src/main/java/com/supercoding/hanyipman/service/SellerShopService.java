@@ -71,8 +71,4 @@ public class SellerShopService {
         return sellerRepository.findByUser(user).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
     }
 
-    private CustomUserDetail validUserDetail(CustomUserDetail customUserDetail) {
-        return Optional.ofNullable(customUserDetail).orElseThrow(() -> new CustomException(TokenErrorCode.ACCESS_DENIED));
-    }
-
 }
