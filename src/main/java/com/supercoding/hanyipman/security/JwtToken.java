@@ -25,11 +25,13 @@ import java.util.Optional;
 @Configuration
 public class JwtToken {
     private static UserRepository userRepository;
+
     @Autowired
     public JwtToken(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
-    public static User user() {
+
+    public static synchronized User user() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
