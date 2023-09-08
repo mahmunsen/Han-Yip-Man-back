@@ -1,10 +1,7 @@
-package com.supercoding.hanyipman.repository.Shop;
+package com.supercoding.hanyipman.repository.shop;
 
-import com.supercoding.hanyipman.dto.shop.buyer.response.ViewShopListResponse;
 import com.supercoding.hanyipman.entity.Seller;
 import com.supercoding.hanyipman.entity.Shop;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,5 +14,5 @@ public interface ShopRepository extends JpaRepository<Shop, Long>, ShopCustomRep
     @Query("SELECT s FROM Shop s WHERE s.id =:shopId")
     Optional<Shop> findShopByShopId(@Param("shopId") Long shopId);
 
-    List<Shop> findAllBySeller(Seller seller);
+    List<Shop> findAllBySellerAndIsDeletedFalse(Seller seller);
 }

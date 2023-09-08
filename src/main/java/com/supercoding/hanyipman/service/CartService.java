@@ -8,7 +8,7 @@ import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.*;
-import com.supercoding.hanyipman.repository.Shop.ShopRepository;
+import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.security.JwtToken;

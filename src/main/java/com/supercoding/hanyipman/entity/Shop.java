@@ -1,16 +1,17 @@
 package com.supercoding.hanyipman.entity;
 
-import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.DynamicUpdate;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
@@ -19,6 +20,7 @@ import java.util.List;
 @Entity
 @DynamicInsert
 @DynamicUpdate
+@SQLDelete(sql = "UPDATE shop SET is_deleted = true WHERE id = ?")
 @Table(name = "shop")
 public class Shop {
     @Id
@@ -49,6 +51,9 @@ public class Shop {
     @Lob
     @Column(name = "description", nullable = false)
     private String description;
+
+    @Column(name = "business_number")
+    private String businessNumber;
 
     @Lob
     @Setter
@@ -85,9 +90,13 @@ public class Shop {
         menuGroups.add(menuGroup);
     }
 
-    public void removeMenuGroup(MenuGroup menuGroup) {
+    public void removeMenuGroup(Long menuGroupId) {
+        MenuGroup menuGroup = menuGroups.stream()
+                .filter(mg -> mg.getId().equals(menuGroupId))
+                .findFirst()
+                .orElse(null);
         menuGroups.remove(menuGroup);
-        menuGroup.setShop(null);
+        Objects.requireNonNull(menuGroup).setShop(null);
     }
 
     public MenuGroup getMenuGroupById(Long menuGroupId) {
@@ -95,6 +104,22 @@ public class Shop {
                 .filter(menuGroup -> menuGroup.getId().equals(menuGroupId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public void menuGroupUpdateSequenceById(Long menuGroupId, Integer newSequence) {
+        MenuGroup menuGroupToUpdate = getMenuGroupById(menuGroupId);
+
+        if (menuGroupToUpdate != null) {
+            menuGroupToUpdate.setSequence(newSequence);
+        }
+    }
+
+    public void menuGroupUpdateNameById(Long menuGroupId, String newName) {
+        MenuGroup menuGroupToUpdate = getMenuGroupById(menuGroupId);
+
+        if (menuGroupToUpdate != null) {
+            menuGroupToUpdate.setName(newName);
+        }
     }
 
     public void setAddress(Address address) {
@@ -113,6 +138,7 @@ public class Shop {
                 .minOrderPrice(registerShopRequest.getMinOrderPrice())
                 .defaultDeliveryPrice(2000)
                 .description(registerShopRequest.getShowDescription())
+                .businessNumber(registerShopRequest.getBusinessNumber())
                 .build();
     }
 

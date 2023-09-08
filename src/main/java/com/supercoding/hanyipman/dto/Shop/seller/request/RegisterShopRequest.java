@@ -1,7 +1,5 @@
-package com.supercoding.hanyipman.dto.shop.seller.request;
+package com.supercoding.hanyipman.dto.Shop.seller.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

@@ -4,6 +4,9 @@ import com.amazonaws.services.s3.AmazonS3Client;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.supercoding.hanyipman.error.CustomException;
+import com.supercoding.hanyipman.error.domain.UtilErrorCode;
+import com.supercoding.hanyipman.utils.FilePathUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -39,14 +42,14 @@ public class AwsS3Service {
         }
     }
 
-//    private void removeFile(String imageUrl) {
-//        String filePath = FilePathUtils.convertImageUrlToFilePath(imageUrl);
-//        if(!amazonS3Client.doesObjectExist(bucket, filePath)){
-//            throw new CustomException(UtilErrorCode.NOT_FOUND_FILE);
-//        }
-//
-//        amazonS3Client.deleteObject(bucket, filePath);
-//    }
+    private void removeFile(String imageUrl) {
+        String filePath = FilePathUtils.convertImageUrlToFilePath(imageUrl);
+        if(!amazonS3Client.doesObjectExist(bucket, filePath)){
+            throw new CustomException(UtilErrorCode.NOT_FOUND_FILE);
+        }
+
+        amazonS3Client.deleteObject(bucket, filePath);
+    }
 
 
 }

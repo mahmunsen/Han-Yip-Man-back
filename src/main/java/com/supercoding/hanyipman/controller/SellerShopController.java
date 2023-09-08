@@ -1,9 +1,9 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
-import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
-import com.supercoding.hanyipman.dto.shop.seller.response.ShopManagementListResponse;
-import com.supercoding.hanyipman.dto.user.CustomUserDetail;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.SellerShopService;
@@ -13,11 +13,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,10 +49,26 @@ public class SellerShopController {
         return ApiUtils.success(HttpStatus.CREATED, "가게 등록 성공", null);
     }
 
+    @Operation(summary = "가게 삭제", description = "가게 아이디를 입력하여 가게 레코드를 제거합니다.")
+    @DeleteMapping(value = "/shops/{shop_id}", headers = "X-API-VERSION=1")
+    public Response<Void> deleteShop(@PathVariable(value = "shop_id") Long shopId) {
+
+        sellerShopService.deleteShop(shopId, JwtToken.user());
+
+        return ApiUtils.success(HttpStatus.OK, "가게 제거 완료", null);
+    }
+
     @Operation(summary = "내 가게 리스트 조회", description = "토큰 정보로 로그인한 사장님이 관리중인 가게의 이름 레코드를 조회합니다")
     @GetMapping(value = "/shops", headers = "X-API-VERSION=1")
     public Response<List<ShopManagementListResponse>> findShopManagementList() {
         return ApiUtils.success(HttpStatus.OK, "관리 가게 조회 성공",  sellerShopService.findManagementList(JwtToken.user()));
     }
+
+    @Operation(summary = "가게 상세 조회", description = "가게 상세 조회")
+    @GetMapping(value = "/shops/{shop_id}", headers = "X-API-VERSION=1")
+    public Response<ShopDetailResponse> findDetailShop(@PathVariable(value = "shop_id") Long shopId) {
+        return ApiUtils.success(HttpStatus.OK, "가게 상세 조회 성공", sellerShopService.detailShop(shopId));
+    }
+
 
 }

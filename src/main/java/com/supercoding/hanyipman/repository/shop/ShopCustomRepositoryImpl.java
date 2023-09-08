@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository.Shop;
+package com.supercoding.hanyipman.repository.shop;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -7,9 +7,9 @@ import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
-import com.supercoding.hanyipman.dto.shop.buyer.request.ViewShopListRequest;
-import com.supercoding.hanyipman.dto.shop.buyer.response.ShopList;
-import com.supercoding.hanyipman.dto.shop.buyer.response.ViewShopListResponse;
+import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.ShopList;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.ViewShopListResponse;
 import com.supercoding.hanyipman.enums.ShopSortType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -20,7 +20,6 @@ import java.util.List;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static com.supercoding.hanyipman.entity.QShop.shop;
 import static com.supercoding.hanyipman.entity.QReview.review;
-import static com.supercoding.hanyipman.entity.QCategory.category;
 
 @Repository
 @RequiredArgsConstructor
@@ -52,6 +51,7 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
         if (searchKeyword != null && !searchKeyword.isEmpty()) {
             whereConditions.and(shop.name.contains(searchKeyword));
         }
+        whereConditions.and(shop.isDeleted.eq(false));
 
         ShopSortType shopSortType = ShopSortType.fromString(request.getSortType());
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
