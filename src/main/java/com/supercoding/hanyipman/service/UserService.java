@@ -3,8 +3,9 @@ package com.supercoding.hanyipman.service;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.LoginRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
-import com.supercoding.hanyipman.entity.Address;
-import com.supercoding.hanyipman.entity.Buyer;
+import com.supercoding.hanyipman.entity.*;
+import com.supercoding.hanyipman.enums.FilePath;
+import com.supercoding.hanyipman.error.domain.FileErrorCode;
 import com.supercoding.hanyipman.error.domain.LoginErrorCode;
 import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
@@ -12,8 +13,6 @@ import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
-import com.supercoding.hanyipman.entity.Seller;
-import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
@@ -21,9 +20,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +35,8 @@ public class UserService {
     private final UserRepository userRepository;
     private final BuyerRepository buyerRepository;
     private final AddressRepository addressRepository;
+    private final AwsS3Service awsS3Service;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
@@ -62,24 +66,22 @@ public class UserService {
     }
 
     @Transactional
-    public String buyersSignup(BuyerSignUpRequest request) {
+    public String buyersSignup(BuyerSignUpRequest request, MultipartFile file) {
         Optional<User> userEntity = userRepository.findByEmail(request.getEmail());
         // TODO 유저 권한에 따른 예외처리 해야함
-        if (!Objects.equals(request.getPassword(), request.getPasswordCheck()))
+        if (request.getPassword() == request.getPasswordCheck())
             throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
         if (userEntity.isPresent()) throw new CustomException(UserErrorCode.DUPLICATE_MEMBER_ID);
 
         String encodingPassword = passwordEncoder.encode(request.getPassword());
 
         User user = User.toBuyerSignup(request, encodingPassword);
-        User savedUser = userRepository.save(user);
-
-        Buyer buyer = Buyer.tobuyer(savedUser, request);
+        userRepository.save(user);
+        Buyer buyer = Buyer.tobuyer(user, request, uploadImageFile(file, user));
         Buyer savedBuyUser = buyerRepository.save(buyer);
-//      주소 지움
         Address address = Address.toBuyerAddress(request, savedBuyUser);
         addressRepository.save(address);
-        return savedUser.getEmail();
+        return user.getEmail();
     }
 
 
@@ -115,5 +117,16 @@ public class UserService {
         return loginResponse;
     }
 
+    private String uploadImageFile(MultipartFile multipartFile, User user) {
+        String uniqueIdentifier = UUID.randomUUID().toString();
+        try {
+            if (multipartFile != null) {
+                return awsS3Service.uploadImage(multipartFile, FilePath.TEST_DIR.getPath() + user.getId() + "/" + uniqueIdentifier);
+            }
+        } catch (IOException e) {
+            throw new CustomException(FileErrorCode.FILE_UPLOAD_FAILED);
+        }
+        return null;
+    }
 
 }
