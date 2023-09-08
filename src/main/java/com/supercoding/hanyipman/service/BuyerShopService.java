@@ -1,7 +1,7 @@
 package com.supercoding.hanyipman.service;
 
-import com.supercoding.hanyipman.dto.shop.buyer.request.ViewShopListRequest;
-import com.supercoding.hanyipman.dto.shop.buyer.response.ViewShopListResponse;
+import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.ViewShopListResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;

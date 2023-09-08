@@ -1,9 +1,9 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
-import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
-import com.supercoding.hanyipman.dto.shop.seller.response.ShopDetailResponse;
-import com.supercoding.hanyipman.dto.shop.seller.response.ShopManagementListResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
