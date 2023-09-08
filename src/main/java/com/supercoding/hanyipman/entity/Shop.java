@@ -51,6 +51,9 @@ public class Shop {
     @Column(name = "description", nullable = false)
     private String description;
 
+    @Column(name = "business_number")
+    private String businessNumber;
+
     @Lob
     @Setter
     @Column(name = "thumbnail")
@@ -114,6 +117,7 @@ public class Shop {
                 .minOrderPrice(registerShopRequest.getMinOrderPrice())
                 .defaultDeliveryPrice(2000)
                 .description(registerShopRequest.getShowDescription())
+                .businessNumber(registerShopRequest.getBusinessNumber())
                 .build();
     }
 
