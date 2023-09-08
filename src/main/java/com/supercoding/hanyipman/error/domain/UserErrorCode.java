@@ -21,8 +21,15 @@ public enum UserErrorCode implements ErrorCode {
     NON_EXISTENT_MEMBER(HttpStatus.NOT_FOUND.value(), "존재하지 않는 회원입니다."),
 
     // HTTP 상태 코드 400 (패스워드 확인 에러)
-    INVALID_PASSWORD_CONFIRMATION(HttpStatus.BAD_REQUEST.value(), "패스워드와 패스워드 확인이 일치하지 않습니다.");
+    INVALID_PASSWORD_CONFIRMATION(HttpStatus.BAD_REQUEST.value(), "패스워드와 패스워드 확인이 일치하지 않습니다."),
 
+    // HTTP 상태 코드 403 (Forbidden)
+    ONLY_OWN_PROFILE_EDITABLE(HttpStatus.FORBIDDEN.value(), "자신의 마이페이지만 수정할 수 있습니다."),
+
+    // HTTP 상태 코드 409 (이메일 중복 에러)
+    DUPLICATE_EMAIL(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다."),
+
+;
 
     private final int code;
     private final String message;

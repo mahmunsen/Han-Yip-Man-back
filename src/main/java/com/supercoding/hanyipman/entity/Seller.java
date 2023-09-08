@@ -1,7 +1,9 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
@@ -11,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @NoArgsConstructor
 @Table(name = "seller")
 public class Seller {
@@ -28,6 +31,14 @@ public class Seller {
 
     public static Seller toSeller(SellerSignUpRequest request, User user) {
         return Seller.builder()
+                .user(user)
+                .businessNumber(request.getBusinessNumber())
+                .build();
+    }
+
+    public static Seller updateBusinessNum(User user, SellerUpdateInfoRequest request) {
+        return Seller.builder()
+                .id(user.getSeller().getId())
                 .user(user)
                 .businessNumber(request.getBusinessNumber())
                 .build();

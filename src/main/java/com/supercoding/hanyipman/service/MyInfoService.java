@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.myInfo.response.MyInfoAddressResponse;
 import com.supercoding.hanyipman.dto.myInfo.response.MyInfoResponse;
 import com.supercoding.hanyipman.entity.Address;
@@ -9,6 +10,7 @@ import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.SellerErrorCode;
+import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
@@ -16,6 +18,7 @@ import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.security.JwtToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +28,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.supercoding.hanyipman.entity.Seller.*;
+import static com.supercoding.hanyipman.entity.User.sellerUpdateMyInfo;
+
 @Slf4j
 @Service
 @AllArgsConstructor
@@ -33,6 +39,7 @@ public class MyInfoService {
     private final AddressRepository addressRepository;
     private final SellerRepository sellerRepository;
     private final BuyerRepository buyerRepository;
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Transactional
     public MyInfoResponse getUserInfoForMyPage(User user) {
@@ -53,5 +60,22 @@ public class MyInfoService {
         List<MyInfoAddressResponse> myInfoAddressResponses = addressList.stream().map(MyInfoAddressResponse::toMyAddressResponse).collect(Collectors.toList());
 
         return MyInfoResponse.toBuyerInfoResponse(user, buyer, myInfoAddressResponses);
+    }
+
+    @Transactional
+    public void sellerUpdateInfo(User user, SellerUpdateInfoRequest request) {
+        if (!(user.getId() == request.getUserNumber()))
+            throw new CustomException(UserErrorCode.ONLY_OWN_PROFILE_EDITABLE);
+        if (request.getPassword() != null && request.getPasswordCheck() != null) {
+            if (request.getPassword() == request.getPasswordCheck())
+                throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
+            request.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        // TODO: 영속성 적용해서 데이터 업데이트 하기
+//        updateBusinessNum(user, request);
+//        sellerUpdateMyInfo(user, request);
+        // TODO: 비즈니스 번호가 안바뀜
+        sellerRepository.save(updateBusinessNum(user, request));
+        userRepository.save(sellerUpdateMyInfo(user, request));
     }
 }
