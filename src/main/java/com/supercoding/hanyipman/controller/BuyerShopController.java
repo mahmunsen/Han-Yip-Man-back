@@ -3,8 +3,8 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.reivew.request.ViewShopReviewsRequest;
 import com.supercoding.hanyipman.dto.reivew.response.ViewShopReviewsResponse;
-import com.supercoding.hanyipman.dto.shop.buyer.request.ViewShopListRequest;
-import com.supercoding.hanyipman.dto.shop.buyer.response.ViewShopListResponse;
+import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.ViewShopListResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.service.BuyerShopService;
