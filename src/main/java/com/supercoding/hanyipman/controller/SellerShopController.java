@@ -1,10 +1,9 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
-import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
-import com.supercoding.hanyipman.dto.shop.seller.response.ShopDetailResponse;
-import com.supercoding.hanyipman.dto.shop.seller.response.ShopManagementListResponse;
-import com.supercoding.hanyipman.dto.user.CustomUserDetail;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.SellerShopService;
@@ -14,11 +13,9 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
