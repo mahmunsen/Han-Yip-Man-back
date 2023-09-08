@@ -58,6 +58,9 @@ public class User {
     @OneToOne(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
     private Buyer buyer;
 
+    @OneToOne(mappedBy = "user",cascade = CascadeType.ALL, orphanRemoval = true)
+    private Seller seller;
+
     public static User toSellerSignup(SellerSignUpRequest request, String password) {
         return User.builder()
                 .email(request.getEmail())

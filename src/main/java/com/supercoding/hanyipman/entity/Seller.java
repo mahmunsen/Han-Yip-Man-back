@@ -2,6 +2,7 @@ package com.supercoding.hanyipman.entity;
 
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import lombok.*;
+import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
 
@@ -18,7 +19,7 @@ public class Seller {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 

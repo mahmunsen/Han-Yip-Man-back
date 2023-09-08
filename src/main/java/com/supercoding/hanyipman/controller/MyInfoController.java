@@ -34,7 +34,7 @@ public class MyInfoController {
     @GetMapping(value = "/users/my-info",headers = "X-API-VERSION=1")
     @Operation(summary = "구매자 마이페이지 API", description = "회원의 정보와 회원에 등록어 주소 리스트가 출력됩니다.")
     public Response<MyInfoResponse> buyerUserMyInfo() {
-        return ApiUtils.success(HttpStatus.OK, "유저 마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
+        return ApiUtils.success(HttpStatus.OK, "마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
     }
 
 
