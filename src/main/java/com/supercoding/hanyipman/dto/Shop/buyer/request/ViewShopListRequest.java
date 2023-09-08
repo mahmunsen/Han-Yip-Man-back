@@ -1,12 +1,10 @@
-package com.supercoding.hanyipman.dto.shop.buyer.request;
+package com.supercoding.hanyipman.dto.Shop.buyer.request;
 
-import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.NotBlank;
 

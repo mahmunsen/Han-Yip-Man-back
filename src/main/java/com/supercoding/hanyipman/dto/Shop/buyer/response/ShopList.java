@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.dto.shop.buyer.response;
+package com.supercoding.hanyipman.dto.Shop.buyer.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
