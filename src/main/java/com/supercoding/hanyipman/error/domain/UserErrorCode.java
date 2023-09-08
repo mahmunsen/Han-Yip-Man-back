@@ -26,9 +26,6 @@ public enum UserErrorCode implements ErrorCode {
     // HTTP 상태 코드 403 (Forbidden)
     ONLY_OWN_PROFILE_EDITABLE(HttpStatus.FORBIDDEN.value(), "자신의 마이페이지만 수정할 수 있습니다."),
 
-    // HTTP 상태 코드 409 (이메일 중복 에러)
-    DUPLICATE_EMAIL(HttpStatus.CONFLICT.value(), "이미 사용 중인 이메일입니다."),
-
 ;
 
     private final int code;
