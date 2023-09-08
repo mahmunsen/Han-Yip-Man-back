@@ -2,6 +2,7 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.shop.seller.response.ShopDetailResponse;
 import com.supercoding.hanyipman.dto.shop.seller.response.ShopManagementListResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.Response;
@@ -52,7 +53,7 @@ public class SellerShopController {
     }
 
     @Operation(summary = "가게 삭제", description = "가게 아이디를 입력하여 가게 레코드를 제거합니다.")
-    @DeleteMapping(value = "/{shop_id}", headers = "X-API-VERSION=1")
+    @DeleteMapping(value = "/shops/{shop_id}", headers = "X-API-VERSION=1")
     public Response<Void> deleteShop(@PathVariable(value = "shop_id") Long shopId) {
 
         sellerShopService.deleteShop(shopId, JwtToken.user());
@@ -65,5 +66,12 @@ public class SellerShopController {
     public Response<List<ShopManagementListResponse>> findShopManagementList() {
         return ApiUtils.success(HttpStatus.OK, "관리 가게 조회 성공",  sellerShopService.findManagementList(JwtToken.user()));
     }
+
+    @Operation(summary = "가게 상세 조회", description = "가게 상세 조회")
+    @GetMapping(value = "/shops/{shop_id}", headers = "X-API-VERSION=1")
+    public Response<ShopDetailResponse> findDetailShop(@PathVariable(value = "shop_id") Long shopId) {
+        return ApiUtils.success(HttpStatus.OK, "가게 상세 조회 성공", sellerShopService.detailShop(shopId));
+    }
+
 
 }
