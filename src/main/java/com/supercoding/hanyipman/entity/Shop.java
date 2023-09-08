@@ -1,6 +1,6 @@
 package com.supercoding.hanyipman.entity;
 
-import com.supercoding.hanyipman.dto.shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
 import lombok.*;
 import org.hibernate.annotations.*;
 
@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Getter
 @NoArgsConstructor
@@ -89,9 +90,13 @@ public class Shop {
         menuGroups.add(menuGroup);
     }
 
-    public void removeMenuGroup(MenuGroup menuGroup) {
+    public void removeMenuGroup(Long menuGroupId) {
+        MenuGroup menuGroup = menuGroups.stream()
+                .filter(mg -> mg.getId().equals(menuGroupId))
+                .findFirst()
+                .orElse(null);
         menuGroups.remove(menuGroup);
-        menuGroup.setShop(null);
+        Objects.requireNonNull(menuGroup).setShop(null);
     }
 
     public MenuGroup getMenuGroupById(Long menuGroupId) {
@@ -99,6 +104,22 @@ public class Shop {
                 .filter(menuGroup -> menuGroup.getId().equals(menuGroupId))
                 .findFirst()
                 .orElse(null);
+    }
+
+    public void menuGroupUpdateSequenceById(Long menuGroupId, Integer newSequence) {
+        MenuGroup menuGroupToUpdate = getMenuGroupById(menuGroupId);
+
+        if (menuGroupToUpdate != null) {
+            menuGroupToUpdate.setSequence(newSequence);
+        }
+    }
+
+    public void menuGroupUpdateNameById(Long menuGroupId, String newName) {
+        MenuGroup menuGroupToUpdate = getMenuGroupById(menuGroupId);
+
+        if (menuGroupToUpdate != null) {
+            menuGroupToUpdate.setName(newName);
+        }
     }
 
     public void setAddress(Address address) {
