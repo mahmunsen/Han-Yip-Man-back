@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository.Shop;
+package com.supercoding.hanyipman.repository.shop;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
@@ -20,7 +20,6 @@ import java.util.List;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static com.supercoding.hanyipman.entity.QShop.shop;
 import static com.supercoding.hanyipman.entity.QReview.review;
-import static com.supercoding.hanyipman.entity.QCategory.category;
 
 @Repository
 @RequiredArgsConstructor
