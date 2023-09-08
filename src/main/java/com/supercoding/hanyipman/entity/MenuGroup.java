@@ -1,13 +1,15 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "menu_group")
 public class MenuGroup {
     @Id
@@ -24,5 +26,13 @@ public class MenuGroup {
 
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
+
+    public static MenuGroup from(Shop shop, String name, Integer sequence) {
+        return MenuGroup.builder()
+                .shop(shop)
+                .name(name)
+                .sequence(sequence)
+                .build();
+    }
 
 }
