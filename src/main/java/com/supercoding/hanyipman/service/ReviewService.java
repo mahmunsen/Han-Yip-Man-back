@@ -14,7 +14,7 @@ import com.supercoding.hanyipman.error.domain.FileErrorCode;
 import com.supercoding.hanyipman.error.domain.ReviewErrorCode;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.ReviewRepository;
-import com.supercoding.hanyipman.repository.Shop.ShopRepository;
+import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
