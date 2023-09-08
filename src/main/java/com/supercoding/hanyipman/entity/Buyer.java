@@ -2,8 +2,6 @@ package com.supercoding.hanyipman.entity;
 
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import lombok.*;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
 import java.util.List;
@@ -46,10 +44,10 @@ public class Buyer {
         }
     }
 
-    public static Buyer tobuyer(User user, BuyerSignUpRequest request) {
+    public static Buyer tobuyer(User user, BuyerSignUpRequest request, String file) {
         return Buyer.builder()
                 .user(user)
-                .profile(request.getProfileImageFile())
+                .profile(file)
                 .build();
     }
 }
