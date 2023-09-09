@@ -1,10 +1,14 @@
-package com.supercoding.hanyipman.dto.payment.response;
+package com.supercoding.hanyipman.dto.payment.response.iamport;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.Instant;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CancelPaymentResponse {
     private Long code;
     private String message;
@@ -12,6 +16,8 @@ public class CancelPaymentResponse {
 
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public class Response {
         private String imp_uid;
         private String merchant_uid;

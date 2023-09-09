@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.dto.payment.request;
+package com.supercoding.hanyipman.dto.payment.request.iamport;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,7 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class AccessTokenRequest {
 
-    private String apikey;
-    private String apiSecret;
+    private Long orderId;
 
 }
