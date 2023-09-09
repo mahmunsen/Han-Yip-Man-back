@@ -32,7 +32,7 @@ public class MyInfoController {
     @Operation(summary = "사장님,마이페이지 수정 API", description = "사장님의 유저정보와 사업자 번호를 수정합니다.")
     public Response<Void> sellerUpdateInfo(@RequestBody SellerUpdateInfoRequest request) {
         myInfoService.sellerUpdateInfo(JwtToken.user(), request);
-        return ApiUtils.success(HttpStatus.OK, "", null);
+        return ApiUtils.success(HttpStatus.OK, "마이페이지가 정상적으로 수정되었습니다.", null);
     }
 
 
