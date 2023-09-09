@@ -1,8 +1,6 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.time.Instant;
@@ -10,6 +8,8 @@ import java.time.Instant;
 @NoArgsConstructor
 @Getter
 @Setter
+@Builder
+@AllArgsConstructor
 @Entity
 @Table(name = "payment")
 public class Payment {
