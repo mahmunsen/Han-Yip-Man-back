@@ -18,7 +18,6 @@ public class Payment {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    // @Column(name = "order_id", nullable = false)
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "order_id", nullable = false)
     private OrderTest orderTestId;
@@ -50,16 +49,31 @@ public class Payment {
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
 
-    public Payment(OrderTest orderTest, String merchantUid, String impUid, String status, String paymentMethod) {
+    public Payment(OrderTest orderTest, String merchantUid, String impUid, String status, String paymentMethod, Long sellerId) {
         this.orderTestId = orderTest;
         this.impUid = impUid;
         this.merchantUid = merchantUid;
-        this.buyerId = orderTest.getBuyerId();
+        this.buyerId = orderTest.getBuyerId().getId();
         this.totalAmount = orderTest.getTotalPrice();
         this.paymentMethod = paymentMethod;
         this.paymentStatus = status;
         this.paymentDate = Instant.now();
-        this.sellerId = 1L;
+        this.sellerId = sellerId;
+
+    }
+
+    public static Payment from(OrderTest orderTest, String merchantUid, String tid, Long sellerId) {
+        return Payment.builder()
+                .orderTestId(orderTest)
+                .impUid(tid)
+                .merchantUid(merchantUid)
+                .buyerId(orderTest.getBuyerId().getId())
+                .totalAmount(orderTest.getTotalPrice())
+                .paymentMethod("KakaoPay")
+                .paymentStatus("ready")
+                .paymentDate(Instant.now())
+                .sellerId(sellerId)
+                .build();
 
     }
 }
