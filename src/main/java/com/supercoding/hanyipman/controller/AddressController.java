@@ -26,7 +26,7 @@ public class AddressController {
     //TODO 주소등록
     @PostMapping(value = "/register", headers = "X-API-VERSION=1")
     @Operation(summary = "주소 등록", description = "주소를 입력 추가를 하면 위도경도를 포함하여 저장한다")
-    public Response<String> registerAddress(AddressRegisterRequest addressRegisterRequest) {
+    public Response<Void> registerAddress(AddressRegisterRequest addressRegisterRequest) {
         String saveAddress = addressService.registerAddress(JwtToken.user(), addressRegisterRequest);
 
         return ApiUtils.success(HttpStatus.CREATED, saveAddress + " 주소가 추가되었습니다.", null);
@@ -41,14 +41,14 @@ public class AddressController {
 
     // Todo 주소 수정
     @PatchMapping(value = "/{address_id}", headers = "X-API-VERSION=1")
-    public Response<String> patchAddress(@PathVariable("address_id") Long addressId, AddressRegisterRequest addressRegisterRequest) {
+    public Response<Void> patchAddress(@PathVariable("address_id") Long addressId, AddressRegisterRequest addressRegisterRequest) {
         Long patchId = addressService.patchAddress(JwtToken.user(), addressId, addressRegisterRequest);
-        return ApiUtils.success(HttpStatus.OK, patchId + "번 주소가 수정되었습니다.", null);
+        return ApiUtils.success(HttpStatus.NO_CONTENT, patchId + "번 주소가 수정되었습니다.", null);
     }
 
     // Todo 주소 삭제
     @DeleteMapping(value = "/{address_id}", headers = "X-API-VERSION=1")
-    public Response<String> sellerDeleteAddress(@PathVariable("address_id") Long addressId) {
+    public Response<Void> sellerDeleteAddress(@PathVariable("address_id") Long addressId) {
         String deleteAddress = addressService.sellerDeleteAddress(JwtToken.user(), addressId);
         return ApiUtils.success(HttpStatus.NO_CONTENT, deleteAddress + " 주소 삭제 완료", null);
     }

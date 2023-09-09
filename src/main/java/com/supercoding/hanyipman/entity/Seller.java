@@ -1,7 +1,10 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import lombok.*;
+import org.hibernate.annotations.DynamicUpdate;
+import org.hibernate.mapping.ToOne;
 
 import javax.persistence.*;
 
@@ -10,6 +13,7 @@ import javax.persistence.*;
 @Entity
 @Builder
 @AllArgsConstructor
+@DynamicUpdate
 @NoArgsConstructor
 @Table(name = "seller")
 public class Seller {
@@ -18,7 +22,7 @@ public class Seller {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @OneToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -31,5 +35,14 @@ public class Seller {
                 .businessNumber(request.getBusinessNumber())
                 .build();
     }
+
+    public static Seller updateBusinessNum(Seller seller, SellerUpdateInfoRequest request) {
+        return Seller.builder()
+                .id(seller.getId())
+                .user(seller.getUser())
+                .businessNumber(request.getBusinessNumber())
+                .build();
+    }
+
 
 }
