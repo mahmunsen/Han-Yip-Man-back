@@ -87,8 +87,7 @@ public class UserService {
 
     public User login(LoginRequest request) {
         Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-        if (optionalUser.isEmpty())
-            throw new CustomException(LoginErrorCode.INVALID_LOGIN);
+        if (optionalUser.isEmpty()) throw new CustomException(LoginErrorCode.INVALID_LOGIN);
 
         if (Boolean.TRUE.equals(optionalUser.get().getIsDeleted()))
             throw new CustomException(LoginErrorCode.INVALID_LOGIN);
@@ -129,4 +128,9 @@ public class UserService {
         return null;
     }
 
+    public void checkDuplicateEmail(String checkEmail) {
+        Optional<User> user = userRepository.findByEmail(checkEmail);
+        if (user.isPresent())throw new CustomException(UserErrorCode.DUPLICATE_EMAIL);
+
+    }
 }

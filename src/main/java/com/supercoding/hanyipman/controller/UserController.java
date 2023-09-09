@@ -6,11 +6,13 @@ import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.entity.User;
+import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
 import com.supercoding.hanyipman.service.UserService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
@@ -41,7 +43,7 @@ public class UserController {
 
     @PostMapping(value = "/sellers/signup", headers = "X-API-VERSION=1")
     @ApiOperation(value = "업주 회원가입 API", nickname = "업주 회원가입 API")
-    public Response sellersSignup(@RequestBody SellerSignUpRequest request) {
+    public Response<Void> sellersSignup(@RequestBody SellerSignUpRequest request) {
         String signupEmail = userService.sellerSignup(request);
         return ApiUtils.success(HttpStatus.CREATED, signupEmail + "업주 등록 성공", null);
     }
@@ -50,8 +52,18 @@ public class UserController {
     @ApiOperation(value = "유저 회원가입 API", nickname = "유저 회원가입 API")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "multipart/form-data",
             schema = @Schema(implementation = MultipartFile.class)))
-    public Response buyersSignup(@ModelAttribute BuyerSignUpRequest request, @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile) {
+    public Response<Void> buyersSignup(
+            @ModelAttribute BuyerSignUpRequest request,
+            @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile) {
         String signupEmail = userService.buyersSignup(request, profileImageFile);
         return ApiUtils.success(HttpStatus.CREATED, signupEmail + "회원가입 성공", null);
+    }
+
+    @GetMapping(value = "/users/check-email-duplicate")
+    @Operation(summary = "이메일 중복확인", description = "이메일 데이터를 받아 중복이 있는지 확인합니다.")
+    public Response<Void> checkDuplicateEmail(String checkEmail) {
+        userService.checkDuplicateEmail(checkEmail);
+
+        return ApiUtils.success(HttpStatus.OK, "사용할 수 있는 이메일입니다.", null);
     }
 }
