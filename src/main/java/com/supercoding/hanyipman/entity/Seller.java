@@ -36,12 +36,13 @@ public class Seller {
                 .build();
     }
 
-    public static Seller updateBusinessNum(User user, SellerUpdateInfoRequest request) {
+    public static Seller updateBusinessNum(Seller seller, SellerUpdateInfoRequest request) {
         return Seller.builder()
-                .id(user.getSeller().getId())
-                .user(user)
+                .id(seller.getId())
+                .user(seller.getUser())
                 .businessNumber(request.getBusinessNumber())
                 .build();
     }
+
 
 }

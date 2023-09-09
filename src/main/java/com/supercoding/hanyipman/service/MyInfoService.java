@@ -71,11 +71,11 @@ public class MyInfoService {
                 throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
             request.setPassword(passwordEncoder.encode(request.getPassword()));
         }
+        Optional<Seller> seller = sellerRepository.findByUser(user);
+        if (seller==null) throw  new CustomException(SellerErrorCode.NOT_SELLER);
+
         // TODO: 영속성 적용해서 데이터 업데이트 하기
-//        updateBusinessNum(user, request);
-//        sellerUpdateMyInfo(user, request);
-        // TODO: 비즈니스 번호가 안바뀜
-        sellerRepository.save(updateBusinessNum(user, request));
-        userRepository.save(sellerUpdateMyInfo(user, request));
+        sellerRepository.save(seller.get().updateBusinessNum(seller.get(), request));
+        userRepository.save(sellerUpdateMyInfo(user, seller.get(), request));
     }
 }

@@ -87,7 +87,7 @@ public class User {
                 .build();
     }
 
-    public static User sellerUpdateMyInfo(User user, SellerUpdateInfoRequest request) {
+    public static User sellerUpdateMyInfo(User user,Seller seller, SellerUpdateInfoRequest request) {
         return User.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -97,7 +97,7 @@ public class User {
                 .role(user.getRole())
                 .createdAt(user.getCreatedAt())
                 .isDeleted(user.getIsDeleted())
-                .seller(user.getSeller())
+                .seller(seller)
                 .build();
     }
 }
