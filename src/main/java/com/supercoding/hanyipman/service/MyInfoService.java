@@ -67,7 +67,7 @@ public class MyInfoService {
         if (!(user.getId() == request.getUserNumber()))
             throw new CustomException(UserErrorCode.ONLY_OWN_PROFILE_EDITABLE);
         if (request.getPassword() != null && request.getPasswordCheck() != null) {
-            if (request.getPassword() == request.getPasswordCheck())
+            if (!request.getPassword().equals(request.getPasswordCheck()))
                 throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
             request.setPassword(passwordEncoder.encode(request.getPassword()));
         }
