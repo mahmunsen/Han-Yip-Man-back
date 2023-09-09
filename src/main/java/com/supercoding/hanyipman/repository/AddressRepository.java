@@ -31,4 +31,5 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("delete from Address a where a.buyer=?1 and a.id = ?2 ")
     void deleteAddressByAddress(Buyer buyer, Long id);
 
+    Address findAddressById(Long addressId);
 }
