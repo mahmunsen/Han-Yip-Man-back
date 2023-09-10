@@ -28,6 +28,9 @@ public class Option {
     @Column(name = "name", nullable = false, length = 50)
     private String name;
 
+    @Column(name = "max_selected")
+    private Integer maxSelected;
+
     @Column(name = "is_multiple", nullable = false)
     private Boolean isMultiple;
 
@@ -58,6 +61,7 @@ public class Option {
         return Option.builder()
                 .name(optionRequest.getOptionName())
                 .isMultiple(optionRequest.getIsMultiple())
+                .maxSelected(Boolean.TRUE.equals(optionRequest.getIsMultiple()) ? optionRequest.getMaxSelected() : 0)
                 .isDeleted(false)
                 .build();
     }

@@ -27,6 +27,8 @@ public class RegisterMenuRequest {
     public static class OptionGroupRequest {
         private String optionName;
         private Boolean isMultiple;
+
+        private Integer maxSelected;
         private List<OptionItemRequest> optionItems;
 
 
