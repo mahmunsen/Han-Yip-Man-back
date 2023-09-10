@@ -4,7 +4,9 @@ import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuRequest;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -33,11 +35,23 @@ public class Option {
     private Boolean isDeleted;
 
     @OneToMany(mappedBy = "option",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OptionItem> optionItems;
+    private List<OptionItem> optionItems = new ArrayList<>();
 
     public void addOption(OptionItem optionItem) {
         optionItem.setOption(this);
         optionItems.add(optionItem);
+    }
+
+    public void addOptionItemList(List<OptionItem> optionItemList) {
+
+        if (optionItems == null) {
+            optionItems = new ArrayList<>();
+        }
+
+        optionItemList.forEach(optionItem -> {
+            optionItem.setOption(this);
+            optionItems.add(optionItem);
+        });
     }
 
     public static Option from(RegisterMenuRequest.OptionGroupRequest optionRequest) {

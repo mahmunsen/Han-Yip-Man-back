@@ -4,7 +4,9 @@ import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuRequest;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -47,11 +49,23 @@ public class Menu {
     private Boolean isDeleted;
 
     @OneToMany(mappedBy = "menu",cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Option> options;
+    private List<Option> options  = new ArrayList<>();
 
     public void addOption(Option option) {
         option.setMenu(this);
         options.add(option);
+    }
+
+    public void addOptionList(List<Option> optionList) {
+
+        if (options == null) {
+            options = new ArrayList<>();
+        }
+
+        optionList.forEach(option -> {
+            option.setMenu(this);
+            options.add(option);
+        });
     }
 
     public static Menu from(RegisterMenuRequest registerMenuRequest, MenuGroup menuGroup, Integer sequence) {
@@ -61,7 +75,7 @@ public class Menu {
                 .price(registerMenuRequest.getPrice())
                 .discountPrice(registerMenuRequest.getPrice())
                 .description(registerMenuRequest.getDescription())
-                .sequence(sequence)
+                .sequence(sequence+1)
                 .isDeleted(false)
                 .build();
     }

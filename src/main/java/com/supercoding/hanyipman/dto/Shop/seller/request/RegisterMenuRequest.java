@@ -18,7 +18,6 @@ public class RegisterMenuRequest {
     private String menuName;
     private Integer price;
     private String description;
-    private MultipartFile menuThumbnailImage;
     private List<OptionGroupRequest> options;
 
     @Getter
