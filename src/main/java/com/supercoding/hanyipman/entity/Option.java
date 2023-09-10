@@ -1,7 +1,7 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuRequest;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.List;
@@ -9,6 +9,9 @@ import java.util.List;
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "`option`")
 public class Option {
     @Id
@@ -35,5 +38,13 @@ public class Option {
     public void addOption(OptionItem optionItem) {
         optionItem.setOption(this);
         optionItems.add(optionItem);
+    }
+
+    public static Option from(RegisterMenuRequest.OptionGroupRequest optionRequest) {
+        return Option.builder()
+                .name(optionRequest.getOptionName())
+                .isMultiple(optionRequest.getIsMultiple())
+                .isDeleted(false)
+                .build();
     }
 }

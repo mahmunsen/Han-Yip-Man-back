@@ -1,13 +1,16 @@
 package com.supercoding.hanyipman.entity;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuRequest;
+import lombok.*;
 
 import javax.persistence.*;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "option_item")
 public class OptionItem {
     @Id
@@ -27,5 +30,13 @@ public class OptionItem {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
+
+    public static OptionItem from(RegisterMenuRequest.OptionGroupRequest.OptionItemRequest optionItemRequest) {
+        return OptionItem.builder()
+                .name(optionItemRequest.getItemName())
+                .price(optionItemRequest.getItemPrice())
+                .isDeleted(false)
+                .build();
+    }
 
 }

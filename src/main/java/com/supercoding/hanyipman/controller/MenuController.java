@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuGroup;
 import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterMenuRequest;
 import com.supercoding.hanyipman.dto.vo.Response;
+import com.supercoding.hanyipman.service.MenuService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -26,14 +27,16 @@ import java.util.List;
 @Api(tags = "메뉴 관련 API")
 public class MenuController {
 
+    private final MenuService menuService;
+
     @Operation(summary = "메뉴 등록", description = "대분류 정보를 입력하여 대분류 레코드를 생성합니다.")
     @PostMapping(value = "/{menu_group_id}",consumes = "multipart/form-data", headers = "X-API-VERSION=1")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "multipart/form-data",
             schema = @Schema(implementation = MultipartFile.class)))
-    public Response<Void> createMenuGroup(@ModelAttribute RegisterMenuRequest registerMenuRequest,
+    public Response<Void> createMenu(@ModelAttribute RegisterMenuRequest registerMenuRequest,
                                           @PathVariable(value = "menu_group_id") Long menuGroupId) {
 
-
+        menuService.createMenu(registerMenuRequest, menuGroupId);
 
         return ApiUtils.success(HttpStatus.CREATED, "메뉴 등록 성공", null);
     }
