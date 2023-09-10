@@ -86,18 +86,12 @@ public class UserService {
 
 
     public User login(LoginRequest request) {
-        Optional<User> optionalUser = userRepository.findByEmail(request.getEmail());
-        if (optionalUser.isEmpty()) throw new CustomException(LoginErrorCode.INVALID_LOGIN);
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new CustomException(LoginErrorCode.INVALID_LOGIN));
 
-        if (Boolean.TRUE.equals(optionalUser.get().getIsDeleted()))
+        if (Boolean.TRUE.equals(user.getIsDeleted()) || !passwordEncoder.matches(request.getPassword(), user.getPassword()))
             throw new CustomException(LoginErrorCode.INVALID_LOGIN);
 
-        User loginUser = optionalUser.get();
-
-        if (!passwordEncoder.matches(request.getPassword(), loginUser.getPassword())) {
-            throw new CustomException(LoginErrorCode.INVALID_LOGIN);
-        }
-        return loginUser;
+        return user;
     }
 
     public LoginResponse tokenGenerator(User loginUser) {
@@ -130,7 +124,7 @@ public class UserService {
 
     public void checkDuplicateEmail(String checkEmail) {
         Optional<User> user = userRepository.findByEmail(checkEmail);
-        if (user.isPresent())throw new CustomException(UserErrorCode.DUPLICATE_EMAIL);
+        if (user.isPresent()) throw new CustomException(UserErrorCode.DUPLICATE_EMAIL);
 
     }
 }
