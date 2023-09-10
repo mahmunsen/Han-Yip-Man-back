@@ -27,6 +27,9 @@ public class MenuGroup {
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
     public static MenuGroup from(Shop shop, String name, Integer sequence) {
         return MenuGroup.builder()
                 .shop(shop)

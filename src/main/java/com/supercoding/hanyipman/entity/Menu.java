@@ -38,4 +38,7 @@ public class Menu {
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
 }
