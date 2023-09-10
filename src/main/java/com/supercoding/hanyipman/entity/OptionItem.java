@@ -24,4 +24,7 @@ public class OptionItem {
     @Column(name = "price", nullable = false)
     private Integer price;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
 }

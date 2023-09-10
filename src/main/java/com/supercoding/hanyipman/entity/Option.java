@@ -24,4 +24,7 @@ public class Option {
     @Column(name = "is_multiple", nullable = false)
     private Boolean isMultiple;
 
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
+
 }
