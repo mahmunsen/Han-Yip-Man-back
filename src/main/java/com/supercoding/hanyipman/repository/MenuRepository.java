@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -19,5 +20,7 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
 
     @Query("SELECT COALESCE(MAX(m.sequence), 0) FROM Menu m WHERE m.menuGroup = :menuGroup")
     Integer findMaxSequenceByShop(@Param("menuGroup") MenuGroup menuGroup);
+
+    List<Menu> findAllByMenuGroupAndIsDeletedFalse(MenuGroup menuGroup);
 
 }
