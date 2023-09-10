@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.controller;
 
 
+import com.supercoding.hanyipman.dto.Shop.buyer.response.MenuGroupListResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.ShopInfoResponse;
 import com.supercoding.hanyipman.dto.reivew.request.ViewShopReviewsRequest;
 import com.supercoding.hanyipman.dto.reivew.response.ViewShopReviewsResponse;
@@ -18,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RequestMapping("/api/buyer-shops")
 @RestController
@@ -38,11 +41,17 @@ public class BuyerShopController {
     }
 
     @Operation(summary = "가게 상세 조회", description = "가게의 상세 정보를 읽습니다.")
-
     @GetMapping(value = "/{shop_id}/info", headers = "X-API-VERSION=1")
     public Response<ShopInfoResponse> findShopDetail(@PathVariable(value = "shop_id") Long shopId) {
 
         return ApiUtils.success(HttpStatus.OK, "가게 정보 조회 성공", buyerShopService.findShopDetail(shopId));
+    }
+
+    @Operation(summary = "가게 대분류 별 메뉴 조회", description = "가게의 대분류 별 메뉴 리스트를 읽습니다.")
+    @GetMapping(value = "/{shop_id}/menus", headers = "X-API-VERSION=1")
+    public Response<List<MenuGroupListResponse>> findMenuListByMenuGroup(@PathVariable(value = "shop_id") Long shopId) {
+
+        return ApiUtils.success(HttpStatus.OK, "가게 정보 조회 성공", buyerShopService.findMenuListByMenuGroup(shopId));
     }
 
     @GetMapping(value = "/{shopId}/reviews", headers = "X-API-VERSION=1")

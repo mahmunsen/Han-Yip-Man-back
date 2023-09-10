@@ -1,13 +1,13 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.MenuByMenuGroupResponse;
+import com.supercoding.hanyipman.dto.Shop.buyer.response.MenuGroupListResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.ShopInfoResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.ViewShopListResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.MenuGroupResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
-import com.supercoding.hanyipman.entity.Address;
-import com.supercoding.hanyipman.entity.Buyer;
-import com.supercoding.hanyipman.entity.Shop;
-import com.supercoding.hanyipman.entity.User;
+import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
@@ -20,7 +20,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +48,17 @@ public class BuyerShopService {
         return ShopInfoResponse.from(validShop(shopId));
     }
 
+    @Transactional
+    public List<MenuGroupListResponse> findMenuListByMenuGroup(Long shopId) {
+        Shop shop = validShop(shopId);
+        return shop.getMenuGroups()
+                .stream()
+                .filter(menuGroup -> !menuGroup.getIsDeleted())
+                .sorted(Comparator.comparing(MenuGroup::getSequence))
+                .map(MenuGroupListResponse::from)
+                .collect(Collectors.toList());
+    }
+
     private Buyer validBuyerUser(CustomUserDetail customUserDetail) {
         User validUser = userRepository.findById(customUserDetail.getUserId()).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
         return buyerRepository.findBuyerByUserId(validUser.getId()).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
@@ -53,6 +67,7 @@ public class BuyerShopService {
     private Shop validShop(Long shopId) {
         return shopRepository.findShopByShopId(shopId).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
     }
+
 
 
 }
