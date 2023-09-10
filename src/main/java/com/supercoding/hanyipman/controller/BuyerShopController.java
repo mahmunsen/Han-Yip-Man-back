@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.controller;
 
 
+import com.supercoding.hanyipman.dto.Shop.buyer.response.ShopInfoResponse;
 import com.supercoding.hanyipman.dto.reivew.request.ViewShopReviewsRequest;
 import com.supercoding.hanyipman.dto.reivew.response.ViewShopReviewsResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
@@ -32,6 +33,12 @@ public class BuyerShopController {
                                                        @AuthenticationPrincipal CustomUserDetail customUserDetail) {
 
         return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findShopList(viewShopListRequest, customUserDetail));
+    }
+
+    @GetMapping(value = "/{shop_id}/info", headers = "X-API-VERSION=1")
+    public Response<ShopInfoResponse> findShopDetail(@PathVariable(value = "shop_id") Long shopId) {
+
+        return ApiUtils.success(HttpStatus.OK, "가게 정보 조회 성공", buyerShopService.findShopDetail(shopId));
     }
 
     @GetMapping(value = "/{shopId}/reviews", headers = "X-API-VERSION=1")
