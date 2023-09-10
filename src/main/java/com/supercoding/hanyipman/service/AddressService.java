@@ -33,8 +33,8 @@ public class AddressService {
         requestNullCheck(request);
         Buyer buyerId = buyerRepository.findByUser(user);
         if (buyerId.getAddresses() == null) throw new CustomException(BuyerErrorCode.INVALID_BUYER);
-        if (addressRepository.existsAllByAddress(request.getAddress()) >= 1)
-            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
+//        if (addressRepository.existsAllByAddress(request.getAddress()) >= 1)
+//            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
         Integer allByUserCountId = addressRepository.findAllByUserCountId(buyerId.getId());
         if (allByUserCountId >= limitAddress) throw new CustomException(AddressErrorCode.ADDRESS_DATA_EXCEED_LIMIT);
 
@@ -42,6 +42,7 @@ public class AddressService {
         Address address = Address.toAddAddress(buyer, request);
 
         Address save = addressRepository.save(address);
+        setDefaultAddress(user, address.getId());
         return save.getAddress();
     }
 
@@ -55,10 +56,7 @@ public class AddressService {
 
         addressRepository.findAllByBuyer(byUser);
 
-        return addressRepository.findAllByBuyer(byUser)
-                .stream()
-                .map(AddressListResponse::toaAddressListResponse)
-                .collect(Collectors.toList());
+        return addressRepository.findAllByBuyer(byUser).stream().map(AddressListResponse::toaAddressListResponse).collect(Collectors.toList());
     }
 
     // Todo 주소 수정
@@ -93,6 +91,23 @@ public class AddressService {
     public void requestNullCheck(AddressRegisterRequest request) {
         if (request.getAddress() == null || "".equals(request.getAddress()) || request.getAddressDetail() == null || "".equals(request.getAddressDetail()) || request.getLatitude() == null || request.getLongitude() == null)
             throw new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA);
+    }
+
+    @Transactional
+    public void setDefaultAddress(User user, Long defaultAddressId) {
+        List<Address> addressList = addressRepository.findAllByBuyer(user.getBuyer());
+
+        if (addressList.stream().noneMatch(address -> address.getId().equals(defaultAddressId)))
+            throw new CustomException(AddressErrorCode.MY_ADDRESS_ONLY);
+
+        addressList.stream().map(address -> {
+            if (address.getId().equals(defaultAddressId)) {
+                address.setIsDefault(true);
+            } else {
+                address.setIsDefault(false);
+            }
+            return address;
+        }).collect(Collectors.toList());
     }
 }
 
