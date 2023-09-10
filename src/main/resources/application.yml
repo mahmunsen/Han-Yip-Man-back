@@ -55,3 +55,5 @@ cloud:
 imp_key: ENC(Q5lR5+Q/SjYwyGZSKKBAgdQs3kqk9hv5dn5dueyUZtM=)
 imp_secret: ENC(N8pL9GLWYo0bk/YZLya5Ey5hwF4ZTZdjPOWKq2MiC4F9CP/1iICWLtB49AYUYYy5tpPI1ZPkiuYFonVhTqYwwgs5xWL9IRpbBUJQ1mB7oFbgwysBq4/KQg611hkMI+mN)
 
+#kakaopay
+kakaopay_key: ENC(YSfTSGO2d2UxBQbv19QK5oF8irUUvhGHewBI9b+Ykn+wF8dVKHegr5vbBxrFABBZ)

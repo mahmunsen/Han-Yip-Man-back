@@ -1,8 +1,12 @@
-package com.supercoding.hanyipman.dto.payment.response;
+package com.supercoding.hanyipman.dto.payment.response.iamport;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class GetOnePaymentResponse {
 
     private Long code;
@@ -10,6 +14,8 @@ public class GetOnePaymentResponse {
     private Response response;
 
     @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
     public class Response {
 
         String imp_uid;
