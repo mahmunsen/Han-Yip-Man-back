@@ -55,6 +55,7 @@ public class MenuGroupService {
 
         return shop.getMenuGroups()
                 .stream()
+                .filter(menuGroup -> !menuGroup.getIsDeleted())
                 .sorted(Comparator.comparing(MenuGroup::getSequence))
                 .map(MenuGroupResponse::from)
                 .collect(Collectors.toList());

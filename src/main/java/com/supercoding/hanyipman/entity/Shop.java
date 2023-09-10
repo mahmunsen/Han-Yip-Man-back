@@ -96,7 +96,7 @@ public class Shop {
                 .findFirst()
                 .orElse(null);
         menuGroups.remove(menuGroup);
-        Objects.requireNonNull(menuGroup).setShop(null);
+        Objects.requireNonNull(menuGroup).setIsDeleted(true);
     }
 
     public MenuGroup getMenuGroupById(Long menuGroupId) {
