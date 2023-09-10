@@ -64,18 +64,26 @@ public class MyInfoService {
 
     @Transactional
     public void sellerUpdateInfo(User user, SellerUpdateInfoRequest request) {
-        if (!(user.getId() == request.getUserNumber()))
+        String password = request.getPassword();
+        String passwordCheck = request.getPasswordCheck();
+
+        if (!(user.getId().equals(request.getUserId())))
             throw new CustomException(UserErrorCode.ONLY_OWN_PROFILE_EDITABLE);
-        if (request.getPassword() != null && request.getPasswordCheck() != null) {
-            if (!request.getPassword().equals(request.getPasswordCheck()))
-                throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
-            request.setPassword(passwordEncoder.encode(request.getPassword()));
-        }
-        Optional<Seller> seller = sellerRepository.findByUser(user);
-        if (seller==null) throw  new CustomException(SellerErrorCode.NOT_SELLER);
+
+        validatePasswordConfirmation(password, passwordCheck, request);
+        Seller seller = sellerRepository.findByUser(user).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
 
         // TODO: 영속성 적용해서 데이터 업데이트 하기
-        sellerRepository.save(seller.get().updateBusinessNum(seller.get(), request));
-        userRepository.save(sellerUpdateMyInfo(user, seller.get(), request));
+        sellerRepository.save(seller.updateBusinessNum(seller, request));
+        userRepository.save(sellerUpdateMyInfo(user, seller, request));
+    }
+
+    private void validatePasswordConfirmation(String password, String passwordCheck, SellerUpdateInfoRequest request) {
+        if (password != null && passwordCheck != null) {
+            if (!password.equals(passwordCheck)) {
+                throw new CustomException(UserErrorCode.INVALID_PASSWORD_CONFIRMATION);
+            }
+            request.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
     }
 }

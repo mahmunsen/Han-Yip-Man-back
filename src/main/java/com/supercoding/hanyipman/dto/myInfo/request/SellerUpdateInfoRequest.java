@@ -6,7 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SellerUpdateInfoRequest {
-    private Long userNumber;
+    private Long userId;
     private String phoneNumber;
     private String nickName;
     private String password;
