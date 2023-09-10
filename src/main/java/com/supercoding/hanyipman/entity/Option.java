@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -15,8 +16,9 @@ public class Option {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "menu_id", nullable = false)
-    private Long menuId;
+    @ManyToOne
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
@@ -27,4 +29,11 @@ public class Option {
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
 
+    @OneToMany(mappedBy = "option",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OptionItem> optionItems;
+
+    public void addOption(OptionItem optionItem) {
+        optionItem.setOption(this);
+        optionItems.add(optionItem);
+    }
 }

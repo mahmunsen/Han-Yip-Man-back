@@ -15,8 +15,9 @@ public class OptionItem {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "option_id", nullable = false)
-    private Long optionId;
+    @ManyToOne
+    @JoinColumn(name = "option_id", nullable = false)
+    private Option option;
 
     @Column(name = "name", nullable = false, length = 50)
     private String name;
