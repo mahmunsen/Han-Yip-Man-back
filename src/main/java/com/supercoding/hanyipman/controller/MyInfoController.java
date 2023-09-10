@@ -28,7 +28,7 @@ public class MyInfoController {
         return ApiUtils.success(HttpStatus.OK, "마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
     }
 
-    @PatchMapping("/sellers/my-info")
+    @PatchMapping(value = "/sellers/my-info", headers = "X-API-VERSION=1")
     @Operation(summary = "사장님,마이페이지 수정 API", description = "사장님의 유저정보와 사업자 번호를 수정합니다.")
     public Response<Void> sellerUpdateInfo(@RequestBody SellerUpdateInfoRequest request) {
         myInfoService.sellerUpdateInfo(JwtToken.user(), request);

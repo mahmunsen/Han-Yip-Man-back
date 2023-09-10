@@ -52,5 +52,11 @@ public class AddressController {
         String deleteAddress = addressService.sellerDeleteAddress(JwtToken.user(), addressId);
         return ApiUtils.success(HttpStatus.NO_CONTENT, deleteAddress + " 주소 삭제 완료", null);
     }
+
+    @PostMapping(value = "/set-default-address", headers = "X-API-VERSION=1")
+    public Response<Void> setDefaultAddress(Long defaultAddressId) {
+        addressService.setDefaultAddress(JwtToken.user(), defaultAddressId);
+        return ApiUtils.success(HttpStatus.OK, "기본 주소가 변경되었습니다.", null);
+    }
 }
 
