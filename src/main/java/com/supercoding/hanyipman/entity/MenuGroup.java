@@ -3,6 +3,8 @@ package com.supercoding.hanyipman.entity;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -29,6 +31,10 @@ public class MenuGroup {
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted;
+
+    @OneToMany(mappedBy = "menuGroup",cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Menu> menus  = new ArrayList<>();
+
 
     public static MenuGroup from(Shop shop, String name, Integer sequence) {
         return MenuGroup.builder()
