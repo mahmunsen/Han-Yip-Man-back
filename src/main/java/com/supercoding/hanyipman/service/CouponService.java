@@ -50,7 +50,7 @@ public class CouponService {
 
         Buyer buyer = validateUser(userId);
 
-        return buyerCouponRepository.findBuyerCouponsByBuyer(buyer).stream()
+        return buyerCouponRepository.findBuyerCouponsByBuyerOrderByEnabledDescCreatedAtDesc(buyer).stream()
                 .map(buyerCoupon -> ViewCouponsResponse.from(buyerCoupon)).collect(Collectors.toList());
     }
 

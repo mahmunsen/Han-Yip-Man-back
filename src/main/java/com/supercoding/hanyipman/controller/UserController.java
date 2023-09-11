@@ -6,18 +6,20 @@ import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.entity.User;
+import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
 import com.supercoding.hanyipman.service.UserService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @AllArgsConstructor
@@ -27,7 +29,7 @@ public class UserController {
 
     private UserService userService;
 
-    @PostMapping(value = "/users/login")
+    @PostMapping(value = "/users/login", headers = "X-API-VERSION=1")
     @ApiOperation(value = "유저,업주 로그인 API", nickname = "유저,업주 로그인 API")
     public Response<LoginResponse> allLogin(@RequestBody LoginRequest request) {
         User loginUser = userService.login(request);
@@ -39,17 +41,29 @@ public class UserController {
         return ApiUtils.success(HttpStatus.OK, "로그인 성공", loginResponse);
     }
 
-    @PostMapping(value = "/sellers/signup")
+    @PostMapping(value = "/sellers/signup", headers = "X-API-VERSION=1")
     @ApiOperation(value = "업주 회원가입 API", nickname = "업주 회원가입 API")
-    public Response sellersSignup(@RequestBody SellerSignUpRequest request) {
+    public Response<Void> sellersSignup(@RequestBody SellerSignUpRequest request) {
         String signupEmail = userService.sellerSignup(request);
         return ApiUtils.success(HttpStatus.CREATED, signupEmail + "업주 등록 성공", null);
     }
 
-    @PostMapping(value = "/buyers/signup")
+    @PostMapping(value = "/buyers/signup", consumes = "multipart/form-data", headers = "X-API-VERSION=1")
     @ApiOperation(value = "유저 회원가입 API", nickname = "유저 회원가입 API")
-    public Response buyersSignup(@RequestBody BuyerSignUpRequest request) {
-        String signupEmail = userService.buyersSignup(request);
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "multipart/form-data",
+            schema = @Schema(implementation = MultipartFile.class)))
+    public Response<Void> buyersSignup(
+            @ModelAttribute BuyerSignUpRequest request,
+            @RequestPart(value = "profileImageFile", required = false) MultipartFile profileImageFile) {
+        String signupEmail = userService.buyersSignup(request, profileImageFile);
         return ApiUtils.success(HttpStatus.CREATED, signupEmail + "회원가입 성공", null);
+    }
+
+    @GetMapping(value = "/users/check-email-duplicate")
+    @Operation(summary = "이메일 중복확인", description = "이메일 데이터를 받아 중복이 있는지 확인합니다.")
+    public Response<Void> checkDuplicateEmail(String checkEmail) {
+        userService.checkDuplicateEmail(checkEmail);
+
+        return ApiUtils.success(HttpStatus.OK, "사용할 수 있는 이메일입니다.", null);
     }
 }

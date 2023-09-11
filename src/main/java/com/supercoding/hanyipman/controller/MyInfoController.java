@@ -1,28 +1,17 @@
 package com.supercoding.hanyipman.controller;
 
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.myInfo.response.MyInfoResponse;
-import com.supercoding.hanyipman.dto.user.CustomUserDetail;
+import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.vo.Response;
-import com.supercoding.hanyipman.entity.User;
-import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.LoginErrorCode;
-import com.supercoding.hanyipman.error.domain.TokenErrorCode;
-import com.supercoding.hanyipman.error.domain.UserErrorCode;
-import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.MyInfoService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Optional;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @AllArgsConstructor
@@ -32,17 +21,19 @@ public class MyInfoController {
 
     private final MyInfoService myInfoService;
 
-    private final UserRepository userRepository;
-
-
-    @GetMapping("/users/my-info")
-    @Operation(summary = "구매자 마이페이지 API", description = "회원의 정보와 회원에 등록어 주소 리스트가 출력됩니다.")
+    @TimeTrace
+    @GetMapping(value = "/users/my-info", headers = "X-API-VERSION=1")
+    @Operation(summary = "구매자, 판매자 마이페이지 API", description = "회원은 나의정보 및 등록주소 표시, 사장은 나의정보 포시")
     public Response<MyInfoResponse> buyerUserMyInfo() {
-        return ApiUtils.success(HttpStatus.OK, "유저 마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
+        return ApiUtils.success(HttpStatus.OK, "마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
     }
 
-    public User findUserByUserId(CustomUserDetail userDetail) {
-        CustomUserDetail validUserDetail = Optional.ofNullable(userDetail).orElseThrow(() -> new CustomException(TokenErrorCode.ACCESS_DENIED));
-        return userRepository.findById(validUserDetail.getUserId()).orElseThrow(() -> new CustomException(UserErrorCode.INVALID_MEMBER_ID));
+    @PatchMapping(value = "/sellers/my-info", headers = "X-API-VERSION=1")
+    @Operation(summary = "사장님,마이페이지 수정 API", description = "사장님의 유저정보와 사업자 번호를 수정합니다.")
+    public Response<Void> sellerUpdateInfo(@RequestBody SellerUpdateInfoRequest request) {
+        myInfoService.sellerUpdateInfo(JwtToken.user(), request);
+        return ApiUtils.success(HttpStatus.OK, "마이페이지가 정상적으로 수정되었습니다.", null);
     }
+
+
 }

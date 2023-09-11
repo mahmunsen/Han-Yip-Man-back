@@ -18,15 +18,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@Api("리뷰 관리")
+@Api(tags = "리뷰 관리")
 @RequestMapping("/api/reviews")
 public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping
     @Operation(summary = "리뷰 등록", description = "리뷰와 별점을 등록한다.")
-    public Response<?> registerReview(@AuthenticationPrincipal CustomUserDetail userDetail,
-                                       RegisterReviewRequest registerReviewRequest
+    public Response<Void> registerReview(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                         RegisterReviewRequest registerReviewRequest
 
     ) {
         reviewService.registerReview(userDetail, registerReviewRequest);

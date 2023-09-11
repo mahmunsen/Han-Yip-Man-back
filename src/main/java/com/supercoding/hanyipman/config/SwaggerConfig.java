@@ -34,7 +34,7 @@ public class SwaggerConfig {
                 .paths(PathSelectors.any())
                 .build()
                 .apiInfo(apiInfo())
-                .consumes(Collections.singleton("multipart/form-data"))
+                .consumes(Collections.singleton(MediaType.MULTIPART_FORM_DATA_VALUE))
                 .produces(Collections.singleton(MediaType.APPLICATION_JSON_VALUE))
                 .ignoredParameterTypes(CustomUserDetail.class);
     }

@@ -1,8 +1,8 @@
 package com.supercoding.hanyipman.dto.coupon.response;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import com.supercoding.hanyipman.entity.BuyerCoupon;
+import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -12,13 +12,20 @@ import java.time.Instant;
 @Getter
 @AllArgsConstructor
 @Builder
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Schema(description = "쿠폰 조회 응답 DTO")
 public class ViewCouponsResponse {
+    @ApiModelProperty(value="고객 쿠폰 식별값 필드", dataType = "Long")
     private Long buyerCouponId;
+    @ApiModelProperty(value="쿠폰 식별값 필드", dataType = "Long")
     private Long couponId;
+    @ApiModelProperty(value="쿠폰 코드 필드", dataType = "String")
     private String couponCode;
+    @ApiModelProperty(value="쿠폰 할인 금액 필드", dataType = "Integer")
     private Integer discountPrice;
+    @ApiModelProperty(value="쿠폰 등록 시점 필드", dataType = "Instant")
     private Instant createdAt;
+    @ApiModelProperty(value="사용 여부 필드", dataType = "Boolean")
+    private Boolean enabled;
 
     public static ViewCouponsResponse from(BuyerCoupon buyerCoupon) {
         return ViewCouponsResponse.builder()
@@ -27,6 +34,7 @@ public class ViewCouponsResponse {
                 .couponCode(buyerCoupon.getCoupon().getCode())
                 .discountPrice(buyerCoupon.getCoupon().getDiscountPrice())
                 .createdAt(buyerCoupon.getCreatedAt())
+                .enabled(buyerCoupon.getEnabled())
                 .build();
     }
 

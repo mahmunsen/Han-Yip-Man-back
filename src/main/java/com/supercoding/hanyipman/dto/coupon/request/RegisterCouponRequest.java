@@ -1,8 +1,7 @@
 package com.supercoding.hanyipman.dto.coupon.request;
 
-import com.fasterxml.jackson.databind.PropertyNamingStrategies;
-import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@JsonNaming(value = PropertyNamingStrategies.SnakeCaseStrategy.class)
+@Schema(description = "쿠폰 등록 요청 DTO")
 public class RegisterCouponRequest {
 
     @ApiModelProperty(value = "쿠폰 코드", example = "사장님이 미쳤어요")

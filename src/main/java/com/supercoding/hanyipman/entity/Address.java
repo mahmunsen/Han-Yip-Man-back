@@ -1,11 +1,13 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.address.request.AddressRegisterRequest;
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import lombok.*;
 import org.hibernate.annotations.DynamicInsert;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Getter
 @Setter
@@ -44,7 +46,6 @@ public class Address {
     @Column(name = "is_default")
     private Boolean isDefault;
 
-
     public static Address toBuyerAddress(BuyerSignUpRequest request, Buyer buyer) {
         return Address.builder()
                 .buyer(buyer)
@@ -65,4 +66,15 @@ public class Address {
                 .isDefault(true)
                 .build();
     }
+
+    public static Address toAddAddress(Buyer buyer, AddressRegisterRequest request) {
+        return Address.builder()
+                .buyer(buyer)
+                .address(request.getAddress())
+                .detailAddress(request.getAddressDetail())
+                .latitude(request.getLatitude())
+                .longitude(request.getLongitude())
+                .build();
+    }
+
 }

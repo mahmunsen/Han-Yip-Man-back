@@ -1,15 +1,19 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import com.supercoding.hanyipman.security.UserRole;
+import com.supercoding.hanyipman.service.MyInfoService;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
+import java.util.List;
 
 @Getter
 @Entity
@@ -17,6 +21,7 @@ import java.time.Instant;
 @AllArgsConstructor
 @NoArgsConstructor
 @DynamicInsert
+@DynamicUpdate
 @Table(name = "users")
 public class User {
     @Id
@@ -54,6 +59,12 @@ public class User {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Buyer buyer;
+
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Seller seller;
+
     public static User toSellerSignup(SellerSignUpRequest request, String password) {
         return User.builder()
                 .email(request.getEmail())
@@ -73,6 +84,20 @@ public class User {
                 .phoneNum(request.getPhoneNumber())
                 .role(UserRole.BUYER.name())
                 .authProvider(null)
+                .build();
+    }
+
+    public static User sellerUpdateMyInfo(User user,Seller seller, SellerUpdateInfoRequest request) {
+        return User.builder()
+                .id(user.getId())
+                .email(user.getEmail())
+                .password(request.getPassword())
+                .nickname(request.getNickName())
+                .phoneNum(request.getPhoneNumber())
+                .role(user.getRole())
+                .createdAt(user.getCreatedAt())
+                .isDeleted(user.getIsDeleted())
+                .seller(seller)
                 .build();
     }
 }

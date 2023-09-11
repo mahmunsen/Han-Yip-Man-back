@@ -3,16 +3,19 @@ package com.supercoding.hanyipman.entity;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
 @Getter
 @Setter
 @Entity
+@SQLDelete(sql = "UPDATE Cart SET is_deleted = true WHERE id = ?")
 @Table(name = "`order`")
 public class Order {
     @Id
@@ -47,11 +50,11 @@ public class Order {
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
-    private Timestamp createdAt;
+    private Instant createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", insertable = false)
-    private Timestamp updatedAt;
+    private Instant updatedAt;
 
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
