@@ -45,4 +45,8 @@ public class BuyerCoupon {
                 .build();
     }
 
+    public Integer discount() {
+        this.enabled = false;
+        return this.getCoupon().getDiscountPrice();
+    }
 }
