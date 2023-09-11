@@ -120,7 +120,7 @@ public class CartService {
         //구매자 찾기
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //options, totalPrice 제외 가져오기
-        List<ViewCartResponse> carts = emCartRepository.findCartsByUnpaidCart(buyer.getId(), pageable).stream().map(ViewCartResponse::from).collect(Collectors.toList());
+        List<ViewCartResponse> carts = emCartRepository.findPageableCartsByUnpaidCart(buyer.getId(), pageable).stream().map(ViewCartResponse::from).collect(Collectors.toList());
 
         //Cart Ids추출
         List<Long> cartIds = carts.stream().map(ViewCartResponse::getCartId).collect(Collectors.toList());
