@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.controller;
 
 
+import com.supercoding.hanyipman.dto.Shop.buyer.response.MenuDetailResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.MenuGroupListResponse;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.ShopInfoResponse;
 import com.supercoding.hanyipman.dto.reivew.request.ViewShopReviewsRequest;
@@ -52,6 +53,13 @@ public class BuyerShopController {
     public Response<List<MenuGroupListResponse>> findMenuListByMenuGroup(@PathVariable(value = "shop_id") Long shopId) {
 
         return ApiUtils.success(HttpStatus.OK, "가게 정보 조회 성공", buyerShopService.findMenuListByMenuGroup(shopId));
+    }
+
+    @Operation(summary = "메뉴 상세 조회", description = "가게의 대분류 별 메뉴 리스트를 읽습니다.")
+    @GetMapping(value = "/menus/{menu_id}", headers = "X-API-VERSION=1")
+    public Response<MenuDetailResponse> findDetailMenu(@PathVariable(value = "menu_id") Long menuId) {
+
+        return ApiUtils.success(HttpStatus.OK, "메뉴 상세 조회 성공", buyerShopService.findDetailMenu(menuId));
     }
 
     @GetMapping(value = "/{shopId}/reviews", headers = "X-API-VERSION=1")
