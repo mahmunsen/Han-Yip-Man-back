@@ -18,8 +18,8 @@ public interface CartOptionItemRepository extends JpaRepository<CartOptionItem, 
 
     @Query("SELECT coi " +
             "FROM CartOptionItem coi " +
-            "JOIN fetch coi.optionItem " +
-            "JOIN fetch coi.cart " +
-            "WHERE coi.cart.id in :cartIds")
-    List<CartOptionItem> findCartOptionItemsByCartIds(List<Long> cartIds);
+            "JOIN fetch coi.optionItem oi " +
+            "JOIN fetch coi.cart c " +
+            "WHERE c.id in :cartIds")
+    List<CartOptionItem> findCartOptionItemsByCartIds(@Param("cartIds") List<Long> cartIds);
 }
