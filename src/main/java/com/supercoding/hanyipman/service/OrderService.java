@@ -89,10 +89,13 @@ public class OrderService {
         List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrderId(ordersId));
         Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
         orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
-
-
         List<ViewOrderResponse> viewOrderResponses = orders.stream().map(ViewOrderResponse::from).collect(Collectors.toList());
+        calcCursorIdx(pageable, orders);
         return PageResponse.from(viewOrderResponses, pageable);
+    }
+
+    private static void calcCursorIdx(CustomPageable pageable, List<Order> orders) {
+        if(orders.size() > 0) pageable.setCursor(orders.get(orders.size() - 1).getId());
     }
 
     private List<Cart> getCartsJoinItems(List<Cart> carts) {

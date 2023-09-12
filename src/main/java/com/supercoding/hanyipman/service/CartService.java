@@ -128,6 +128,7 @@ public class CartService {
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //options, totalPrice 제외 가져오기
         List<ViewCartResponse> carts = emCartRepository.findPageableCartsByUnpaidCart(buyer.getId(), pageable).stream().map(ViewCartResponse::from).collect(Collectors.toList());
+        calCursorIdx(pageable, carts);
 
         //Cart Ids추출
         List<Long> cartIds = carts.stream().map(ViewCartResponse::getCartId).collect(Collectors.toList());
@@ -143,6 +144,10 @@ public class CartService {
         carts.forEach(ViewCartResponse::calTotalPrice);
 
         return PageResponse.from(carts, pageable);
+    }
+
+    private static void calCursorIdx(CustomPageable pageable, List<ViewCartResponse> carts) {
+        if(carts.size() >= 1) pageable.setCursor(carts.get(carts.size()-1).getCartId());
     }
 
     @Transactional

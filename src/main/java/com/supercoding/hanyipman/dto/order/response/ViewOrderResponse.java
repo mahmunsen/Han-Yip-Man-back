@@ -19,6 +19,7 @@ import static com.supercoding.hanyipman.utils.DateUtils.yearMonthDayHourMinuteSe
 @Builder
 @AllArgsConstructor
 public class ViewOrderResponse {
+    private final Long orderId;
     private final String orderUid;
     private final String shopName;
     private final String bannerImg;
@@ -29,6 +30,7 @@ public class ViewOrderResponse {
     private final String orderStatus;
     public static ViewOrderResponse from(Order order){
         return ViewOrderResponse.builder()
+                .orderId(order.getId())
                 .orderUid(order.getOrderUid())
                 .shopName(order.getShop().getName())
                 .bannerImg(order.getShop().getBanner())
