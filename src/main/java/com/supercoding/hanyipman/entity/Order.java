@@ -36,7 +36,7 @@ public class Order {
     @Column(name = "order_uid", nullable = false)
     private String orderUid;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_coupon_id")
     private BuyerCoupon buyerCoupon;
 
@@ -51,11 +51,11 @@ public class Order {
     @JoinColumn(name = "buyer_id", nullable = false)
     private Buyer buyer;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "address_id", nullable = false)
     private Address address;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id", nullable = false)
     private Shop shop;
 
@@ -114,7 +114,7 @@ public class Order {
         if(this.buyerCoupon != null) totalPrice -= this.buyerCoupon.discount();
 
         // 배달비 추가
-        totalPrice -= shop.getDefaultDeliveryPrice();
+        totalPrice += shop.getDefaultDeliveryPrice();
 
         this.totalPrice = totalPrice;
     }

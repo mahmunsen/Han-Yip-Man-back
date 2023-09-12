@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository;
+package com.supercoding.hanyipman.repository.order;
 
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Seller;

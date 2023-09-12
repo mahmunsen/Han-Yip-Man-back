@@ -8,7 +8,7 @@ import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.WebSocketErrorCode;
-import com.supercoding.hanyipman.repository.OrderRepository;
+import com.supercoding.hanyipman.repository.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

@@ -36,4 +36,12 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "WHERE b.id =:buyerId " +
             "AND (c.isDeleted is null or c.isDeleted is false)")
     List<Cart> findCartsByBuyerId(@Param("buyerId") Long buyerId);
+
+    @Query("SELECT c FROM Cart c " +
+            "JOIN fetch c.shop s " +
+            "JOIN fetch c.buyer b " +
+            "JOIN fetch c.order o " +
+            "JOIN fetch c.menu m " +
+            "WHERE o.id in :ordersId")
+    List<Cart> findCartsByOrderId(@Param("ordersId")List<Long> ordersId);
 }
