@@ -7,6 +7,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum OrderStatus {
     WAIT("WAIT"),
+    PAID("PAID"),
     TAKEOVER("TAKEOVER"),
     DELIVERY("DELIVERY"),
     COMPLETE("COMPLETE"),
