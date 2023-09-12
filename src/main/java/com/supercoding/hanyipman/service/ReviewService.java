@@ -90,7 +90,7 @@ public class ReviewService {
     public Double viewShopReviewAverage(String shopId) {
         Shop shop = validateShop(Long.valueOf(shopId));
         Double reviewScoreAverage = reviewRepository.findAllByShop(shop).stream().map(review -> review.getScore()).mapToInt(Integer::intValue).average().orElse(0.0);
-        return Math.round(reviewScoreAverage)==0.0? 0.0 :Math.round(reviewScoreAverage) + 0.5;
+        return reviewScoreAverage;
     }
 
     private Buyer validateUser(Long userId) {
