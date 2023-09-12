@@ -61,10 +61,10 @@ public class BuyerShopController {
 
         return ApiUtils.success(HttpStatus.OK, "메뉴 상세 조회 성공", buyerShopService.findDetailMenu(menuId));
     }
-
+    @Operation(summary="가게 리뷰 조회", description = "가게의 리뷰를 읽습니다.")
     @GetMapping(value = "/{shopId}/reviews", headers = "X-API-VERSION=1")
     public Response<ViewShopReviewsResponse> viewShopReviews(@PathVariable String shopId,
-                                                             @RequestBody ViewShopReviewsRequest viewShopReviewsRequest) {
+                                                              ViewShopReviewsRequest viewShopReviewsRequest) {
 
         return ApiUtils.success(HttpStatus.OK, "해당 가게에 대한 리뷰 조회에 성공했습니다.", reviewService.viewShopReviews(shopId, viewShopReviewsRequest));
     }
