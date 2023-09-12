@@ -5,6 +5,7 @@ import com.supercoding.hanyipman.dto.cart.request.UpdateCartRequest;
 import com.supercoding.hanyipman.dto.cart.response.ViewCartResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
+import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.service.CartService;
 import com.supercoding.hanyipman.utils.ApiUtils;
@@ -50,8 +51,8 @@ public class CartController {
 
     @Operation(summary = "장바구니 조회", description = "사용자가 담았던 장바구니 리스트를 반환한다.")
     @GetMapping(headers = "X-API-VERSION=1")
-    public Response<List<ViewCartResponse>> viewAllCartsV2(CustomPageable pageable){
-        List<ViewCartResponse> cartsResponse =  cartService.findUnpaidCartsAndOptionItemsV2(pageable);
+    public Response<PageResponse<ViewCartResponse>> viewAllCartsV2(CustomPageable pageable){
+        PageResponse<ViewCartResponse> cartsResponse =  cartService.findUnpaidCartsAndOptionItemsV2(pageable);
         return ApiUtils.success(HttpStatus.OK, "장바구니를 성공적으로 가져왔습니다.", cartsResponse);
     }
 

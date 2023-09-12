@@ -4,6 +4,7 @@ import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.cart.response.OptionItemResponse;
 import com.supercoding.hanyipman.dto.cart.response.ViewCartResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
+import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
@@ -39,7 +40,7 @@ public class CartService {
 
     @TimeTrace
     @Transactional
-    public void registerCart(Long userId, Long shopId, Long menuId, List<Long> optionIds, Long amount) {
+    public void registerCart(Long userId, Long shopId, Long menuId, List<Long> optionsId, Long amount) {
         // 구매자 찾기
         Buyer buyer = findBuyerByUserId(userId); //TODO: query 개선할 것
         // 기존 담은 장바구니 가져오기
@@ -57,13 +58,19 @@ public class CartService {
         // 생성된 엔티티 저장
         cartRepository.save(cart);
         // 선택한 옵션 아이템 찾기
-        List<OptionItem> optionItems = optionItemRepository.findByOptionItemIds(optionIds);
         //옵션 유효성 검사
-        isValidOptions(optionIds.stream().sorted().collect(Collectors.toList()), optionItems);
         // 장바구니에 <-> 옵션 아이템 중간객체 생성
-        List<CartOptionItem> cartOptionItems = createCartOptionItems(cart, optionItems);
         // 생성된 엔티티 저장
-        cartOptionItemRepository.saveAll(cartOptionItems);
+        createCartOptionsItem(optionsId, cart);
+    }
+
+    private void createCartOptionsItem(List<Long> optionsId, Cart cart) {
+        if(optionsId != null){
+            List<OptionItem> optionItems = optionItemRepository.findByOptionItemIds(optionsId);
+            isValidOptions(optionsId.stream().sorted().collect(Collectors.toList()), optionItems);
+            List<CartOptionItem> cartOptionItems = createCartOptionItems(cart, optionItems);
+            cartOptionItemRepository.saveAll(cartOptionItems);
+        }
     }
 
     private static void isValidOptions(List<Long> options, List<OptionItem> optionItems) {
@@ -116,7 +123,7 @@ public class CartService {
     }
     @TimeTrace
     @Transactional(readOnly = true)
-    public List<ViewCartResponse> findUnpaidCartsAndOptionItemsV2(CustomPageable pageable) {
+    public PageResponse<ViewCartResponse> findUnpaidCartsAndOptionItemsV2(CustomPageable pageable) {
         //구매자 찾기
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //options, totalPrice 제외 가져오기
@@ -135,7 +142,7 @@ public class CartService {
         carts.forEach(cart -> cart.setOptionItems(coiMap.get(cart.getCartId())));
         carts.forEach(ViewCartResponse::calTotalPrice);
 
-        return carts;
+        return PageResponse.from(carts, pageable);
     }
 
     @Transactional
