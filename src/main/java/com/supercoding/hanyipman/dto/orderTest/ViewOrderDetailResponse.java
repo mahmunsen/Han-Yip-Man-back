@@ -6,6 +6,10 @@ import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.*;
 
 import java.text.ParseException;
+import java.util.List;
+import java.util.Map;
+
+import static com.supercoding.hanyipman.utils.DateUtils.yearMonthDayHourMinuteSecond;
 
 @ToString
 @Data
@@ -14,29 +18,37 @@ import java.text.ParseException;
 @Builder
 public class ViewOrderDetailResponse {
 
-    private String shopName;
-    //    private String orderName; // todo 주문 메뉴명
-    private String createdAt;
     private String orderUid;
+    private String createdAt;
+    private String shopName;
+    private String orderName; // 주문한 메뉴명
+    private List<Map<String, Object>> orderMenus; // 메뉴들, 수량(첫번째) 가격(둘째) 옵션들 (셋째)
+    private Integer defaultDeliveryPrice;
     private Integer totalPrice;
+    private Integer buyerCouponDiscount;
     private String orderStatus;
-    //    private Map<String, String> address;
     private String address;
     private String payMethod;
     private String phoneNum;
     private String shopTelphoneNum;
+    private String canceledAt;
 
-    public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop) throws ParseException {
+    public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop, List<Map<String, Object>> orderMenus, String orderName) throws ParseException {
         return ViewOrderDetailResponse.builder()
                 .shopName(shop.getName())
-                .createdAt(DateUtils.convertToString(payment.getPaymentDate()))
+                .orderName(orderName)
+                .orderMenus(orderMenus)
+                .createdAt(DateUtils.convertToString(payment.getPaymentDate(), yearMonthDayHourMinuteSecond))
                 .orderUid(order.getOrderUid())
                 .totalPrice(payment.getTotalAmount())
+                .buyerCouponDiscount(order.getBuyerCoupon() == null ? 0 : order.getBuyerCoupon().discount())
+                .defaultDeliveryPrice(shop.getDefaultDeliveryPrice())
                 .orderStatus(order.getOrderStatus().getStatus())
                 .address(deliveryAddress)
                 .payMethod(payment.getPaymentMethod())
                 .phoneNum(order.getBuyer().getUser().getPhoneNum())
                 .shopTelphoneNum(shop.getPhoneNum())
+                .canceledAt(order.getOrderStatus().getStatus() == "CANCELED"? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
                 .build();
     }
 }
