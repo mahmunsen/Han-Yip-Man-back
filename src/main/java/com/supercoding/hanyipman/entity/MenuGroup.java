@@ -1,6 +1,8 @@
 package com.supercoding.hanyipman.entity;
 
 import lombok.*;
+import org.hibernate.annotations.DynamicInsert;
+import org.hibernate.annotations.SQLDelete;
 
 import javax.persistence.*;
 import java.util.ArrayList;
@@ -12,6 +14,8 @@ import java.util.List;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@DynamicInsert
+@SQLDelete(sql = "UPDATE menu_group SET is_deleted = true WHERE id = ?")
 @Table(name = "menu_group")
 public class MenuGroup {
     @Id
@@ -29,7 +33,7 @@ public class MenuGroup {
     @Column(name = "sequence", nullable = false)
     private Integer sequence;
 
-    @Column(name = "is_deleted", nullable = false)
+    @Column(name = "is_deleted")
     private Boolean isDeleted;
 
     @OneToMany(mappedBy = "menuGroup",cascade = CascadeType.ALL, orphanRemoval = true)
