@@ -14,5 +14,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long>, ShopCustomRep
     @Query("SELECT s FROM Shop s WHERE s.id =:shopId")
     Optional<Shop> findShopByShopId(@Param("shopId") Long shopId);
 
+
     List<Shop> findAllBySellerAndIsDeletedFalse(Seller seller);
 }

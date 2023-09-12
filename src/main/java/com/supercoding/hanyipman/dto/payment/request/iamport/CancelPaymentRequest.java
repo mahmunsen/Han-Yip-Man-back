@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CancelPaymentRequest {
 
-    private String imp_uid;
-    private String merchant_uid;
+//    private String imp_uid;
+//    private String merchant_uid;
     private Long orderId;
 
 }

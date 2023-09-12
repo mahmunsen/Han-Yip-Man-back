@@ -32,11 +32,13 @@ public class MenuController {
     private final MenuService menuService;
 
     @Operation(summary = "메뉴 등록", description = "메뉴 정보를 입력하여 메뉴 레코드를 생성합니다.")
-    @PostMapping(value = "/{menu_group_id}",consumes = {MediaType.APPLICATION_JSON_VALUE, MediaType.MULTIPART_FORM_DATA_VALUE}, headers = "X-API-VERSION=1")
-    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(mediaType = "multipart/form-data",
+    @PostMapping(value = "/{menu_group_id}",consumes = MediaType.MULTIPART_FORM_DATA_VALUE, headers = "X-API-VERSION=1")
+    @io.swagger.v3.oas.annotations.parameters.RequestBody(content = {@Content(mediaType = MediaType.MULTIPART_FORM_DATA_VALUE,
             schema = @Schema(implementation = MultipartFile.class)),@Content(mediaType = MediaType.APPLICATION_JSON_VALUE, schema = @Schema(implementation = RegisterMenuRequest.class))})
     public Response<Void> createMenu(@RequestPart(name = "registerMenuRequest") RegisterMenuRequest registerMenuRequest,
-                                     @RequestPart(required = false, name = "menuThumbnailImage") MultipartFile menuThumbnailImage,
+                                     @RequestPart(required = false, name = "menuThumbnailImage")
+                                     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(schema = @Schema(type = "string", format = "binary")))
+                                     MultipartFile menuThumbnailImage,
                                      @PathVariable(value = "menu_group_id") Long menuGroupId) {
         menuService.createMenu(registerMenuRequest, menuThumbnailImage, menuGroupId);
 

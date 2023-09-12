@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.reivew.request.RegisterReviewRequest;
 import com.supercoding.hanyipman.dto.reivew.request.ViewShopReviewsRequest;
 import com.supercoding.hanyipman.dto.reivew.response.ShopReview;
@@ -39,6 +40,7 @@ public class ReviewService {
     private final AwsS3Service awsS3Service;
 
     @Transactional
+    @TimeTrace
     public void registerReview(CustomUserDetail userDetail, RegisterReviewRequest registerReviewRequest) {
         Long userId = userDetail.getUserId();
         Buyer buyer = validateUser(userId);
@@ -61,7 +63,7 @@ public class ReviewService {
         }
 
     }
-
+    @TimeTrace
     public ViewShopReviewsResponse viewShopReviews(String shopId, ViewShopReviewsRequest viewShopReviewsRequest) {
 
         Shop shop = validateShop(Long.valueOf(shopId));
@@ -84,10 +86,11 @@ public class ReviewService {
                 .shopReviewsList(shopReviewList)
                 .build();
     }
-
+    @TimeTrace
     public Double viewShopReviewAverage(String shopId) {
-        Double reviewScoreAverage = reviewRepository.findAll().stream().map(review -> review.getScore()).mapToInt(Integer::intValue).average().orElse(0.0);
-        return Math.round(reviewScoreAverage)+0.5;
+        Shop shop = validateShop(Long.valueOf(shopId));
+        Double reviewScoreAverage = reviewRepository.findAllByShop(shop).stream().map(review -> review.getScore()).mapToInt(Integer::intValue).average().orElse(0.0);
+        return reviewScoreAverage;
     }
 
     private Buyer validateUser(Long userId) {

@@ -20,7 +20,7 @@ public class Payment {
 
     @OneToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "order_id", nullable = false)
-    private OrderTest orderTestId;
+    private Order order;
 
     @Column(name = "imp_uid", nullable = false)
     private String impUid;
@@ -49,26 +49,26 @@ public class Payment {
     @Column(name = "buyer_id", nullable = false)
     private Long buyerId;
 
-    public Payment(OrderTest orderTest, String merchantUid, String impUid, String status, String paymentMethod, Long sellerId) {
-        this.orderTestId = orderTest;
-        this.impUid = impUid;
-        this.merchantUid = merchantUid;
-        this.buyerId = orderTest.getBuyerId().getId();
-        this.totalAmount = orderTest.getTotalPrice();
-        this.paymentMethod = paymentMethod;
-        this.paymentStatus = status;
-        this.paymentDate = Instant.now();
-        this.sellerId = sellerId;
-
-    }
-
-    public static Payment from(OrderTest orderTest, String merchantUid, String tid, Long sellerId) {
+    public static Payment importFrom(Order order, String merchantUid, Long sellerId) {
         return Payment.builder()
-                .orderTestId(orderTest)
+                .order(order)
+                .impUid(null)
+                .merchantUid(merchantUid)
+                .buyerId(order.getBuyer().getId())
+                .totalAmount(order.getTotalPrice())
+                .paymentMethod("html5_inicis")
+                .paymentStatus("ready")
+                .paymentDate(Instant.now())
+                .sellerId(sellerId)
+                .build();
+    }
+    public static Payment kakaoFrom(Order order, String merchantUid, String tid, Long sellerId) {
+        return Payment.builder()
+                .order(order)
                 .impUid(tid)
                 .merchantUid(merchantUid)
-                .buyerId(orderTest.getBuyerId().getId())
-                .totalAmount(orderTest.getTotalPrice())
+                .buyerId(order.getBuyer().getId())
+                .totalAmount(order.getTotalPrice())
                 .paymentMethod("KakaoPay")
                 .paymentStatus("ready")
                 .paymentDate(Instant.now())

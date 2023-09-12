@@ -7,10 +7,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum CartErrorCode implements ErrorCode {
-    NOT_FOUND_CART(HttpStatus.NOT_FOUND.value(), "요청하신 장바구니를 찾을 수 없습니다."),
-    EMPTY_CART(HttpStatus.BAD_REQUEST.value(),  "장바구니가 비어있습니다.")
-    ;
+public enum WebSocketErrorCode implements ErrorCode {
+    ORDER_NOT_EXIST(HttpStatus.NOT_FOUND.value(), "해당 주문이 존재하지 않습니다.");
+
 
     private final int code;
     private final String message;

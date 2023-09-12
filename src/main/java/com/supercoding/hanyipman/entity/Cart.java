@@ -1,22 +1,23 @@
 package com.supercoding.hanyipman.entity;
 
+import com.supercoding.hanyipman.dto.cart.response.OptionItemResponse;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.DynamicInsert;
-import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
 @Entity
 @Builder
-
+@DynamicUpdate
 @DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
@@ -60,8 +61,9 @@ public class Cart {
     @Column(name = "updated_at", insertable = false)
     private Instant updatedAt;
 
+    @ColumnDefault(value = "false")
     @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
+    private Boolean isDeleted;
 
 
     public static Cart from(Buyer buyer, Shop shop, Menu menu, Long amount){
@@ -72,6 +74,16 @@ public class Cart {
                 .amount(amount)
                 .build();
     }
-    
 
+    public Integer calTotalPrice(){
+        Integer price = menu.getPrice();
+
+        if(cartOptionItems == null) return price * amount.intValue();
+
+        price = (price + cartOptionItems.stream()
+                .mapToInt(coi -> coi.getOptionItem().getPrice())
+                .sum()) * amount.intValue();
+
+        return price;
+    }
 }

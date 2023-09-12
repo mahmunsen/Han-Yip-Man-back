@@ -20,4 +20,6 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Page<Review> findAllByShopAndScoreOrderByCreatedAtDesc(Shop shop,Integer score, Pageable pageable);
 
     List<Review> findAllByShopAndScoreAndCreatedAtLessThanOrderByCreatedAtDesc(Shop shop,Integer score, Instant createdAt, Pageable pageable);
+
+    List<Review> findAllByShop(Shop shop);
 }
