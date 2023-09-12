@@ -7,4 +7,6 @@ public interface ShopCustomRepository {
 
     ViewShopListResponse findShopListWithNextCursor(ViewShopListRequest viewShopListRequest , Double latitude, Double longitude);
 
+    Boolean existShopNameBySeller(String shopName, Long sellerId);
+
 }
