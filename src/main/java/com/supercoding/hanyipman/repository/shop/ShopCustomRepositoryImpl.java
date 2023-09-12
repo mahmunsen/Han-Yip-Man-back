@@ -97,6 +97,19 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
         return new ViewShopListResponse(result, nextCursor);
     }
 
+    @Override
+    public Boolean existShopNameBySeller(String shopName, Long sellerId) {
+        Integer fetchOne = jpaQueryFactory
+                .selectOne()
+                .from(shop)
+                .where(
+                        shop.name.eq(shopName),
+                        shop.seller.id.eq(sellerId)
+                )
+                .fetchFirst();
+        return fetchOne != null;
+    }
+
     private BooleanExpression ltShopId(Long shopId) {
         if (shopId != null && shopId > 0) {
             return shop.id.lt(shopId);

@@ -70,5 +70,12 @@ public class SellerShopController {
         return ApiUtils.success(HttpStatus.OK, "가게 상세 조회 성공", sellerShopService.detailShop(shopId));
     }
 
+    @Operation(summary = "가게 이름 중복 조회", description = "가게 이름을 요청하여 내가 관리중인 가게 중 중복 이름이 있는지 검사합니다.")
+    @GetMapping(value = "/shops/duplication", headers = "X-API-VERSION=1")
+    public Response<Void> checkDuplicationShopName(String shopName) {
+        sellerShopService.checkDuplicationShopName(shopName);
+        return ApiUtils.success(HttpStatus.OK, "내가 관리중인 가게중에 중복된 상호명이 없습니다.", null);
+    }
+
 
 }

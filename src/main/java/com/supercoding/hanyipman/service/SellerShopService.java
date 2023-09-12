@@ -9,6 +9,7 @@ import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.CategoryRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
+import com.supercoding.hanyipman.repository.shop.ShopCustomRepositoryImpl;
 import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.enums.FilePath;
@@ -32,19 +33,27 @@ public class SellerShopService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final ShopRepository shopRepository;
+    private final ShopCustomRepositoryImpl shopCustomRepository;
     private final AwsS3Service awsS3Service;
 
     @Transactional
     public void registerShop(RegisterShopRequest registerShopRequest, ShopAddressRequest shopAddressRequest, MultipartFile bannerFile, MultipartFile thumbnailFile, User user) {
 
         Seller seller = validSellerUser(user);
+        validationShopName(registerShopRequest.getShopName(), seller.getId());
         Category category = categoryRepository.findById(registerShopRequest.getCategoryId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_CATEGORY));
+
         Shop shop = Shop.from(registerShopRequest, seller, category);
 
         shopRepository.save(shop);
         shop.setBanner(uploadImageFile(bannerFile, shop));
         shop.setThumbnail(uploadImageFile(thumbnailFile, shop));
         shop.setAddress(Address.from(shopAddressRequest));
+    }
+
+    public void checkDuplicationShopName(String shopName) {
+        Seller seller = validSellerUser(JwtToken.user());
+        validationShopName(shopName, seller.getId());
     }
 
     public void deleteShop(Long shopId, User user) {
@@ -92,6 +101,7 @@ public class SellerShopService {
         return shop;
     }
 
-
-
+    private void validationShopName(String shopName, Long sellerId) {
+        if (Boolean.TRUE.equals(shopCustomRepository.existShopNameBySeller(shopName, sellerId))) throw new CustomException(ShopErrorCode.DUPLICATION_SHOP_NAME);
+    }
 }
