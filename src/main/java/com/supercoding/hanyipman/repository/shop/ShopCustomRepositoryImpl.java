@@ -2,6 +2,7 @@ package com.supercoding.hanyipman.repository.shop;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.JPAExpressions;
@@ -31,27 +32,8 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
     @Override
     public ViewShopListResponse findShopListWithNextCursor(ViewShopListRequest request, Double latitude, Double longitude) {
 
-        BooleanBuilder whereConditions = new BooleanBuilder();
-        Long cursor = request.getCursor();
-        if (cursor != null) {
-            whereConditions.and(shop.id.lt(cursor));
-        }
 
-        Long categoryId = request.getCategoryId();
-        if (categoryId != null && categoryId > 0) {
-            whereConditions.and(shop.category.id.eq(categoryId));
-        }
-
-        NumberExpression<Double> distance = numberTemplate(Double.class,
-                "ST_Distance_Sphere(point({0}, {1}), point({2}, {3}))",
-                longitude, latitude, shop.address.longitude, shop.address.latitude);
-        whereConditions.and(distance.round().intValue().lt(1000));
-
-        String searchKeyword = request.getSearchKeyword();
-        if (searchKeyword != null && !searchKeyword.isEmpty()) {
-            whereConditions.and(shop.name.contains(searchKeyword));
-        }
-        whereConditions.and(shop.isDeleted.eq(false));
+        NumberExpression<Double> distance = calcDistance(latitude, longitude);
 
         ShopSortType shopSortType = ShopSortType.fromString(request.getSortType());
         List<OrderSpecifier<?>> orderSpecifiers = new ArrayList<>();
@@ -99,13 +81,54 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                                             distance.round().intValue()
                                                     ))
                 .from(shop)
-                .where(whereConditions)
+                .where(
+                        isDeletedFalse(),
+                        ltShopId(request.getCursor()),
+                        eqCategoryId(request.getCategoryId()),
+                        distance.round().intValue().lt(1000),
+                        containsSearchKeyword(request.getSearchKeyword())
+                )
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
                 .limit(request.getSize())
                 .fetch();
 
-        Long nextCursor = result.isEmpty() ? null : result.get(result.size() - 1).getShopId();
+        Long nextCursor = calcNextCursor(result);
 
         return new ViewShopListResponse(result, nextCursor);
+    }
+
+    private BooleanExpression ltShopId(Long shopId) {
+        if (shopId != null && shopId > 0) {
+            return shop.id.lt(shopId);
+        }
+        return null;
+    }
+
+    private BooleanExpression eqCategoryId(Long categoryId) {
+        if (categoryId != null && categoryId > 0) {
+            return shop.category.id.eq(categoryId);
+        }
+        return null;
+    }
+
+    private BooleanExpression containsSearchKeyword(String searchKeyword) {
+        if (searchKeyword != null && !searchKeyword.isEmpty()) {
+            return shop.name.contains(searchKeyword);
+        }
+        return null;
+    }
+
+    private BooleanExpression isDeletedFalse() {
+        return shop.isDeleted.eq(false);
+    }
+
+    private NumberExpression<Double> calcDistance(Double latitude, Double longitude) {
+        return numberTemplate(Double.class,
+                "ST_Distance_Sphere(point({0}, {1}), point({2}, {3}))",
+                longitude, latitude, shop.address.longitude, shop.address.latitude);
+    }
+
+    private Long calcNextCursor(List<ShopList> result) {
+        return result.isEmpty() ? null : result.get(result.size() - 1).getShopId();
     }
 }
