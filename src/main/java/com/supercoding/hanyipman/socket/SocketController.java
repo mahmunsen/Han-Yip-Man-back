@@ -5,7 +5,7 @@ import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
-import com.supercoding.hanyipman.dto.websocket.OrderStatus;
+import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +22,7 @@ public class SocketController {
         server.addConnectListener(onConnected());
         server.addDisconnectListener(onDisconnected());
         server.addEventListener("send_message", ChatMessage.class, onChatReceived());
-        server.addEventListener("send_order", OrderStatus.class, onOrderStatusReceived());
+        server.addEventListener("send_order", OrderStatusMessage.class, onOrderStatusReceived());
 
 
     }
@@ -34,10 +34,10 @@ public class SocketController {
         };
     }
 
-    private DataListener<OrderStatus> onOrderStatusReceived() {
+    private DataListener<OrderStatusMessage> onOrderStatusReceived() {
         return (senderClient, data, ackSender) -> {
             log.info(data.toString());
-            socketService.sendOrderStatus(data.getRoom(),"get_order_status_response", senderClient, data.getOrderType());
+            socketService.sendOrderStatus(data.getRoom(),"get_order_status_response", senderClient, data.getOrderStatus());
         };
     }
 

@@ -1,8 +1,10 @@
 package com.supercoding.hanyipman.dto.websocket;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ErrorMessage {
 
     private String status;

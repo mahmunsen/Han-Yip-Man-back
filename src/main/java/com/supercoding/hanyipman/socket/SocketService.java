@@ -4,8 +4,7 @@ import com.corundumstudio.socketio.SocketIOClient;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.MessageType;
-import com.supercoding.hanyipman.dto.websocket.OrderStatus;
-import com.supercoding.hanyipman.dto.websocket.OrderType;
+import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.WebSocketErrorCode;
@@ -34,15 +33,14 @@ public class SocketService {
     }
 
     @Transactional
-    public void sendOrderStatus(String room, String eventName, SocketIOClient senderClient, OrderType orderType
+    public void sendOrderStatus(String room, String eventName, SocketIOClient senderClient, com.supercoding.hanyipman.enums.OrderStatus orderStatus
     ) {
         Long orderId = Long.valueOf(room);
 
-
         try {
             Order order = validateOrder(orderId);
-            if (!order.getStatus().equals("CANCELED")) {
-                changeOrderStatus(order, orderType);
+            if (!order.getOrderStatus().equals("CANCELED")) {
+                changeOrderStatus(order, orderStatus);
             } else {
                 //고객이 이미 취소한 건에 대해 사장이 주문 취소 요청
                 sendErrorMessage(HttpStatus.CONFLICT.value(),"해당 주문이 이미 취소되었습니다.",senderClient);
@@ -57,7 +55,7 @@ public class SocketService {
                 SocketIOClient client : senderClient.getNamespace().getRoomOperations(room).getClients()) {
             if (!client.getSessionId().equals(senderClient.getSessionId())) {
                 client.sendEvent(eventName,
-                        new OrderStatus(orderType, "주문 상태가 정상 변경되었습니다."));
+                        new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다."));
             }
         }
 
@@ -68,12 +66,11 @@ public class SocketService {
 
     }
 
-    private void changeOrderStatus(Order order, OrderType orderType) {
+    private void changeOrderStatus(Order order, com.supercoding.hanyipman.enums.OrderStatus orderStatus) {
 
-        String orderStatusTypeToChange = orderType.name();
         //TODO 주문 취소 메서드 추후 변경
 //        if(orderStatusTypeToChange.equals("CANCELED")) orderService.cancelOrder();
-        order.setStatus(orderStatusTypeToChange);
+        order.setOrderStatus(orderStatus);
     }
 
     private void sendErrorMessage(Integer errorCode, String errorMessage, SocketIOClient senderClient) {
