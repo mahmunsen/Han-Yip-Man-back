@@ -12,7 +12,7 @@ import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
-import com.supercoding.hanyipman.repository.OrderRepository;
+import com.supercoding.hanyipman.repository.order.OrderRepository;
 import org.springframework.beans.factory.annotation.Value;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
 import com.supercoding.hanyipman.error.CustomException;

@@ -22,7 +22,7 @@ public class CustomPageable {
     private  Integer size;
     @ApiModelProperty(value = "정렬 필드 id", example = "id")
     private  String sortField;
-    @ApiModelProperty(value = "정렬 방향 ASE|DESC", example = "ASC|DESC")
+    @ApiModelProperty(value = "정렬 방향 ASC|DESC", example = "ASC|DESC")
     private  String direction;
 
     public Pageable from(){
