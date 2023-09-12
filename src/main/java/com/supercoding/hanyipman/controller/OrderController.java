@@ -2,7 +2,10 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
 import com.supercoding.hanyipman.dto.orderTest.ViewOrderDetailResponse;
+import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
+import com.supercoding.hanyipman.dto.vo.CustomPageable;
+import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.OrderService;
@@ -37,6 +40,15 @@ public class OrderController {
 
         return ApiUtils.success(HttpStatus.CREATED, "성공적으로 주문됐습니다.", null);
     }
+
+    @Operation(summary = "주문목록 조회", description = "주문했던 목록을 가져옴")
+    @GetMapping(headers = "X-API-VERSION=1")
+    public Response<PageResponse<ViewOrderResponse>> getOrders(CustomPageable pageable,
+                                                               @AuthenticationPrincipal CustomUserDetail auth) {
+        PageResponse<ViewOrderResponse> orders = orderService.getOrders(auth.getUserId(), pageable);
+        return ApiUtils.success(HttpStatus.CREATED, "성공적으로 주문내역을 조회했습니다.", orders);
+    }
+
 
 
 

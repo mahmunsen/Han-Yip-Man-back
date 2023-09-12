@@ -1,6 +1,10 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.dto.orderTest.ViewOrderDetailResponse;
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
+import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
+import com.supercoding.hanyipman.dto.vo.CustomPageable;
+import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
@@ -8,6 +12,8 @@ import com.supercoding.hanyipman.repository.*;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.shop.ShopRepository;
+import com.supercoding.hanyipman.repository.order.EmOrderRepository;
+import com.supercoding.hanyipman.repository.order.OrderRepository;
 import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -29,13 +36,16 @@ public class OrderService {
     private final BuyerCouponRepository buyerCouponRepository;
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
+    private final EmOrderRepository emOrderRepository;
     private final EmCartRepository emCartRepository;
+    private final CartRepository cartRepository;
     private final BuyerRepository buyerRepository;
     private final CartOptionItemRepository cartOptionItemRepository;
     private final PaymentRepository paymentRepository;
     private final ShopRepository shopRepository;
 
 
+    @TimeTrace
     @Transactional
     public Long order(Long userId, Long addressId, Long buyerCouponId) {
 
@@ -68,6 +78,21 @@ public class OrderService {
 
         // 주문 식별값 ID 반환
         return order.getId();
+    }
+
+    @TimeTrace
+    public PageResponse<ViewOrderResponse> getOrders(Long userId, CustomPageable pageable) {
+        Buyer buyer = findBuyerByUserId(userId);
+
+        List<Order> orders = emOrderRepository.findListOrders(buyer.getId(), pageable);
+        List<Long> ordersId = orders.stream().map(Order::getId).collect(Collectors.toList());
+        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrderId(ordersId));
+        Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
+        orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
+
+
+        List<ViewOrderResponse> viewOrderResponses = orders.stream().map(ViewOrderResponse::from).collect(Collectors.toList());
+        return PageResponse.from(viewOrderResponses, pageable);
     }
 
     private List<Cart> getCartsJoinItems(List<Cart> carts) {
