@@ -11,7 +11,9 @@ import com.supercoding.hanyipman.dto.payment.response.iamport.PaymentPrepareResp
 import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.OrderStatus;
+import com.supercoding.hanyipman.error.domain.CartErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
+import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
 import org.springframework.beans.factory.annotation.Value;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
@@ -29,8 +31,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -40,6 +45,7 @@ public class PaymentService {
     private final PaymentRepository paymentRepository;
     private final OrderRepository orderRepository;
     private final BuyerRepository buyerRepository;
+    private final EmCartRepository emCartRepository;
     private final RestTemplate restTemplate;
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
@@ -168,7 +174,7 @@ public class PaymentService {
 
         // 해당 주문건 찾기
         Order order = isOrderValid(user, orderId);
-        
+
         // 해당 결제건 찾기 (이 때는 결제건이 존재해야 한다)
         Payment payment = paymentRepository.findPaymentByOrder(order).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
         String merchant_uid = payment.getMerchantUid();
@@ -277,10 +283,16 @@ public class PaymentService {
     @Transactional
     public KakaoPayReadyResponse kakaopayReady(Long orderId, User user) {
 
-        // 해당 주문건
-        Order order = isOrderValid(user, orderId);
+        BuyerAndOrder buyerAndOrder = getBuyerAndOrder(orderId, user);
+        // 해당 주문건의 카트들 가져오기(소비자 아이디와 주문 아이디로)
+        List<Cart> carts = getCarts(orderId, buyerAndOrder);
+        // 메뉴이름들
+        List<String> menuNames = carts.stream().map(cart -> cart.getMenu().getName()).collect(Collectors.toList());
+        // 주문명
+        String orderName = getOrderName(carts, menuNames);
+
         // 해당 주문건의 상태값에 따른 처리
-        checkOrderStatus(order);
+        checkOrderStatus(buyerAndOrder.order);
 
         // todo merchant_uid (결제번호) 생성
         String merchant_uid = UUID.randomUUID().toString();
@@ -294,9 +306,9 @@ public class PaymentService {
         params.add("cid", "TC0ONETIME");
         params.add("partner_order_id", merchant_uid);
         params.add("partner_user_id", orderId);
-        params.add("item_name", "맛나피자"); // todo 추후 수정, 예시
+        params.add("item_name", orderName); // todo 추후 수정, 예시
         params.add("quantity", 1);
-        params.add("total_amount", order.getTotalPrice());
+        params.add("total_amount", buyerAndOrder.order.getTotalPrice());
         params.add("tax_free_amount", 0);
         params.add("approval_url", "http://localhost:8080/api/payments/approve/" + orderId); // todo url들 추후 수정 가능
         params.add("cancel_url", "http://localhost:8080/api/payments/kakaoPayCancel/" + orderId);
@@ -310,11 +322,11 @@ public class PaymentService {
             // 응답값으로 merchant_uid 포함
             kakaoPayReadyResponse.getBody().setMerchant_uid(merchant_uid);
             // 해당 주문건 매장의 업주
-            Seller seller = orderRepository.findSellerByShopId(order.getShop().getId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
+            Seller seller = orderRepository.findSellerByShopId(buyerAndOrder.order.getShop().getId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
 
-            isPaymentExistent(order);
+            isPaymentExistent(buyerAndOrder.order);
             // 결제사전준비에서 payment 새로 생성 (tid 저장)
-            paymentRepository.save(Payment.kakaoFrom(order, merchant_uid, kakaoPayReadyResponse.getBody().getTid(), seller.getId()));
+            paymentRepository.save(Payment.kakaoFrom(buyerAndOrder.order, merchant_uid, kakaoPayReadyResponse.getBody().getTid(), seller.getId()));
 
             return kakaoPayReadyResponse.getBody();
         } else {
@@ -421,7 +433,7 @@ public class PaymentService {
 
         ResponseEntity<KakaoPayCancelResponse> kakaoPayCancelResponse = kakaoTemplate.exchange(KAKAOPAY_BASE_URL + "/v1/payment/cancel", HttpMethod.POST, httpEntity, KakaoPayCancelResponse.class);
 
-        if (kakaoPayCancelResponse.getStatusCode() == HttpStatus.OK && kakaoPayCancelResponse!= null) {
+        if (kakaoPayCancelResponse.getStatusCode() == HttpStatus.OK && kakaoPayCancelResponse != null) {
             // Payment: 결제내역 상태 변경, 취소날짜 삽입
             payment.setCancellationDate(Instant.now());
             payment.setPaymentStatus("canceled");
@@ -452,24 +464,18 @@ public class PaymentService {
     /* todo----------------------------------------------------------------------------------*/
 
 
-
     /* todo 외부 메소드: isOrderValid */
     // 로그인한 소비자 아이디와 결제주문건의 소비자 아이디와 일치하는 경우만
     private Order isOrderValid(User user, Long orderId) {
-        Boolean areYouBuyer = buyerRepository.existsByUser(user);
+        Buyer buyer = buyerRepository.findBuyerByUserId(user.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER));
 
-        if (Boolean.TRUE.equals(areYouBuyer)) {
-            Buyer buyer = buyerRepository.findByUser(user);
+        // Order를 orderId로 찾기
+        Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
 
-            // Order를 orderId로 찾기
-            Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
-
-            // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
-            if (order.getBuyer().getId() == buyer.getId()) {
-                return order;
-
-            } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
-        } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER);
+        // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
+        if (order.getBuyer().getId() == buyer.getId()) {
+            return order;
+        } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
     }
 
     /* todo 외부 메소드: 결제건 여부 체크 */
@@ -493,9 +499,9 @@ public class PaymentService {
 
     /* todo 외부 메소드: 결제의 상태값 체크 (결제준비, 결제승인일 경우) */
     private static void checkPaymentStatus(Payment payment) {
-        if (payment.getPaymentStatus().equals("paid")){
+        if (payment.getPaymentStatus().equals("paid")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_PAID);
-        } else if (payment.getPaymentStatus().equals("canceled")){
+        } else if (payment.getPaymentStatus().equals("canceled")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_CANCELLED);
         }
     }
@@ -511,9 +517,9 @@ public class PaymentService {
 
     /* todo 외부 메소드: 결제의 상태값 체크 (결제후 취소일 경우) */
     private static void checkPaymentStatusAfterPay(Payment payment) {
-        if (payment.getPaymentStatus().equals("ready")){
+        if (payment.getPaymentStatus().equals("ready")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND);
-        } else if (payment.getPaymentStatus().equals("canceled")){
+        } else if (payment.getPaymentStatus().equals("canceled")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_CANCELLED);
         }
     }
@@ -534,6 +540,45 @@ public class PaymentService {
         headers.add("Accept", MediaType.APPLICATION_JSON_UTF8_VALUE);
         headers.add("Content-Type", MediaType.APPLICATION_FORM_URLENCODED_VALUE + ";charset=UTF-8");
         return headers;
+    }
+
+    /* todo 외부 메소드: 소비자와 주문 */
+    private BuyerAndOrder getBuyerAndOrder(Long orderId, User user) {
+        Buyer buyer = buyerRepository.findBuyerByUserId(user.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER));
+
+        // Order를 orderId로 찾기
+        Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
+
+        // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
+        if (!(order.getBuyer().getId() == buyer.getId())) {
+            throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
+        }
+        BuyerAndOrder buyerAndOrder = new BuyerAndOrder(buyer, order);
+        return buyerAndOrder;
+    }
+
+    private static class BuyerAndOrder {
+        public final Buyer buyer;
+        public final Order order;
+
+        public BuyerAndOrder(Buyer buyer, Order order) {
+            this.buyer = buyer;
+            this.order = order;
+        }
+    }
+    /* todo 외부 메소드: 해당 주문건의 카트들 */
+    private List<Cart> getCarts(Long orderId, BuyerAndOrder buyerAndOrder) {
+        List<Cart> carts = emCartRepository.findCartsBypaidCartForOrderDetail(buyerAndOrder.buyer.getId(), orderId);
+        if (carts.isEmpty()) {
+            throw new CustomException(CartErrorCode.EMPTY_CART);
+        }
+        return carts;
+    }
+
+    /* todo 외부 메소드: 주문명 */
+    private static String getOrderName(List<Cart> carts, List<String> menuNames) {
+        String orderName = IntStream.range(0, menuNames.size()).mapToObj(i -> (i == 0 ? menuNames.get(i) + " " + carts.get(i).getAmount() + "개" : "외 " + carts.stream().skip(1).mapToInt(cart -> cart.getAmount().intValue()).sum() + "개")).collect(Collectors.joining(" "));
+        return orderName;
     }
 }
 

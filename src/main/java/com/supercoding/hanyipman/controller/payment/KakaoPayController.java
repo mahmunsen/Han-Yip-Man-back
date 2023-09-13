@@ -5,15 +5,12 @@ import com.supercoding.hanyipman.dto.payment.request.kakaopay.KakaoPayReadyReque
 import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
-import com.supercoding.hanyipman.service.OrderService;
 import com.supercoding.hanyipman.service.PaymentService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -23,14 +20,12 @@ import org.springframework.web.bind.annotation.*;
 public class KakaoPayController {
 
     private final PaymentService paymentService;
-    private final OrderService orderService;
 
     @Operation(summary= "(카카오페이) 단건결제준비 API ", description = "카카오서버에 정보전달하고 결제고유번호(TID) 받는 API")
     @PostMapping(path = "/ready", headers = "X-API-VERSION=1")
     public Response<Object> kakaoPayReady(@RequestBody KakaoPayReadyRequest kakaoPayReadyRequest) {
         Long orderId = kakaoPayReadyRequest.getOrderId();
         KakaoPayReadyResponse kakaoPayReadyResponse = paymentService.kakaopayReady(orderId, JwtToken.user());
-
         return ApiUtils.success(HttpStatus.OK.value(), "결제준비가 완료되었습니다.", kakaoPayReadyResponse);
     }
 

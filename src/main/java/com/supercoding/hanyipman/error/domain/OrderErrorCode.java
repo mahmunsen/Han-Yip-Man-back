@@ -9,7 +9,8 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum OrderErrorCode implements ErrorCode {
 
-    ORDER_MIN_PRICE(HttpStatus.BAD_REQUEST.value(), "최소 금액 이상으로 주문해야 합니다.");
+    ORDER_MIN_PRICE(HttpStatus.BAD_REQUEST.value(), "최소 금액 이상으로 주문해야 합니다."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "주문건이 존재하지 않습니다.");
 
     private final int code;
     private final String message;

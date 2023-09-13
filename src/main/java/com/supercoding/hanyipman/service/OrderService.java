@@ -21,11 +21,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.supercoding.hanyipman.utils.DateUtils.orderDatePattern;
 
@@ -42,7 +40,6 @@ public class OrderService {
     private final BuyerRepository buyerRepository;
     private final CartOptionItemRepository cartOptionItemRepository;
     private final PaymentRepository paymentRepository;
-    private final ShopRepository shopRepository;
 
 
     @TimeTrace
@@ -121,49 +118,71 @@ public class OrderService {
     }
 
 
-
-
-
-    /* todo 메뉴명 필드 삽입 예정,
-      예외 처리 부분 수정 예정,
-      orderTest 번호 11번 이상(디버깅 해서 shop Id 18 분명 존재하는데 계속 존재하지 않는 가게라고 함)*/
+    // 결제된 이후 해당 주문건 상세페이지 조회
+    @TimeTrace
+    @Transactional
     public ViewOrderDetailResponse viewOrderDetail(User user, Long orderId) throws ParseException {
-        // 해당 주문
-        Order order = isOrderValid(user, orderId);
-        Address addressFound = addressRepository.findAddressById(order.getAddress().getId());
-        // 해당 주문의 가게
-        Shop shopFound = shopRepository.findById(order.getShop().getId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
+        // 해당 주문건의 소비자
+        Buyer buyer = findBuyerByUserId(user.getId());
+        // 해당 주문건, orderId로 찾기
+        Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+        // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
+        if (!(order.getBuyer().getId() == buyer.getId())) {
+            throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
+        }
+        // 해당 주문건의 카트들 가져오기(소비자 아이디와 주문 아이디로)
+        List<Cart> carts = emCartRepository.findCartsBypaidCartForOrderDetail(buyer.getId(), orderId);
+        if (carts.isEmpty()) {
+            throw new CustomException(CartErrorCode.EMPTY_CART);
+        }
+        // 카트들에서 해당 메뉴들 불러오기
+        List<Map<String, Object>> orderMenus = carts.stream().map(cart -> {
+            Map<String, Object> orderMenu = new HashMap<>();
+            Menu menu = cart.getMenu();
+            // 주문명: 메뉴명 + 수량
+            String menuNameAndAmount = menu.getName() + " x " + cart.getAmount();
+            // 메뉴가격: 메뉴 가격 * 수량
+            Integer menuPrice = menu.getPrice() * cart.getAmount().intValue();
+            // 메뉴옵션들
+            List<Map<String, Object>> options = getMenuOptions(cart);
 
-//        // 주소에서 간단주소, 상세주소 추출
-//        Map<String, String> address = new HashMap<>();
-//        address.put("address", addressFound.getAddress());
-//        address.put("detailAddress", addressFound.getDetailAddress());
+            orderMenu.put("name", menuNameAndAmount);
+            orderMenu.put("price", menuPrice);
+            orderMenu.put("options", options);
+
+            return orderMenu;
+        }).collect(Collectors.toList());
+
+        // 메뉴이름들
+        List<String> menuNames = carts.stream().map(cart -> cart.getMenu().getName()).collect(Collectors.toList());
+
+        // 주문명
+        String orderName = createOrderName(carts, menuNames);
 
         // 주소 = 간단주소 + 상세주소
-        String address = String.join(" ", addressFound.getAddress(), addressFound.getDetailAddress());
+        String address = String.join(" ", order.getAddress().getAddress(), order.getAddress().getDetailAddress());
 
         // 해당 결제건
         Payment payment = paymentRepository.findPaymentByOrder(order).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
 
-        return new ViewOrderDetailResponse().toDto(order, payment, address, shopFound);
+        return new ViewOrderDetailResponse().toDto(order, payment, address, order.getShop(), orderMenus, orderName);
     }
 
+    // 메뉴옵션들
+    private static List<Map<String, Object>> getMenuOptions(Cart cart) {
+        List<Map<String, Object>> options = cart.getCartOptionItems().stream().map(cartOptionItem -> {
+            OptionItem optionItem = cartOptionItem.getOptionItem();
+            Map<String, Object> optionInfo = new HashMap<>();
+            optionInfo.put("optionName", optionItem.getName() + " x " + cart.getAmount());
+            optionInfo.put("optionPrice", optionItem.getPrice() * cart.getAmount().intValue());
+            return optionInfo;
+        }).collect(Collectors.toList());
+        return options;
+    }
 
-    /* todo 외부메소드 */
-    private Order isOrderValid(User user, Long orderId) {
-        Boolean areYouBuyer = buyerRepository.existsByUser(user);
-
-        if (Boolean.TRUE.equals(areYouBuyer)) {
-            Buyer buyer = buyerRepository.findByUser(user);
-
-            // Order를 orderId로 찾기
-            Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
-
-            // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
-            if (order.getBuyer().getId() == buyer.getId()) {
-                return order;
-
-            } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
-        } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER);
+    // 메뉴이름들 가지고 주문명 만들기
+    private static String createOrderName(List<Cart> carts, List<String> menuNames) {
+        String orderName = IntStream.range(0, menuNames.size()).mapToObj(i -> (i == 0 ? menuNames.get(i) + " " + carts.get(i).getAmount() + "개" : "외 " + carts.stream().skip(1).mapToInt(cart -> cart.getAmount().intValue()).sum() + "개")).collect(Collectors.joining(" "));
+        return orderName;
     }
 }
