@@ -11,7 +11,6 @@ import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.OrderService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +29,7 @@ public class OrderController {
 
     private final OrderService orderService;
 
-    
+
     //TODO: 임시 테스트 url 실제는 api/payment url에서 주문과 결제가 이뤄짐
     @Operation(summary = "주문 등록", description = "장바구니에 담겨진 메뉴들을 주문함")
     @PostMapping(headers = "X-API-VERSION=1")
