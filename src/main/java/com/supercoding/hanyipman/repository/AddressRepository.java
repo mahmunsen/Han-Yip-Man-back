@@ -20,8 +20,8 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     Integer findAllByUserCountId(@Param("buyer_id") Long buyerId);
 
 
-    @Query("select count(a) from Address a where a.address=:address")
-    Integer existsAllByAddress(@Param("address") String address);
+    @Query("select count(a) from Address a where a.mapId=:map_id")
+    Integer existsAllByMapId(@Param("map_id") String mapId);
 
 
     @Query("select a from Address a where a.buyer = ?1 and a.id = ?2")
@@ -31,5 +31,9 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
     @Query("delete from Address a where a.buyer=?1 and a.id = ?2 ")
     void deleteAddressByAddress(Buyer buyer, Long id);
 
-    Address findAddressById(Long addressId);
+    @Query("select count(a) from Address a where a.buyer = ?1")
+    Integer countAddressByBuyer(Buyer buyer);
+
+    List<Address> findAllByBuyerAndIsDefaultFalseOrderByIdDesc(Buyer buyer);
+
 }

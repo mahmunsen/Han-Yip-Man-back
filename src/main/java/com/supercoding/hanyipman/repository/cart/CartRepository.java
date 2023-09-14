@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.repository.cart;
 
 import com.supercoding.hanyipman.entity.Cart;
+import com.supercoding.hanyipman.entity.Seller;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -43,8 +44,13 @@ public interface CartRepository extends JpaRepository<Cart, Long> {
             "WHERE o.id in :ordersId")
     List<Cart> findCartsByOrdersId(@Param("ordersId")List<Long> ordersId);
 
-    @Query("SELECT c FROM Cart c " +
-            "JOIN fetch c.order o " +
-            "WHERE o.id =:orderId")
-    List<Cart> findCartsByOrderId(@Param("orderId") Long orderId);
+//    @Query("SELECT c FROM Cart c " +
+//            "JOIN fetch c.order o " +
+//            "WHERE o.id =:orderId")
+//    List<Cart> findCartsByOrderId(@Param("orderId") Long orderId);
+
+    @Query("SELECT s.seller FROM Cart c" +
+            " JOIN c.shop s" +
+            " WHERE c.buyer.id = :buyerId")
+    Optional<Seller> findSellerByBuyerId(@Param("buyerId") Long buyerId);
 }

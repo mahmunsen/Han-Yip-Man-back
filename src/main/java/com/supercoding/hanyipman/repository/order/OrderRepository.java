@@ -34,4 +34,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT o FROM Order o WHERE o.shop = :shop AND o.orderStatus IN (:orderStatusList) ORDER BY o.orderStatus")
     Optional<List<Order>> findOrderExceptCompleted(Shop shop, List<OrderStatus> orderStatusList);
 
+    @Query("SELECT o FROM Order o " +
+            "JOIN fetch o.buyer b " +
+            "WHERE o.id =:orderId" +
+            " AND o.isDeleted = false")
+    Optional<Order> findOrderByIdAndIsDeletedFalse(@Param("orderId") Long orderId);
+
 }

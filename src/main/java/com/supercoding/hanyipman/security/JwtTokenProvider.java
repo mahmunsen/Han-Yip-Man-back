@@ -37,8 +37,8 @@ public class JwtTokenProvider {
 
         Claims claims = Jwts.claims().setSubject(loginUser.getEmail());
         Date now = new Date();
-        // 토큰 만료시간 12시간
-        Date tokenValidMillisecond = Date.from(Instant.now().plus(12, ChronoUnit.HOURS));
+        // 토큰 만료시간 48시간
+        Date tokenValidMillisecond = Date.from(Instant.now().plus(48, ChronoUnit.HOURS));
         claims.put("userIdx", loginUser.getId());
         claims.put("email", loginUser.getEmail());
         claims.put("role", loginUser.getRole());
