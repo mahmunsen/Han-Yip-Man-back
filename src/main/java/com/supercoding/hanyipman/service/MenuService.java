@@ -38,7 +38,7 @@ public class MenuService {
     public void createMenu(RegisterMenuRequest registerMenuRequest, MultipartFile menuThumbnailImage, Long menuGroupId) {
         MenuGroup menuGroup = validMenuGroup(menuGroupId);
         Seller seller = validSellerUser(JwtToken.user());
-        if (Objects.equals(menuGroup.getShop().getSeller().getId(), seller.getId())) {
+        if (!Objects.equals(menuGroup.getShop().getSeller().getId(), seller.getId())) {
             throw new CustomException(ShopErrorCode.DIFFERENT_SELLER);
         }
 
