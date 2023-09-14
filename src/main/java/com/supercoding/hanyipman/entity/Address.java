@@ -46,6 +46,12 @@ public class Address {
     @Column(name = "is_default")
     private Boolean isDefault;
 
+    @Column(name = "road_address")
+    private String roadAddress;
+
+    @Column(name = "map_id")
+    private String mapId;
+
     public static Address toBuyerAddress(BuyerSignUpRequest request, Buyer buyer) {
         return Address.builder()
                 .buyer(buyer)
@@ -54,6 +60,8 @@ public class Address {
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
                 .isDefault(true)
+                .roadAddress(request.getRoadAddress())
+                .mapId(request.getMapId())
                 .build();
     }
 
@@ -74,6 +82,8 @@ public class Address {
                 .detailAddress(request.getAddressDetail())
                 .latitude(request.getLatitude())
                 .longitude(request.getLongitude())
+                .roadAddress(request.getRoadAddress())
+                .mapId(request.getMapId())
                 .build();
     }
 
