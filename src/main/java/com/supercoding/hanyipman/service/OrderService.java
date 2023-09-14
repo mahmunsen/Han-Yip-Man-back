@@ -1,6 +1,6 @@
 package com.supercoding.hanyipman.service;
 
-import com.supercoding.hanyipman.dto.orderTest.ViewOrderDetailResponse;
+import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
@@ -210,32 +210,19 @@ public class OrderService {
     public ViewOrderDetailResponse viewOrderDetail(User user, Long orderId) throws ParseException {
         // 해당 주문건의 소비자
         Buyer buyer = findBuyerByUserId(user.getId());
-        // 해당 주문건, orderId로 찾기
-        Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
-        // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
-        if (!(order.getBuyer().getId() == buyer.getId())) {
-            throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
-        }
+        // 해당 주문건, orderId로 찾기(삭제안된 것만)
+        Order order = getOrder(orderId);
+
+        isSameBuyerIdAndOrderBuyerId(order, buyer);
+
         // 해당 주문건의 카트들 가져오기(소비자 아이디와 주문 아이디로)
-        List<Cart> carts = emCartRepository.findCartsBypaidCartForOrderDetail(buyer.getId(), orderId);
+        List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
         if (carts.isEmpty()) {
             throw new CustomException(CartErrorCode.EMPTY_CART);
         }
         // 카트들에서 해당 메뉴들 불러오기
         List<Map<String, Object>> orderMenus = carts.stream().map(cart -> {
-            Map<String, Object> orderMenu = new HashMap<>();
-            Menu menu = cart.getMenu();
-            // 주문명: 메뉴명 + 수량
-            String menuNameAndAmount = menu.getName() + " x " + cart.getAmount();
-            // 메뉴가격: 메뉴 가격 * 수량
-            Integer menuPrice = menu.getPrice() * cart.getAmount().intValue();
-            // 메뉴옵션들
-            List<Map<String, Object>> options = getMenuOptions(cart);
-
-            orderMenu.put("name", menuNameAndAmount);
-            orderMenu.put("price", menuPrice);
-            orderMenu.put("options", options);
-
+            Map<String, Object> orderMenu = getOrderMenu(cart);
             return orderMenu;
         }).collect(Collectors.toList());
 
@@ -249,9 +236,32 @@ public class OrderService {
         String address = String.join(" ", order.getAddress().getAddress(), order.getAddress().getDetailAddress());
 
         // 해당 결제건
-        Payment payment = paymentRepository.findPaymentByOrder(order).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
+        Payment payment = paymentRepository.findPaymentByOrderId(order.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
 
         return new ViewOrderDetailResponse().toDto(order, payment, address, order.getShop(), orderMenus, orderName);
+    }
+
+    // 주문건
+    private Order getOrder(Long orderId) {
+        Order order = orderRepository.findOrderByIdAndIsDeletedFalse(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+        return order;
+    }
+
+    // 메뉴들
+    private static Map<String, Object> getOrderMenu(Cart cart) {
+        Map<String, Object> orderMenu = new HashMap<>();
+        Menu menu = cart.getMenu();
+        // 주문명: 메뉴명 + 수량
+        String menuNameAndAmount = menu.getName() + " x " + cart.getAmount();
+        // 메뉴가격: 메뉴 가격 * 수량
+        Integer menuPrice = menu.getPrice() * cart.getAmount().intValue();
+        // 메뉴옵션들
+        List<Map<String, Object>> options = getMenuOptions(cart);
+
+        orderMenu.put("name", menuNameAndAmount);
+        orderMenu.put("price", menuPrice);
+        orderMenu.put("options", options);
+        return orderMenu;
     }
 
     // 메뉴옵션들

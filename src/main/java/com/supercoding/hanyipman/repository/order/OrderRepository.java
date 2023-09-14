@@ -26,4 +26,10 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "JOIN fetch o.buyer b " +
             "WHERE o.id =:orderId ")
     Optional<Order> findOrderFetchBuyerByOrderId(@Param("orderId") Long orderId);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN fetch o.buyer b " +
+            "WHERE o.id =:orderId" +
+            " AND o.isDeleted = false")
+    Optional<Order> findOrderByIdAndIsDeletedFalse(@Param("orderId") Long orderId);
 }
