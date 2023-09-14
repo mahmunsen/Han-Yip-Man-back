@@ -44,6 +44,11 @@ public class BuyerShopService {
         return shopCustomRepository.findShopListWithNextCursor(viewShopListRequest, address.getLatitude(), address.getLongitude());
     }
 
+    @Transactional
+    public ViewShopListResponse findGuestShopList(ViewShopListRequest viewShopListRequest, Double latitude, Double longitude) {
+        return shopCustomRepository.findShopListWithNextCursor(viewShopListRequest, latitude, longitude);
+    }
+
     public ShopInfoResponse findShopDetail(Long shopId) {
         return ShopInfoResponse.from(validShop(shopId));
     }
@@ -77,4 +82,6 @@ public class BuyerShopService {
     private Menu validMenu(Long menuId) {
         return menuRepository.findById(menuId).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
     }
+
+
 }
