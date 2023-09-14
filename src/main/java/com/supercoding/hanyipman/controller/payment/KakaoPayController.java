@@ -60,10 +60,10 @@ public class KakaoPayController {
 
 
     @Operation(summary = "(카카오페이) 결제건 조회 API ", description = "결제건 상세정보 조회하는 API")
-    @GetMapping(path = "/order/{tid}/{orderId}", headers = "X-API-VERSION=1")
-    public Response<Object> kakaoPayViewPayment(@PathVariable("tid") String tid, @PathVariable("orderId") Long orderId) {
+    @GetMapping(path = "/order/{tid}", headers = "X-API-VERSION=1")
+    public Response<Object> kakaoPayViewPayment(@PathVariable("tid") String tid) {
 
-        KakaoPayViewPayResponse kakaoPayViewPayResponse = paymentService.kakaopayViewOnePayment(tid, orderId, JwtToken.user());
+        KakaoPayViewPayResponse kakaoPayViewPayResponse = paymentService.kakaopayViewOnePayment(tid);
 
         return ApiUtils.success(HttpStatus.OK.value(), "결제내역 단건 조회에 성공하였습니다.", kakaoPayViewPayResponse);
     }

@@ -1,7 +1,7 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
-import com.supercoding.hanyipman.dto.orderTest.ViewOrderDetailResponse;
+import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
