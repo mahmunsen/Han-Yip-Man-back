@@ -18,6 +18,8 @@ public class AddressListResponse {
     private Double latitude;
     private Double longitude;
     private Boolean isDefault;
+    private String roadAddress;
+    private String mapId;
 
     public static AddressListResponse toaAddressListResponse(Address address) {
         return AddressListResponse.builder()
@@ -27,6 +29,8 @@ public class AddressListResponse {
                 .latitude(address.getLatitude())
                 .longitude(address.getLongitude())
                 .isDefault(address.getIsDefault())
+                .roadAddress(address.getRoadAddress())
+                .mapId(address.getMapId())
                 .build();
     }
 }

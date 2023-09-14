@@ -29,4 +29,8 @@ public class BuyerSignUpRequest {
     private Double latitude;
     @JsonProperty(value = "longitude")
     private Double longitude;
+    @JsonProperty(value = "road_address")
+    private String roadAddress;
+    @JsonProperty(value = "map_id")
+    private String mapId;
 }
