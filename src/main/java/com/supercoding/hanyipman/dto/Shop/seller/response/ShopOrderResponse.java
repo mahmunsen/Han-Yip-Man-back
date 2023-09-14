@@ -24,7 +24,7 @@ public class ShopOrderResponse {
     @ApiModelProperty(value="총 가격 필드", dataType = "Integer")
     private Integer totalAmount;
     @ApiModelProperty(value="주문 메뉴 필드", dataType = "List<OrderMenuResponse>")
-    private List<OrderMenuResponse> menuResponses;
+    private List<ShopOrdersMenuResponse> menuResponses;
 
 
 
@@ -33,7 +33,7 @@ public class ShopOrderResponse {
                 .orderStatus(order.getOrderStatus().name())
                 .orderId(order.getId())
                 .totalAmount(order.getTotalPrice())
-                .menuResponses(order.getCarts().stream().map(cart -> OrderMenuResponse.from(cart)).collect(Collectors.toList()))
+                .menuResponses(order.getCarts().stream().map(cart -> ShopOrdersMenuResponse.from(cart)).collect(Collectors.toList()))
                 .build();
 
     }

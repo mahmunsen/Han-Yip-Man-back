@@ -16,14 +16,14 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @Builder
 @Schema(description = "주문 메뉴 메뉴 응답 DTO")
-public class OrderMenuResponse {
+public class ShopOrdersMenuResponse {
     @ApiModelProperty(value="주문 메뉴 이름 필드", dataType = "String")
     public String menuName;
     @ApiModelProperty(value="주문 메뉴 옵션 리스트 필드", dataType = "List<String>")
     public List<String> optionNames;
 
-    public static OrderMenuResponse from(Cart cart) {
-        return OrderMenuResponse.builder()
+    public static ShopOrdersMenuResponse from(Cart cart) {
+        return ShopOrdersMenuResponse.builder()
                 .menuName(cart.getMenu().getName())
                 .optionNames(cart.getCartOptionItems().stream().map(cartOptionItem -> cartOptionItem.getOptionItem().getName()).collect(Collectors.toList()))
                 .build();
