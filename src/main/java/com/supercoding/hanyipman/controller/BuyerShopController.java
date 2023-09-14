@@ -46,7 +46,7 @@ public class BuyerShopController {
     public Response<ViewShopListResponse> findGuestShopList(ViewShopListRequest viewShopListRequest,
                                                             @RequestParam Double latitude,
                                                             @RequestParam Double longitude) {
-        return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findGuestShopList(viewShopListRequest, latitude, longitude))
+        return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findGuestShopList(viewShopListRequest, latitude, longitude));
     }
 
     @Operation(summary = "가게 상세 조회", description = "가게의 상세 정보를 읽습니다.")
