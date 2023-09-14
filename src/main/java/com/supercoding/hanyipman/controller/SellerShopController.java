@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +34,7 @@ public class SellerShopController {
     private final SellerShopService sellerShopService;
 
     @Operation(summary = "가게 등록", description = "가게 정보를 입력하여 가게 레코드를 생성합니다.")
-    @PostMapping(value = "", consumes = "multipart/form-data", headers="X-API-VERSION=1")
+    @PostMapping(value = "", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, headers="X-API-VERSION=1")
     @io.swagger.v3.oas.annotations.parameters.RequestBody(content = @Content(mediaType = "multipart/form-data",
             schema = @Schema(implementation = MultipartFile.class)))
     public Response<Void> registerShop(@ModelAttribute RegisterShopRequest registerShopRequest,
@@ -73,7 +74,7 @@ public class SellerShopController {
     }
 
     @Operation(summary = "가게 이름 중복 조회", description = "가게 이름을 요청하여 내가 관리중인 가게 중 중복 이름이 있는지 검사합니다.")
-    @GetMapping(value = "/shops/duplication", headers = "X-API-VERSION=1")
+    @GetMapping(value = "/shops/duplication", headers = "X-API-VERSION=1", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Response<Void> checkDuplicationShopName(String shopName) {
         sellerShopService.checkDuplicationShopName(shopName);
         return ApiUtils.success(HttpStatus.OK, "내가 관리중인 가게중에 중복된 상호명이 없습니다.", null);
@@ -84,6 +85,82 @@ public class SellerShopController {
     @GetMapping(value = "/shops/{shop_id}/orders", headers = "X-API-VERSION=1")
     public Response<List<ShopOrderResponse>> findShopOrderList(@PathVariable(value = "shop_id") Long shopId) {
         return ApiUtils.success(HttpStatus.OK, "가게 주문 조회 성공", sellerShopService.findShopOrderList(shopId));
+    }
+
+    @Operation(summary = "가게 썸네일 변경", description = "이미지 파일을 업로드하여 가게 썸네일을 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/thumbnail", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopThumbnailFile(@PathVariable(value = "shop_id") Long shopId,
+                                                  @ApiParam(value = "썸네일 이미지 파일 (선택)")
+                                                  @RequestPart(value = "thumbnailImage", required = false)
+                                                  MultipartFile thumbnailImage
+    ) {
+        sellerShopService.changeThumbnail(thumbnailImage, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 썸네일 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 배너 변경", description = "이미지 파일을 업로드하여 가게 배너를 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/banner", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopBannerFile(@PathVariable(value = "shop_id") Long shopId,
+                                                  @ApiParam(value = "배너 이미지 파일 (선택)")
+                                                  @RequestPart(value = "bannerImage", required = false)
+                                                  MultipartFile bannerImage
+    ){
+        sellerShopService.changeBanner(bannerImage, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 썸네일 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 이름 변경", description = "가게 이름을 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/name", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopName(@PathVariable(value = "shop_id") Long shopId,
+                                                  @RequestParam String shopName) {
+        sellerShopService.changeShopName(shopName, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 이름 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 카테고리 변경", description = "가게 카테고리를 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/category", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopCategory(@PathVariable(value = "shop_id") Long shopId,
+                                                  @RequestParam Long categoryId
+    ) {
+        sellerShopService.changeCategory(categoryId, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 카테고리 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 번호 변경", description = "가게 번호를 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/phone-number", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopPhoneNumber(@PathVariable(value = "shop_id") Long shopId,
+                                                  @RequestParam String phoneNum
+    ) {
+        sellerShopService.changePhoneNum(phoneNum, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 번호 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 최소 주문 금액 변경", description = "가게 최소 주문 금액을 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/min-order-price", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopBannerFile(@PathVariable(value = "shop_id") Long shopId,
+                                               @RequestParam Integer minOrderPrice
+    ) {
+        sellerShopService.changeMinOrderPrice(minOrderPrice, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 최소 주문 금액 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 설명 변경", description = "가게 설명을 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/description", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopDescription(@PathVariable(value = "shop_id") Long shopId,
+                                                  @RequestParam String description
+    ) {
+        sellerShopService.changeDescription(description, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 설명 변경 성공", null);
+    }
+
+    @Operation(summary = "가게 배너 변경", description = "가게 사업자 등록 번호를 변경합니다.")
+    @PatchMapping(value = "/shops/{shop_id}/business-number", headers = "X-API-VERSION=1")
+    public Response<Void> changeShopBusinessNumber(@PathVariable(value = "shop_id") Long shopId,
+                                               @RequestParam String businessNumber
+    ) {
+
+        sellerShopService.changeBusinessNumber(businessNumber, shopId);
+        return ApiUtils.success(HttpStatus.OK, "가게 사업자 등록 번호 변경 성공", null);
     }
 
 

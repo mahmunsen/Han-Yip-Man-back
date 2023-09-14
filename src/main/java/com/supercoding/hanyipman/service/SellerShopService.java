@@ -92,14 +92,89 @@ public class SellerShopService {
         List<OrderStatus> orderStatusesToFind = Arrays.asList(OrderStatus.PAID, OrderStatus.TAKEOVER, OrderStatus.DELIVERY);
         List<Order> orders = orderRepository.findOrderExceptCompleted(shop, orderStatusesToFind).orElse(null);
         return orders.stream().map(order -> ShopOrderResponse.from(order)).collect(Collectors.toList());
-
-
     }
+
+    public void changeThumbnail(MultipartFile thumbnailImage, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+
+        String newThumbnailUrl = updateImageFile(thumbnailImage, shop, shop.getThumbnail());
+        shop.setThumbnail(newThumbnailUrl);
+        shopRepository.save(shop);
+    }
+
+    public void changeBanner(MultipartFile bannerImage, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+
+        String newThumbnailUrl = updateImageFile(bannerImage, shop, shop.getBanner());
+        shop.setBanner(newThumbnailUrl);
+        shopRepository.save(shop);
+    }
+
+    public void changeShopName(String shopName, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        validationShopName(shopName, seller.getId());
+        shop.setName(shopName);
+        shopRepository.save(shop);
+    }
+
+    public void changeCategory(Long categoryId, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        Category category = categoryRepository.findById(categoryId).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_CATEGORY));
+        shop.setCategory(category);
+        shopRepository.save(shop);
+    }
+
+    public void changePhoneNum(String phoneNumber, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        shop.setPhoneNum(phoneNumber);
+        shopRepository.save(shop);
+    }
+
+    public void changeMinOrderPrice(Integer minOrderPrice, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        shop.setMinOrderPrice(minOrderPrice);
+        shopRepository.save(shop);
+    }
+
+    public void changeDescription(String description, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        shop.setDescription(description);
+        shopRepository.save(shop);
+    }
+
+    public void changeBusinessNumber(String businessNumber, Long shopId) {
+        Seller seller = validSellerUser(JwtToken.user());
+        Shop shop = validShop(shopId, seller.getId());
+        shop.setBusinessNumber(businessNumber);
+        shopRepository.save(shop);
+    }
+
+
 
     private String uploadImageFile(MultipartFile multipartFile, Shop shop) {
         String uniqueIdentifier = UUID.randomUUID().toString();
         try {
             if (multipartFile != null) {
+                return awsS3Service.uploadImage(multipartFile, FilePath.SHOP_DIR.getPath() + shop.getId() + "/" + uniqueIdentifier);
+            }
+        }catch (IOException e) {
+            throw new CustomException(FileErrorCode.FILE_UPLOAD_FAILED);
+        }
+        return null;
+    }
+
+    private String updateImageFile(MultipartFile multipartFile, Shop shop, String originUrl) {
+        String uniqueIdentifier = UUID.randomUUID().toString();
+        try {
+            if (multipartFile != null) {
+                awsS3Service.removeFile(originUrl);
                 return awsS3Service.uploadImage(multipartFile, FilePath.SHOP_DIR.getPath() + shop.getId() + "/" + uniqueIdentifier);
             }
         }catch (IOException e) {
@@ -121,4 +196,6 @@ public class SellerShopService {
     private void validationShopName(String shopName, Long sellerId) {
         if (Boolean.TRUE.equals(shopCustomRepository.existShopNameBySeller(shopName, sellerId))) throw new CustomException(ShopErrorCode.DUPLICATION_SHOP_NAME);
     }
+
+
 }
