@@ -207,6 +207,4 @@ public class SellerShopService {
         return new ShopOrderCategorizedResponse(paidOrderList, takeoverOrderList, cookingOrderList, deliveryOrderList);
 
     }
-
-
 }
