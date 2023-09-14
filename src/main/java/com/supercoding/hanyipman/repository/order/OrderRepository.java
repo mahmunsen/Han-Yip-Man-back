@@ -15,4 +15,15 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     // 업주 찾기
     @Query("SELECT s FROM Shop p JOIN p.seller s WHERE p.id = :shopId")
     Optional<Seller> findSellerByShopId(@Param("shopId") Long shopId);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN fetch o.shop s " +
+            "JOIN fetch o.buyer " +
+            "WHERE o.id =:orderId")
+    Optional<Order> findOrderFetchShopAndFetchBuyerByOrderId(@Param("orderId")Long orderId);
+
+    @Query("SELECT o FROM Order o " +
+            "JOIN fetch o.buyer b " +
+            "WHERE o.id =:orderId ")
+    Optional<Order> findOrderFetchBuyerByOrderId(@Param("orderId") Long orderId);
 }

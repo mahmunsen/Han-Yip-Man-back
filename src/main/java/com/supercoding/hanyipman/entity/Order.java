@@ -25,6 +25,7 @@ import static com.supercoding.hanyipman.enums.OrderStatus.WAIT;
 @DynamicInsert
 @NoArgsConstructor
 @AllArgsConstructor
+@Where(clause = "is_deleted is null or is_deleted = false")
 @SQLDelete(sql = "UPDATE `order` SET is_deleted = true WHERE id = ?")
 @Table(name = "`order`")
 public class Order {

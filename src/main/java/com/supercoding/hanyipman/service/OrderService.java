@@ -6,14 +6,15 @@ import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.entity.*;
+import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.*;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
-import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import com.supercoding.hanyipman.repository.order.EmOrderRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
+import com.supercoding.hanyipman.security.UserRole;
 import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,7 +32,9 @@ import static com.supercoding.hanyipman.utils.DateUtils.orderDatePattern;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private final UserRepository userRepository;
     private final BuyerCouponRepository buyerCouponRepository;
+    private final SellerRepository sellerRepository;
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
     private final EmOrderRepository emOrderRepository;
@@ -83,12 +86,65 @@ public class OrderService {
 
         List<Order> orders = emOrderRepository.findListOrders(buyer.getId(), pageable);
         List<Long> ordersId = orders.stream().map(Order::getId).collect(Collectors.toList());
-        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrderId(ordersId));
+        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
         Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
         orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
+
         List<ViewOrderResponse> viewOrderResponses = orders.stream().map(ViewOrderResponse::from).collect(Collectors.toList());
         calcCursorIdx(pageable, orders);
         return PageResponse.from(viewOrderResponses, pageable);
+    }
+
+
+
+    public String generateOrderUid() {
+        String orderDate = DateUtils.convertToString(Instant.now(), orderDatePattern);
+        String uid = UUID.randomUUID().toString().substring(0, 8);
+        return String.join("", orderDate, uid);
+    }
+
+
+    /**
+     * 주문 수락 메소드
+     * @param orderId
+     * @param userId
+     */
+    public void approveOrder(Long orderId, Long userId) {
+        Seller seller = findSellerByUserId(userId);
+        Order order = findByOrderByOrderId(orderId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        OrderStatus.isEqualCancel(order.getOrderStatus());
+        order.setOrderStatus(OrderStatus.TAKEOVER);
+    }
+
+    /**
+     * 주문 상태 변경 메소드
+     * @param orderId
+     * @param orderStatus
+     */
+    public void updateOrderStatus(Long orderId, Long userId, OrderStatus orderStatus) {
+        Order order = findByOrderByOrderId(orderId);
+        Seller seller = findSellerByUserId(userId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        OrderStatus.isEqualCancel(orderStatus);
+        order.setOrderStatus(orderStatus);
+    }
+
+
+    /**
+     * 사장님, 손님이 의도적인 취소 메소드
+     * @param orderId
+     * @param userId
+     */
+    public void IntentionalCancelOrder(Long orderId, Long userId){
+        User user = findUserByUserId(userId);
+        Order order = findByOrderByOrderId(orderId);
+        OrderStatus.isPossibleCancel(order.getOrderStatus());
+        if(user.getRole().equals(UserRole.SELLER.name())){
+            IntentionalCancelOrderBySeller(order, userId);
+            return ;
+        }
+        IntentionalCancelOrderByBuyer(order, userId);
     }
 
     private static void calcCursorIdx(CustomPageable pageable, List<Order> orders) {
@@ -107,16 +163,46 @@ public class OrderService {
         return addressRepository.findByBuyerAndId(buyer, addressId).orElseThrow(() -> new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA));
     }
 
-    public String generateOrderUid() {
-        String orderDate = DateUtils.convertToString(Instant.now(), orderDatePattern);
-        String uid = UUID.randomUUID().toString().substring(0, 8);
-        return String.join("", orderDate, uid);
-    }
-
     private Buyer findBuyerByUserId(Long userId) {
         return buyerRepository.findBuyerByUserId(userId).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
     }
 
+    private void isSameBuyerIdAndOrderBuyerId(Order order, Buyer buyer) {
+        if(order.getBuyer().getId().equals(buyer.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_ORDER_BUYER);
+    }
+
+    private Order findOrderFetchBuyer(Long orderId) {
+        return orderRepository.findOrderFetchBuyerByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private Order findByOrderByOrderId(Long orderId) {
+        return orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
+
+    private void IntentionalCancelOrderByBuyer(Order order, Long userId) {
+        Buyer buyer = findBuyerByUserId(userId);
+        isSameBuyerIdAndOrderBuyerId(order, buyer);
+        order.setOrderStatus(OrderStatus.CANCELED);
+    }
+
+    private void IntentionalCancelOrderBySeller(Order order, Long userId) {
+        Seller seller = findSellerByUserId(userId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        order.setOrderStatus(OrderStatus.CANCELED);
+    }
+
+    private Seller findSellerByUserId(Long userId) {
+        return sellerRepository.findByUserId(userId).orElseThrow(() -> new CustomException(OrderErrorCode.NOT_SAME_ORDER_SELLER));
+    }
+
+    private void isSameSellerIdAndOrderShopSellerId(Order order, Seller seller) {
+        // TODO: 최적화 가능
+        if(!order.getShop().getSeller().getId().equals(seller.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_SHOP_SELLER);
+    }
+
+    private User findUserByUserId(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
+    }
 
     // 결제된 이후 해당 주문건 상세페이지 조회
     @TimeTrace

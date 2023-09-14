@@ -4,6 +4,7 @@ import com.supercoding.hanyipman.entity.Seller;
 import com.supercoding.hanyipman.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
@@ -20,4 +21,7 @@ public interface SellerRepository extends JpaRepository<Seller, Long> {
 
     Optional<Seller> findByUser(User user);
 
+    @Query("SELECT s FROM Seller s " +
+            "WHERE s.user.id =:userId ")
+    Optional<Seller> findByUserId(@Param("userId") Long userId);
 }
