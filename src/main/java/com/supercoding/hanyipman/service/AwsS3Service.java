@@ -42,8 +42,10 @@ public class AwsS3Service {
         }
     }
 
-    private void removeFile(String imageUrl) {
+    public void removeFile(String imageUrl) {
+        if (imageUrl == null) return;
         String filePath = FilePathUtils.convertImageUrlToFilePath(imageUrl);
+        filePath = filePath.replace("%2F%2F", "/");
         if(!amazonS3Client.doesObjectExist(bucket, filePath)){
             throw new CustomException(UtilErrorCode.NOT_FOUND_FILE);
         }
