@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.dto.orderTest;
+package com.supercoding.hanyipman.dto.order.response;
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Payment;
 import com.supercoding.hanyipman.entity.Shop;
