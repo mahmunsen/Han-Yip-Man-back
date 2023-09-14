@@ -168,7 +168,7 @@ public class OrderService {
     }
 
     private void isSameBuyerIdAndOrderBuyerId(Order order, Buyer buyer) {
-        if(order.getBuyer().getId().equals(buyer.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_ORDER_BUYER);
+        if(!order.getBuyer().getId().equals(buyer.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_ORDER_BUYER);
     }
 
     private Order findOrderFetchBuyer(Long orderId) {
