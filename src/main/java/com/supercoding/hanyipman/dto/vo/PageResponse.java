@@ -12,12 +12,12 @@ import java.util.List;
 @AllArgsConstructor
 public class PageResponse<T> {
     private List<T> content;
-    private int page;
+    private long cursor;
     private int size;
     private boolean isEnd;
 
     public static <T> PageResponse<T> from(List<T> content, CustomPageable pageable){
         boolean isEnd = content.size() < pageable.getSize();
-        return new PageResponse<>(content, pageable.getPage()+1, pageable.getSize(), isEnd);
+        return new PageResponse<>(content, pageable.getCursor(), pageable.getSize(), isEnd);
     }
 }
