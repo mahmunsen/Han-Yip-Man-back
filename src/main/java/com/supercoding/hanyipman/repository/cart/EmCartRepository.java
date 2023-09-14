@@ -43,7 +43,7 @@ public class EmCartRepository {
                 .getResultList();
     }
 
-    public List<Cart> findCartsBypaidCartForOrderDetail(Long buyerId, Long orderId){
+    public List<Cart> findCartsByPaidCartForOrderDetail(Long buyerId, Long orderId){
         return em.createQuery(
                         " SELECT c FROM Cart c " +
                                 " join fetch c.menu m " +
@@ -53,6 +53,18 @@ public class EmCartRepository {
                                 " and b.id =:buyerId" +
                                 " and c.order.id = :orderId", Cart.class)
                 .setParameter("buyerId", buyerId)
+                .setParameter("orderId", orderId)
+                .getResultList();
+    }
+
+    public List<Cart> findCartsByPaidCartForPaymentCancel(Long orderId){
+        return em.createQuery(
+                        " SELECT c FROM Cart c " +
+                                " join fetch c.menu m " +
+                                " join fetch c.buyer b " +
+                                " join fetch c.shop s " +
+                                " where (c.isDeleted = true) " +
+                                " and c.order.id = :orderId", Cart.class)
                 .setParameter("orderId", orderId)
                 .getResultList();
     }
