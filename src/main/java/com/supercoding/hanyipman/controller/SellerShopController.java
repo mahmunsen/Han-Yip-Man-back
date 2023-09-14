@@ -1,9 +1,11 @@
 package com.supercoding.hanyipman.controller;
 
-import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopOrderResponse;
+import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.SellerShopService;
@@ -76,6 +78,14 @@ public class SellerShopController {
         sellerShopService.checkDuplicationShopName(shopName);
         return ApiUtils.success(HttpStatus.OK, "내가 관리중인 가게중에 중복된 상호명이 없습니다.", null);
     }
+
+    @TimeTrace
+    @Operation(summary = "가게 주문 조회", description = "가게 주문 조회")
+    @GetMapping(value = "/shops/{shop_id}/orders", headers = "X-API-VERSION=1")
+    public Response<List<ShopOrderResponse>> findShopOrderList(@PathVariable(value = "shop_id") Long shopId) {
+        return ApiUtils.success(HttpStatus.OK, "가게 주문 조회 성공", sellerShopService.findShopOrderList(shopId));
+    }
+
 
 
 }

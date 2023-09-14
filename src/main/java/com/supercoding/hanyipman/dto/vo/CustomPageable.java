@@ -6,46 +6,51 @@ import com.supercoding.hanyipman.error.domain.DirectionErrorCode;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import springfox.documentation.annotations.ApiIgnore;
 
-@Getter
+import java.lang.reflect.Field;
 
+import static com.supercoding.hanyipman.enums.Direction.ASC;
+import static com.supercoding.hanyipman.enums.Direction.DESC;
+
+@Slf4j
+@Setter
 @AllArgsConstructor
 public class CustomPageable {
 
+    @ApiModelProperty(value = "커서", example = "0")
+    private  Long cursor;
     @ApiModelProperty(value = "페이지 번호 0", example = "0")
     private  Integer page;
     @ApiModelProperty(value = "한페이지 크기 10", example = "10")
     private  Integer size;
-    @ApiModelProperty(value = "정렬 필드 id", example = "id")
-    private  String sortField;
-    @ApiModelProperty(value = "정렬 방향 ASC|DESC", example = "ASC|DESC")
-    private  String direction;
 
     public Pageable from(){
         if(page==null) page = 0;
         if(size==null) size = 10;
-        if(sortField == null)return PageRequest.of(page, size,Sort.Direction.ASC, "id");
-
-        switch (Direction.getDirection(direction)) {
-            case ASC:
-                return PageRequest.of(page, size, Sort.Direction.ASC, sortField);
-            case DESC:
-                return PageRequest.of(page, size, Sort.Direction.DESC, sortField);
-            default:
-                throw new CustomException(DirectionErrorCode.NOT_FOUND_DIRECTION);
-        }
+        return PageRequest.of(page, size,Sort.Direction.ASC, "id");
     }
 
     @ApiModelProperty(hidden = true)
-    public Integer getStartIndex(){
-        return page*size;
+    public Long getCursor(){
+        if(cursor == null) return Long.MAX_VALUE;
+        return cursor;
     }
-    @ApiModelProperty(hidden = true)
-    public Integer getEndIndex(){
-        return (page+1)*size;
+    public Integer getSize() {
+        return size;
     }
+
+
+//    public String getSortField(Class<?> clazz) {
+//        for(Field field : clazz.getDeclaredFields()){
+//            if(field.getName().equals(sortField)) return sortField;
+//        }
+//        return sortField;
+//    }
+
 }

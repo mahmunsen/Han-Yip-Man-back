@@ -28,17 +28,13 @@ public class AddressService {
     //TODO 주소등록
     @Transactional
     public String registerAddress(User user, AddressRegisterRequest request) {
-        Integer limitAddress = 3; // 개인당 가질 수 있는 주소 갯수
-        //Todo 주소 3개초과 등록 못함, 주소 빈값 검사
         requestNullCheck(request);
-        Buyer buyerId = buyerRepository.findByUser(user);
-        if (buyerId.getAddresses() == null) throw new CustomException(BuyerErrorCode.INVALID_BUYER);
-//        if (addressRepository.existsAllByAddress(request.getAddress()) >= 1)
-//            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
-        Integer allByUserCountId = addressRepository.findAllByUserCountId(buyerId.getId());
-        if (allByUserCountId >= limitAddress) throw new CustomException(AddressErrorCode.ADDRESS_DATA_EXCEED_LIMIT);
+        if (user.getBuyer().getId() == null) throw new CustomException(BuyerErrorCode.INVALID_BUYER);
 
-        Buyer buyer = buyerRepository.findById(buyerId.getId()).orElseThrow(() -> new CustomException(BuyerErrorCode.INVALID_BUYER));
+        if (addressRepository.existsAllByMapId(request.getMapId()) >= 1)
+            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
+
+        Buyer buyer = buyerRepository.findById(user.getBuyer().getId()).orElseThrow(() -> new CustomException(BuyerErrorCode.INVALID_BUYER));
         Address address = Address.toAddAddress(buyer, request);
 
         Address save = addressRepository.save(address);
@@ -63,22 +59,27 @@ public class AddressService {
     @Transactional
     public Long patchAddress(User user, Long addressId, AddressRegisterRequest request) {
         requestNullCheck(request);
-        Optional<Address> address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId);
-        if (address.isEmpty()) throw new CustomException(AddressErrorCode.UNCHANGEABLE_ADDRESS);
-        patchSetAdd(address.get(), request);
-        return address.get().getId();
+        Address address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId).orElseThrow(() -> new CustomException(AddressErrorCode.UNCHANGEABLE_ADDRESS));
+        patchSetAdd(address, request);
+        return address.getId();
     }
 
 
     // Todo 주소 삭제
-
     @Transactional
     public String sellerDeleteAddress(User user, Long addressId) {
-        Optional<Address> address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId);
-        if (address.isEmpty()) throw new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND);
-        addressRepository.deleteAddressByAddress(user.getBuyer(), address.get().getId());
-        return address.get().getAddress();
+        if (addressRepository.countAddressByBuyer(user.getBuyer()) <= 1)
+            throw new CustomException(AddressErrorCode.ADDRESS_DATA_EXCEED_LIMIT);
 
+        Address address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId).orElseThrow(() -> new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND));
+
+        if (address.getIsDefault()) {
+            List<Address> addresses = addressRepository.findAllByBuyerAndIsDefaultFalseOrderByIdDesc(user.getBuyer());
+            setDefaultAddress(user, addresses.get(0).getId());
+        }
+
+        addressRepository.deleteAddressByAddress(user.getBuyer(), address.getId());
+        return address.getAddress();
     }
 
     public void patchSetAdd(Address address, AddressRegisterRequest request) {
@@ -86,10 +87,12 @@ public class AddressService {
         address.setDetailAddress(request.getAddressDetail());
         address.setLatitude(request.getLatitude());
         address.setLongitude(request.getLongitude());
+        address.setMapId(request.getMapId());
+        address.setRoadAddress(request.getRoadAddress());
     }
 
     public void requestNullCheck(AddressRegisterRequest request) {
-        if (request.getAddress() == null || "".equals(request.getAddress()) || request.getAddressDetail() == null || "".equals(request.getAddressDetail()) || request.getLatitude() == null || request.getLongitude() == null)
+        if (request.getAddress() == null || "".equals(request.getAddress()) || request.getAddressDetail() == null || "".equals(request.getAddressDetail()) || request.getLatitude() == null || request.getLongitude() == null || request.getMapId() == null || "".equals(request.getMapId()) ||request.getRoadAddress() == null || "".equals(request.getRoadAddress()))
             throw new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA);
     }
 

@@ -20,11 +20,14 @@ public class EmCartRepository {
                                 " join fetch c.menu m " +
                                 " join fetch c.buyer b " +
                                 " join fetch c.shop s " +
-                                " where (c.isDeleted = false or c.isDeleted is null) " +
-                                " and b.id =:buyerId", Cart.class)
+                                " where c.id < :cursor " +
+                                " AND (c.isDeleted = false or c.isDeleted is null) " +
+                                " and b.id =:buyerId" +
+                                " ORDER BY c.id DESC ", Cart.class)
                 .setParameter("buyerId", buyerId)
-                .setFirstResult(pageable.getStartIndex())
-                .setMaxResults(pageable.getEndIndex())
+                .setParameter("cursor", pageable.getCursor())
+                .setFirstResult(0)
+                .setMaxResults(pageable.getSize())
                 .getResultList();
     }
 
@@ -37,6 +40,32 @@ public class EmCartRepository {
                                 " where (c.isDeleted = false or c.isDeleted is null) " +
                                 " and b.id =:buyerId", Cart.class)
                 .setParameter("buyerId", buyerId)
+                .getResultList();
+    }
+
+    public List<Cart> findCartsByPaidCartForOrderDetail(Long buyerId, Long orderId){
+        return em.createQuery(
+                        " SELECT c FROM Cart c " +
+                                " join fetch c.menu m " +
+                                " join fetch c.buyer b " +
+                                " join fetch c.shop s " +
+                                " where (c.isDeleted = true) " +
+                                " and b.id =:buyerId" +
+                                " and c.order.id = :orderId", Cart.class)
+                .setParameter("buyerId", buyerId)
+                .setParameter("orderId", orderId)
+                .getResultList();
+    }
+
+    public List<Cart> findCartsByPaidCartForPaymentCancel(Long orderId){
+        return em.createQuery(
+                        " SELECT c FROM Cart c " +
+                                " join fetch c.menu m " +
+                                " join fetch c.buyer b " +
+                                " join fetch c.shop s " +
+                                " where (c.isDeleted = true) " +
+                                " and c.order.id = :orderId", Cart.class)
+                .setParameter("orderId", orderId)
                 .getResultList();
     }
 

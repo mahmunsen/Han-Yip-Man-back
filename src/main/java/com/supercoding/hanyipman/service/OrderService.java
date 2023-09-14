@@ -1,19 +1,20 @@
 package com.supercoding.hanyipman.service;
 
-import com.supercoding.hanyipman.dto.orderTest.ViewOrderDetailResponse;
+import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.entity.*;
+import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.*;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
-import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import com.supercoding.hanyipman.repository.order.EmOrderRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
+import com.supercoding.hanyipman.security.UserRole;
 import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.supercoding.hanyipman.utils.DateUtils.orderDatePattern;
 
@@ -33,7 +32,9 @@ import static com.supercoding.hanyipman.utils.DateUtils.orderDatePattern;
 @Service
 @RequiredArgsConstructor
 public class OrderService {
+    private final UserRepository userRepository;
     private final BuyerCouponRepository buyerCouponRepository;
+    private final SellerRepository sellerRepository;
     private final AddressRepository addressRepository;
     private final OrderRepository orderRepository;
     private final EmOrderRepository emOrderRepository;
@@ -42,7 +43,6 @@ public class OrderService {
     private final BuyerRepository buyerRepository;
     private final CartOptionItemRepository cartOptionItemRepository;
     private final PaymentRepository paymentRepository;
-    private final ShopRepository shopRepository;
 
 
     @TimeTrace
@@ -86,13 +86,69 @@ public class OrderService {
 
         List<Order> orders = emOrderRepository.findListOrders(buyer.getId(), pageable);
         List<Long> ordersId = orders.stream().map(Order::getId).collect(Collectors.toList());
-        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrderId(ordersId));
+        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
         Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
         orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
 
-
         List<ViewOrderResponse> viewOrderResponses = orders.stream().map(ViewOrderResponse::from).collect(Collectors.toList());
+        calcCursorIdx(pageable, orders);
         return PageResponse.from(viewOrderResponses, pageable);
+    }
+
+
+
+    public String generateOrderUid() {
+        String orderDate = DateUtils.convertToString(Instant.now(), orderDatePattern);
+        String uid = UUID.randomUUID().toString().substring(0, 8);
+        return String.join("", orderDate, uid);
+    }
+
+
+    /**
+     * 주문 수락 메소드
+     * @param orderId
+     * @param userId
+     */
+    public void approveOrder(Long orderId, Long userId) {
+        Seller seller = findSellerByUserId(userId);
+        Order order = findByOrderByOrderId(orderId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        OrderStatus.isEqualCancel(order.getOrderStatus());
+        order.setOrderStatus(OrderStatus.TAKEOVER);
+    }
+
+    /**
+     * 주문 상태 변경 메소드
+     * @param orderId
+     * @param orderStatus
+     */
+    public void updateOrderStatus(Long orderId, Long userId, OrderStatus orderStatus) {
+        Order order = findByOrderByOrderId(orderId);
+        Seller seller = findSellerByUserId(userId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        OrderStatus.isEqualCancel(orderStatus);
+        order.setOrderStatus(orderStatus);
+    }
+
+
+    /**
+     * 사장님, 손님이 의도적인 취소 메소드
+     * @param orderId
+     * @param userId
+     */
+    public void IntentionalCancelOrder(Long orderId, Long userId){
+        User user = findUserByUserId(userId);
+        Order order = findByOrderByOrderId(orderId);
+        OrderStatus.isPossibleCancel(order.getOrderStatus());
+        if(user.getRole().equals(UserRole.SELLER.name())){
+            IntentionalCancelOrderBySeller(order, userId);
+            return ;
+        }
+        IntentionalCancelOrderByBuyer(order, userId);
+    }
+
+    private static void calcCursorIdx(CustomPageable pageable, List<Order> orders) {
+        if(orders.size() > 0) pageable.setCursor(orders.get(orders.size() - 1).getId());
     }
 
     private List<Cart> getCartsJoinItems(List<Cart> carts) {
@@ -107,60 +163,122 @@ public class OrderService {
         return addressRepository.findByBuyerAndId(buyer, addressId).orElseThrow(() -> new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA));
     }
 
-    public String generateOrderUid() {
-        String orderDate = DateUtils.convertToString(Instant.now(), orderDatePattern);
-        String uid = UUID.randomUUID().toString().substring(0, 8);
-        return String.join("", orderDate, uid);
-    }
-
     private Buyer findBuyerByUserId(Long userId) {
         return buyerRepository.findBuyerByUserId(userId).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
     }
 
-
-
-
-
-    /* todo 메뉴명 필드 삽입 예정,
-      예외 처리 부분 수정 예정,
-      orderTest 번호 11번 이상(디버깅 해서 shop Id 18 분명 존재하는데 계속 존재하지 않는 가게라고 함)*/
-    public ViewOrderDetailResponse viewOrderDetail(User user, Long orderId) throws ParseException {
-        // 해당 주문
-        Order order = isOrderValid(user, orderId);
-        Address addressFound = addressRepository.findAddressById(order.getAddress().getId());
-        // 해당 주문의 가게
-        Shop shopFound = shopRepository.findById(order.getShop().getId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
-
-//        // 주소에서 간단주소, 상세주소 추출
-//        Map<String, String> address = new HashMap<>();
-//        address.put("address", addressFound.getAddress());
-//        address.put("detailAddress", addressFound.getDetailAddress());
-
-        // 주소 = 간단주소 + 상세주소
-        String address = String.join(" ", addressFound.getAddress(), addressFound.getDetailAddress());
-
-        // 해당 결제건
-        Payment payment = paymentRepository.findPaymentByOrder(order).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
-
-        return new ViewOrderDetailResponse().toDto(order, payment, address, shopFound);
+    private void isSameBuyerIdAndOrderBuyerId(Order order, Buyer buyer) {
+        if(!order.getBuyer().getId().equals(buyer.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_ORDER_BUYER);
     }
 
+    private Order findOrderFetchBuyer(Long orderId) {
+        return orderRepository.findOrderFetchBuyerByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
 
-    /* todo 외부메소드 */
-    private Order isOrderValid(User user, Long orderId) {
-        Boolean areYouBuyer = buyerRepository.existsByUser(user);
+    private Order findByOrderByOrderId(Long orderId) {
+        return orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+    }
 
-        if (Boolean.TRUE.equals(areYouBuyer)) {
-            Buyer buyer = buyerRepository.findByUser(user);
+    private void IntentionalCancelOrderByBuyer(Order order, Long userId) {
+        Buyer buyer = findBuyerByUserId(userId);
+        isSameBuyerIdAndOrderBuyerId(order, buyer);
+        order.setOrderStatus(OrderStatus.CANCELED);
+    }
 
-            // Order를 orderId로 찾기
-            Order order = orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
+    private void IntentionalCancelOrderBySeller(Order order, Long userId) {
+        Seller seller = findSellerByUserId(userId);
+        isSameSellerIdAndOrderShopSellerId(order, seller);
+        order.setOrderStatus(OrderStatus.CANCELED);
+    }
 
-            // 주문건의 소비자 아이디와 로그인한 소비자의 아이디가 같을 때만
-            if (order.getBuyer().getId() == buyer.getId()) {
-                return order;
+    private Seller findSellerByUserId(Long userId) {
+        return sellerRepository.findByUserId(userId).orElseThrow(() -> new CustomException(OrderErrorCode.NOT_SAME_ORDER_SELLER));
+    }
 
-            } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
-        } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER);
+    private void isSameSellerIdAndOrderShopSellerId(Order order, Seller seller) {
+        // TODO: 최적화 가능
+        if(!order.getShop().getSeller().getId().equals(seller.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_SHOP_SELLER);
+    }
+
+    private User findUserByUserId(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
+    }
+
+    // 결제된 이후 해당 주문건 상세페이지 조회
+    @TimeTrace
+    @Transactional
+    public ViewOrderDetailResponse viewOrderDetail(User user, Long orderId) throws ParseException {
+        // 해당 주문건의 소비자
+        Buyer buyer = findBuyerByUserId(user.getId());
+        // 해당 주문건, orderId로 찾기(삭제안된 것만)
+        Order order = getOrder(orderId);
+
+        isSameBuyerIdAndOrderBuyerId(order, buyer);
+
+        // 해당 주문건의 카트들 가져오기(소비자 아이디와 주문 아이디로)
+        List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
+        if (carts.isEmpty()) {
+            throw new CustomException(CartErrorCode.EMPTY_CART);
+        }
+        // 카트들에서 해당 메뉴들 불러오기
+        List<Map<String, Object>> orderMenus = carts.stream().map(cart -> {
+            Map<String, Object> orderMenu = getOrderMenu(cart);
+            return orderMenu;
+        }).collect(Collectors.toList());
+
+        // 메뉴이름들
+        List<String> menuNames = carts.stream().map(cart -> cart.getMenu().getName()).collect(Collectors.toList());
+
+        // 주문명
+        String orderName = createOrderName(carts, menuNames);
+
+        // 주소 = 간단주소 + 상세주소
+        String address = String.join(" ", order.getAddress().getAddress(), order.getAddress().getDetailAddress());
+
+        // 해당 결제건
+        Payment payment = paymentRepository.findPaymentByOrderId(order.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
+
+        return new ViewOrderDetailResponse().toDto(order, payment, address, order.getShop(), orderMenus, orderName);
+    }
+
+    // 주문건
+    private Order getOrder(Long orderId) {
+        Order order = orderRepository.findOrderByIdAndIsDeletedFalse(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
+        return order;
+    }
+
+    // 메뉴들
+    private static Map<String, Object> getOrderMenu(Cart cart) {
+        Map<String, Object> orderMenu = new HashMap<>();
+        Menu menu = cart.getMenu();
+        // 주문명: 메뉴명 + 수량
+        String menuNameAndAmount = menu.getName() + " x " + cart.getAmount();
+        // 메뉴가격: 메뉴 가격 * 수량
+        Integer menuPrice = menu.getPrice() * cart.getAmount().intValue();
+        // 메뉴옵션들
+        List<Map<String, Object>> options = getMenuOptions(cart);
+
+        orderMenu.put("name", menuNameAndAmount);
+        orderMenu.put("price", menuPrice);
+        orderMenu.put("options", options);
+        return orderMenu;
+    }
+
+    // 메뉴옵션들
+    private static List<Map<String, Object>> getMenuOptions(Cart cart) {
+        List<Map<String, Object>> options = cart.getCartOptionItems().stream().map(cartOptionItem -> {
+            OptionItem optionItem = cartOptionItem.getOptionItem();
+            Map<String, Object> optionInfo = new HashMap<>();
+            optionInfo.put("optionName", optionItem.getName() + " x " + cart.getAmount());
+            optionInfo.put("optionPrice", optionItem.getPrice() * cart.getAmount().intValue());
+            return optionInfo;
+        }).collect(Collectors.toList());
+        return options;
+    }
+
+    // 메뉴이름들 가지고 주문명 만들기
+    private static String createOrderName(List<Cart> carts, List<String> menuNames) {
+        String orderName = IntStream.range(0, menuNames.size()).mapToObj(i -> (i == 0 ? menuNames.get(i) + " " + carts.get(i).getAmount() + "개" : "외 " + carts.stream().skip(1).mapToInt(cart -> cart.getAmount().intValue()).sum() + "개")).collect(Collectors.joining(" "));
+        return orderName;
     }
 }
