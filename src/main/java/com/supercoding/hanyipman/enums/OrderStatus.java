@@ -12,6 +12,7 @@ public enum OrderStatus {
     PAID("PAID"),
     CANCELED("CANCELED"),
     TAKEOVER("TAKEOVER"),
+    COOKING("COOKING"),
     DELIVERY("DELIVERY"),
     COMPLETE("COMPLETE");
 
