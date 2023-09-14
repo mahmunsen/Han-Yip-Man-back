@@ -4,7 +4,7 @@ import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
-import com.supercoding.hanyipman.dto.Shop.seller.response.ShopOrderResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopOrderCategorizedResponse;
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
@@ -83,7 +83,7 @@ public class SellerShopController {
     @TimeTrace
     @Operation(summary = "가게 주문 조회", description = "가게 주문 조회")
     @GetMapping(value = "/shops/{shop_id}/orders", headers = "X-API-VERSION=1")
-    public Response<List<ShopOrderResponse>> findShopOrderList(@PathVariable(value = "shop_id") Long shopId) {
+    public Response<ShopOrderCategorizedResponse> findShopOrderList(@PathVariable(value = "shop_id") Long shopId) {
         return ApiUtils.success(HttpStatus.OK, "가게 주문 조회 성공", sellerShopService.findShopOrderList(shopId));
     }
 

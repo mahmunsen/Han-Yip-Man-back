@@ -4,6 +4,7 @@ import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopDetailResponse;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopManagementListResponse;
 import com.supercoding.hanyipman.dto.Shop.seller.response.ShopOrderResponse;
+import com.supercoding.hanyipman.dto.Shop.seller.response.ShopOrderCategorizedResponse;
 import com.supercoding.hanyipman.dto.address.request.ShopAddressRequest;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.FilePath;
@@ -86,12 +87,14 @@ public class SellerShopService {
         return ShopDetailResponse.from(shop);
     }
     @Transactional
-    public List<ShopOrderResponse> findShopOrderList(Long shopId) {
+    public ShopOrderCategorizedResponse findShopOrderList(Long shopId) {
         Seller seller = validSellerUser(JwtToken.user());
         Shop shop = validShop(shopId, seller.getId());
-        List<OrderStatus> orderStatusesToFind = Arrays.asList(OrderStatus.PAID, OrderStatus.TAKEOVER, OrderStatus.DELIVERY);
+        List<OrderStatus> orderStatusesToFind = Arrays.asList(OrderStatus.PAID, OrderStatus.TAKEOVER, OrderStatus.DELIVERY, OrderStatus.COOKING);
         List<Order> orders = orderRepository.findOrderExceptCompleted(shop, orderStatusesToFind).orElse(null);
-        return orders.stream().map(order -> ShopOrderResponse.from(order)).collect(Collectors.toList());
+        List<ShopOrderResponse> shopOrderResponses = orders.stream().map(order -> ShopOrderResponse.from(order)).collect(Collectors.toList());
+
+        return shopOrderCategorize(shopOrderResponses);
     }
 
     public void changeThumbnail(MultipartFile thumbnailImage, Long shopId) {
@@ -156,8 +159,6 @@ public class SellerShopService {
         shopRepository.save(shop);
     }
 
-
-
     private String uploadImageFile(MultipartFile multipartFile, Shop shop) {
         String uniqueIdentifier = UUID.randomUUID().toString();
         try {
@@ -195,6 +196,16 @@ public class SellerShopService {
 
     private void validationShopName(String shopName, Long sellerId) {
         if (Boolean.TRUE.equals(shopCustomRepository.existShopNameBySeller(shopName, sellerId))) throw new CustomException(ShopErrorCode.DUPLICATION_SHOP_NAME);
+    }
+
+    private ShopOrderCategorizedResponse shopOrderCategorize(List<ShopOrderResponse> shopOrderResponses) {
+        List<ShopOrderResponse> paidOrderList = shopOrderResponses.stream().filter(shopOrderResponse -> OrderStatus.valueOf(shopOrderResponse.getOrderStatus()).equals(OrderStatus.PAID)).collect(Collectors.toList());
+        List<ShopOrderResponse> takeoverOrderList = shopOrderResponses.stream().filter(shopOrderResponse -> OrderStatus.valueOf(shopOrderResponse.getOrderStatus()).equals(OrderStatus.TAKEOVER)).collect(Collectors.toList());
+        List<ShopOrderResponse> deliveryOrderList = shopOrderResponses.stream().filter(shopOrderResponse -> OrderStatus.valueOf(shopOrderResponse.getOrderStatus()).equals(OrderStatus.DELIVERY)).collect(Collectors.toList());
+        List<ShopOrderResponse> cookingOrderList = shopOrderResponses.stream().filter(shopOrderResponse -> OrderStatus.valueOf(shopOrderResponse.getOrderStatus()).equals(OrderStatus.COOKING)).collect(Collectors.toList());
+
+        return new ShopOrderCategorizedResponse(paidOrderList, takeoverOrderList, cookingOrderList, deliveryOrderList);
+
     }
 
 
