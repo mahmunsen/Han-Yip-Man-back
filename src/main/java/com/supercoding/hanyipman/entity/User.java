@@ -3,6 +3,9 @@ package com.supercoding.hanyipman.entity;
 import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
+import com.supercoding.hanyipman.error.CustomException;
+import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
+import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.security.UserRole;
 import com.supercoding.hanyipman.service.MyInfoService;
 import lombok.*;
@@ -14,6 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 import javax.persistence.*;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Entity
@@ -64,6 +68,14 @@ public class User {
 
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Seller seller;
+
+    public Seller validSeller() {
+        return Optional.ofNullable(this.seller).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
+    }
+
+    public Buyer validBuyer() {
+        return Optional.ofNullable(this.buyer).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
+    }
 
     public static User toSellerSignup(SellerSignUpRequest request, String password) {
         return User.builder()
