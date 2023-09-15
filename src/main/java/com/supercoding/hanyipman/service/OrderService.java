@@ -68,7 +68,7 @@ public class OrderService {
         if (carts.isEmpty()) throw new CustomException(CartErrorCode.EMPTY_CART);
 
         // carts <-> cartOptionItems 연결
-        List<Cart> cartsJoinItems = getCartsJoinItems(carts);
+        List<Cart> cartsJoinItems = findCartsJoinItems(carts);
 
         // 주문 uid 생성
         String orderUid = generateOrderUid();
@@ -87,7 +87,7 @@ public class OrderService {
 
         List<Order> orders = emOrderRepository.findListOrders(buyer.getId(), pageable);
         List<Long> ordersId = orders.stream().map(Order::getId).collect(Collectors.toList());
-        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
+        List<Cart> cartsJoinItems = findCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
         Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
         orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
 
@@ -102,7 +102,7 @@ public class OrderService {
 
         Order order = findOrderByOrderId(orderId);
         List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
-        List<Cart> joinItems = getCartsJoinItems(carts);
+        List<Cart> joinItems = findCartsJoinItems(carts);
         order.setCarts(joinItems);
 
         return OrderNoticeResponse.from(order);
@@ -165,7 +165,7 @@ public class OrderService {
         if(orders.size() > 0) pageable.setCursor(orders.get(orders.size() - 1).getId());
     }
 
-    private List<Cart> getCartsJoinItems(List<Cart> carts) {
+    private List<Cart> findCartsJoinItems(List<Cart> carts) {
         List<Long> cartIds = carts.stream().map(Cart::getId).collect(Collectors.toList());
         List<CartOptionItem> cartOptionItems = findCartOptionItemsByCartsId(cartIds);
         Map<Long, List<CartOptionItem>> coiMap = cartOptionItems.stream().collect(Collectors.groupingBy(coi -> coi.getCart().getId()));
