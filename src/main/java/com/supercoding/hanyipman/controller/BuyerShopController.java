@@ -41,6 +41,14 @@ public class BuyerShopController {
         return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findShopList(viewShopListRequest, customUserDetail));
     }
 
+    @Operation(summary = "비회원 가게 리스트 조회", description = "위도 경도 정보를 통해 위치기반 가게 리스트를 조회합니다.")
+    @GetMapping(value = "/guest", headers = "X-API-VERSION=1")
+    public Response<ViewShopListResponse> findGuestShopList(ViewShopListRequest viewShopListRequest,
+                                                            @RequestParam Double latitude,
+                                                            @RequestParam Double longitude) {
+        return ApiUtils.success(HttpStatus.OK, "리스트 조회 성공", buyerShopService.findGuestShopList(viewShopListRequest, latitude, longitude));
+    }
+
     @Operation(summary = "가게 상세 조회", description = "가게의 상세 정보를 읽습니다.")
     @GetMapping(value = "/{shop_id}/info", headers = "X-API-VERSION=1")
     public Response<ShopInfoResponse> findShopDetail(@PathVariable(value = "shop_id") Long shopId) {
