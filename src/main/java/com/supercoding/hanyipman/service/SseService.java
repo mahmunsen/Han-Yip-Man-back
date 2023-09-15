@@ -20,7 +20,7 @@ import java.io.IOException;
 public class SseService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 10 * 10 * 1000L; // 10분
+    private final Long timeOut = 10 * 60 * 1000L; // 10분
 
     public SseEmitter registerEmitter(Long userId){
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));

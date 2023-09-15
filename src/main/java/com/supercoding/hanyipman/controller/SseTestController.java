@@ -1,8 +1,8 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
-import com.supercoding.hanyipman.dto.vo.SseTestRequest;
-import com.supercoding.hanyipman.dto.vo.SseTestResponse;
+import com.supercoding.hanyipman.dto.sse.SseTestRequest;
+import com.supercoding.hanyipman.dto.sse.SseTestResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.service.SseService;
