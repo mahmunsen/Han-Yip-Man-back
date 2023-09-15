@@ -4,6 +4,7 @@ import com.supercoding.hanyipman.enums.Direction;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.DirectionErrorCode;
 import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,14 +20,17 @@ import static com.supercoding.hanyipman.enums.Direction.ASC;
 import static com.supercoding.hanyipman.enums.Direction.DESC;
 
 @Slf4j
-@Setter
 @AllArgsConstructor
+@Schema(title="pageable")
 public class CustomPageable {
 
-    @ApiModelProperty(value = "커서", example = "0")
+    @ApiModelProperty(value = "커서 100", example = "100")
+    @Setter
     private  Long cursor;
-    @ApiModelProperty(value = "페이지 번호 0", example = "0")
+
+    @ApiModelProperty(value = "페이지 번호 0 ", example = "0")
     private  Integer page;
+
     @ApiModelProperty(value = "한페이지 크기 10", example = "10")
     private  Integer size;
 
@@ -36,7 +40,6 @@ public class CustomPageable {
         return PageRequest.of(page, size,Sort.Direction.ASC, "id");
     }
 
-    @ApiModelProperty(hidden = true)
     public Long getCursor(){
         if(cursor == null) return Long.MAX_VALUE;
         return cursor;

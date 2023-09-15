@@ -30,8 +30,11 @@ public class LoggingAspect {
     @AfterReturning(pointcut  = "execution(* com.supercoding.hanyipman..*Controller.*(..))",  returning = "returnValue")
     public void afterAdvice(Object returnValue) {
         String endpoint = request.getRequestURI(); // 현재 요청의 엔드포인트 경로를 얻어옴
-
-        log.info("\u001B[32mAPI 호출 완료! - "+endpoint + " : "+ ((Response<?>) returnValue).getMessage() +"\u001B[0m");
+        if(returnValue instanceof  Response<?>){
+            log.info("\u001B[32mAPI 호출 완료! - "+endpoint + " : "+ ((Response<?>) returnValue).getMessage() +"\u001B[0m");
+            return;
+        }
+        log.info("\u001B[32mAPI 호출 완료! - "+endpoint + "\u001B[0m");
     }
 
 }
