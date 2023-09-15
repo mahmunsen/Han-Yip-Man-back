@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
@@ -67,7 +68,7 @@ public class OrderService {
         if (carts.isEmpty()) throw new CustomException(CartErrorCode.EMPTY_CART);
 
         // carts <-> cartOptionItems 연결
-        List<Cart> cartsJoinItems = getCartsJoinItems(carts);
+        List<Cart> cartsJoinItems = findCartsJoinItems(carts);
 
         // 주문 uid 생성
         String orderUid = generateOrderUid();
@@ -81,12 +82,12 @@ public class OrderService {
     }
 
     @TimeTrace
-    public PageResponse<ViewOrderResponse> getOrders(Long userId, CustomPageable pageable) {
+    public PageResponse<ViewOrderResponse> findOrders(Long userId, CustomPageable pageable) {
         Buyer buyer = findBuyerByUserId(userId);
 
         List<Order> orders = emOrderRepository.findListOrders(buyer.getId(), pageable);
         List<Long> ordersId = orders.stream().map(Order::getId).collect(Collectors.toList());
-        List<Cart> cartsJoinItems = getCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
+        List<Cart> cartsJoinItems = findCartsJoinItems(cartRepository.findCartsByOrdersId(ordersId));
         Map<Long, List<Cart>> cartsMap = cartsJoinItems.stream().collect(Collectors.groupingBy(cart -> cart.getOrder().getId()));
         orders.forEach(order -> order.setCarts(cartsMap.get(order.getId())));
 
@@ -94,6 +95,19 @@ public class OrderService {
         calcCursorIdx(pageable, orders);
         return PageResponse.from(viewOrderResponses, pageable);
     }
+
+    @TimeTrace
+    protected OrderNoticeResponse findOrder(Long userId, Long orderId) {
+        Buyer buyer = findBuyerByUserId(userId);
+
+        Order order = findOrderByOrderId(orderId);
+        List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
+        List<Cart> joinItems = findCartsJoinItems(carts);
+        order.setCarts(joinItems);
+
+        return OrderNoticeResponse.from(order);
+    }
+
 
 
 
@@ -111,7 +125,7 @@ public class OrderService {
      */
     public void approveOrder(Long orderId, Long userId) {
         Seller seller = findSellerByUserId(userId);
-        Order order = findByOrderByOrderId(orderId);
+        Order order = findOrderByOrderId(orderId);
         isSameSellerIdAndOrderShopSellerId(order, seller);
         OrderStatus.isEqualCancel(order.getOrderStatus());
         order.setOrderStatus(OrderStatus.TAKEOVER);
@@ -123,7 +137,7 @@ public class OrderService {
      * @param orderStatus
      */
     public void updateOrderStatus(Long orderId, Long userId, OrderStatus orderStatus) {
-        Order order = findByOrderByOrderId(orderId);
+        Order order = findOrderByOrderId(orderId);
         Seller seller = findSellerByUserId(userId);
         isSameSellerIdAndOrderShopSellerId(order, seller);
         OrderStatus.isEqualCancel(orderStatus);
@@ -138,7 +152,7 @@ public class OrderService {
      */
     public void IntentionalCancelOrder(Long orderId, Long userId){
         User user = findUserByUserId(userId);
-        Order order = findByOrderByOrderId(orderId);
+        Order order = findOrderByOrderId(orderId);
         OrderStatus.isPossibleCancel(order.getOrderStatus());
         if(user.getRole().equals(UserRole.SELLER.name())){
             IntentionalCancelOrderBySeller(order, userId);
@@ -151,12 +165,17 @@ public class OrderService {
         if(orders.size() > 0) pageable.setCursor(orders.get(orders.size() - 1).getId());
     }
 
-    private List<Cart> getCartsJoinItems(List<Cart> carts) {
+    private List<Cart> findCartsJoinItems(List<Cart> carts) {
         List<Long> cartIds = carts.stream().map(Cart::getId).collect(Collectors.toList());
-        List<CartOptionItem> cartOptionItems = cartOptionItemRepository.findCartOptionItemsByCartIds(cartIds);
+        List<CartOptionItem> cartOptionItems = findCartOptionItemsByCartsId(cartIds);
         Map<Long, List<CartOptionItem>> coiMap = cartOptionItems.stream().collect(Collectors.groupingBy(coi -> coi.getCart().getId()));
         carts.forEach(cart -> cart.setCartOptionItems(coiMap.get(cart.getId())));
         return carts;
+    }
+
+    private List<CartOptionItem> findCartOptionItemsByCartsId(List<Long> cartIds) {
+        List<CartOptionItem> cartOptionItems = cartOptionItemRepository.findCartOptionItemsByCartIds(cartIds);
+        return cartOptionItems;
     }
 
     private Address findAddressByAddressIdAndBuyer(Long addressId, Buyer buyer) {
@@ -175,7 +194,7 @@ public class OrderService {
         return orderRepository.findOrderFetchBuyerByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
-    private Order findByOrderByOrderId(Long orderId) {
+    private Order findOrderByOrderId(Long orderId) {
         return orderRepository.findOrderById(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 

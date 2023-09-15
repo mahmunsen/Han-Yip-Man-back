@@ -44,7 +44,7 @@ public class OrderController {
     @GetMapping(headers = "X-API-VERSION=1")
     public Response<PageResponse<ViewOrderResponse>> getOrders(CustomPageable pageable,
                                                                @AuthenticationPrincipal CustomUserDetail auth) {
-        PageResponse<ViewOrderResponse> orders = orderService.getOrders(auth.getUserId(), pageable);
+        PageResponse<ViewOrderResponse> orders = orderService.findOrders(auth.getUserId(), pageable);
         return ApiUtils.success(HttpStatus.OK, "성공적으로 주문내역을 조회했습니다.", orders);
     }
 

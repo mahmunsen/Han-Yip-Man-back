@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.payment.request.iamport.CancelPaymentRequest;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PostPaymentRequest;
 import com.supercoding.hanyipman.dto.payment.request.kakaopay.KakaoPayCancelRequest;
@@ -10,12 +11,14 @@ import com.supercoding.hanyipman.dto.payment.response.iamport.GetOnePaymentRespo
 import com.supercoding.hanyipman.dto.payment.response.iamport.PaymentPrepareResponse;
 import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
 import com.supercoding.hanyipman.entity.*;
+import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.domain.CartErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
+import com.supercoding.hanyipman.security.JwtToken;
 import org.springframework.beans.factory.annotation.Value;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
 import com.supercoding.hanyipman.error.CustomException;
@@ -49,6 +52,8 @@ public class PaymentService {
     private final EmCartRepository emCartRepository;
     private final CartRepository cartRepository;
     private final RestTemplate restTemplate;
+    private final OrderService orderService;
+    private final SseService sseService;
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
 
@@ -192,6 +197,9 @@ public class PaymentService {
             payment.setPaymentStatus(status); // 결제 상태값, ready -> paid 로 저장
             order.setOrderStatus(OrderStatus.valueOf("PAID")); // 주문 상태값, WAIT -> PAID로 변경
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
+            //주문 알림 기능
+            OrderNoticeResponse orderNoticeResponse = orderService.findOrder(user.getId(), order.getId());
+            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, orderNoticeResponse);
 
             return ResponseEntity.ok("결제가 성공했습니다.");
         } else {
@@ -350,6 +358,10 @@ public class PaymentService {
             payment.setPaymentStatus("paid");
             paymentRepository.save(payment);
             orderRepository.save(order);
+
+            OrderNoticeResponse sseOrderResponse = orderService.findOrder(user.getId(), order.getId());
+            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, sseOrderResponse);
+
             return kakaoPayApproveResponse.getBody();
         } else {
             throw new CustomException(PaymentErrorCode.KAKAOPAY_API_COMMUNICATION_ERROR);
