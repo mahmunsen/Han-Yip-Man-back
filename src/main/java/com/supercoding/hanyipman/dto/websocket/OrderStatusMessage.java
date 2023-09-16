@@ -13,11 +13,13 @@ public class OrderStatusMessage {
 
     private String room;
     private com.supercoding.hanyipman.enums.OrderStatus orderStatus;
+    private Long orderId;
     private String message;
 
 
-    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message) {
+    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId) {
         this.orderStatus = orderStatus;
         this.message = message;
+        this.orderId = orderId;
     }
 }

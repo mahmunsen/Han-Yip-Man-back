@@ -36,4 +36,6 @@ public interface AddressRepository extends JpaRepository<Address, Long> {
 
     List<Address> findAllByBuyerAndIsDefaultFalseOrderByIdDesc(Buyer buyer);
 
+    Boolean existsAddressByMapIdAndBuyer(String mapId, Buyer buyer);
+
 }

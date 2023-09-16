@@ -6,6 +6,7 @@ import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
+import com.supercoding.hanyipman.security.JwtTokenProvider;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -15,44 +16,48 @@ public class SocketController {
 
     private final SocketIOServer server;
     private final SocketService socketService;
+    private final JwtTokenProvider jwtTokenProvider;
 
-    public SocketController(SocketIOServer server, SocketService socketService) {
+    public SocketController(SocketIOServer server, SocketService socketService, JwtTokenProvider jwtTokenProvider) {
         this.server = server;
         this.socketService = socketService;
+        this.jwtTokenProvider = jwtTokenProvider;
         server.addConnectListener(onConnected());
         server.addDisconnectListener(onDisconnected());
         server.addEventListener("send_message", ChatMessage.class, onChatReceived());
-        server.addEventListener("send_order", OrderStatusMessage.class, onOrderStatusReceived());
+        server.addEventListener("send_order_status_change", OrderStatusMessage.class, onOrderStatusReceived());
+        server.addEventListener("room_enter", String.class, onRoomEnterReceived());
 
 
     }
 
+    private DataListener<String> onRoomEnterReceived() {
+        return (senderClient, data, ackSender) -> {
+            senderClient.joinRoom(data);
+        };
+    }
     private DataListener<ChatMessage> onChatReceived() {
         return (senderClient, data, ackSender) -> {
             log.info(data.toString());
-            socketService.sendMessage(data.getRoom(),"get_message", senderClient, data.getMessage());
+            socketService.sendMessage(data.getRoom(),"get_message", senderClient, data.getMessage(), senderClient.get("token"));
         };
     }
 
     private DataListener<OrderStatusMessage> onOrderStatusReceived() {
         return (senderClient, data, ackSender) -> {
-            log.info(data.toString());
-            socketService.sendOrderStatus(data.getRoom(),"get_order_status_response", senderClient, data.getOrderStatus());
+            socketService.sendOrderStatus(data.getRoom(),"get_order_status_change", senderClient, data.getOrderStatus(), senderClient.get("token"));
         };
     }
 
     private ConnectListener onConnected() {
         return (client) -> {
-            String room = client.getHandshakeData().getSingleUrlParam("room");
-            log.info("room : " + room);
-
-            client.joinRoom(room);
-            log.info("Socket ID[{}]  Connected to socket", client.getSessionId().toString());
+            String token = client.getHandshakeData().getSingleUrlParam("token").substring(7);
+            if (socketService.validateToken(token, client)) {
+                log.info("Socket ID[{}]  Connected to socket", client.getSessionId().toString());
+            }
         };
 
     }
-
-
 
     private DisconnectListener onDisconnected() {
         return (client) -> {
