@@ -3,12 +3,15 @@ package com.supercoding.hanyipman.entity;
 import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
 import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
+import com.supercoding.hanyipman.dto.user.response.KakaoUserInfoResponse;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.SellerErrorCode;
 import com.supercoding.hanyipman.security.UserRole;
-import com.supercoding.hanyipman.service.MyInfoService;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.DynamicInsert;
 import org.hibernate.annotations.DynamicUpdate;
@@ -16,7 +19,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 
 @Getter
@@ -99,7 +101,7 @@ public class User {
                 .build();
     }
 
-    public static User sellerUpdateMyInfo(User user,Seller seller, SellerUpdateInfoRequest request) {
+    public static User sellerUpdateMyInfo(User user, Seller seller, SellerUpdateInfoRequest request) {
         return User.builder()
                 .id(user.getId())
                 .email(user.getEmail())
@@ -110,6 +112,17 @@ public class User {
                 .createdAt(user.getCreatedAt())
                 .isDeleted(user.getIsDeleted())
                 .seller(seller)
+                .build();
+    }
+
+    public static User kakaoBuyerSignup(KakaoUserInfoResponse response, String password) {
+        return User.builder()
+                .email(response.getKakao_account().getEmail())
+                .nickname(response.getProperties().getNickname())
+                .password(password)
+                .phoneNum("010-0000-0000")
+                .role(UserRole.BUYER.name())
+                .authProvider(null)
                 .build();
     }
 }
