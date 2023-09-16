@@ -14,12 +14,16 @@ public class KakaoUserInfoResponse {
     private KakaoAccount kakao_account;
 
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public class KakaoUserProperties {
         private String nickname;
         private String profile_image;
     }
 
     @Getter
+    @NoArgsConstructor
+    @AllArgsConstructor
     public class KakaoAccount {
         private String email;
     }
