@@ -81,6 +81,7 @@ public class BuyerShopController {
     @GetMapping(value = "/{shopId}/review-average", headers = "X-API-VERSION=1")
     public Response<Double> viewShopReviewAverage(@PathVariable String shopId) {
 
+
         return ApiUtils.success(HttpStatus.OK, "해당 가게의 평균 리뷰 별점 조회에 성공했습니다.", reviewService.viewShopReviewAverage(shopId));
     }
 
