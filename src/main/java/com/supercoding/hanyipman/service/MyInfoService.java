@@ -15,20 +15,17 @@ import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
-import com.supercoding.hanyipman.security.JwtToken;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static com.supercoding.hanyipman.entity.Seller.*;
 import static com.supercoding.hanyipman.entity.User.sellerUpdateMyInfo;
 
 @Slf4j
@@ -51,7 +48,7 @@ public class MyInfoService {
             return MyInfoResponse.toSellerInfoResponse(user, seller.get());
 
         }
-        Buyer buyer = buyerRepository.findByUser(user);
+        Buyer buyer = buyerRepository.findByUser(user).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
         if (buyer == null) {
             throw new CustomException(BuyerErrorCode.INVALID_BUYER);
         }
