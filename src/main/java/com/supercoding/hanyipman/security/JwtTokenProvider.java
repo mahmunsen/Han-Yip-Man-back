@@ -1,23 +1,18 @@
 package com.supercoding.hanyipman.security;
 
-import com.supercoding.hanyipman.dto.vo.AuthenticationTestDto;
 import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.TokenErrorCode;
 import com.supercoding.hanyipman.service.CustomUserDetailService;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
-
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
@@ -66,7 +61,14 @@ public class JwtTokenProvider {
             throw new CustomException(TokenErrorCode.UNSUPPORTED_JWT_TOKEN);
         } catch (IllegalArgumentException e) {
             throw new CustomException(TokenErrorCode.INVALID_JWT_TOKEN);
+        } catch (SignatureException e) {
+            throw new CustomException(TokenErrorCode.INVALID_JWT_SIGNATURE);
         }
+    }
+
+
+    public String getUserEmail(String jwtToken) {
+        return Jwts.parser().setSigningKey(secretKeySource).parseClaimsJws(jwtToken).getBody().get("email").toString();
     }
 
 
