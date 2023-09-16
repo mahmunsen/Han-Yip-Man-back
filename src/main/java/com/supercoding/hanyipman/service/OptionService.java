@@ -6,6 +6,7 @@ import com.supercoding.hanyipman.entity.Option;
 import com.supercoding.hanyipman.entity.Seller;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.MenuErrorCode;
+import com.supercoding.hanyipman.error.domain.OptionErrorCode;
 import com.supercoding.hanyipman.repository.MenuRepository;
 import com.supercoding.hanyipman.repository.OptionRepository;
 import com.supercoding.hanyipman.security.JwtToken;
@@ -35,7 +36,15 @@ public class OptionService {
                         .build());
     }
 
+    public void changeOptionName(String optionName, Long optionId) {
+        Option option = optionRepository.findByIdAndIsDeletedFalse(optionId).orElseThrow(()->new CustomException(OptionErrorCode.OPTION_NOT_FOUND));
+        option.setName(optionName);
+        optionRepository.save(option);
+    }
+
     private Menu validMenu(Long menuId) {
         return menuRepository.findByMenuIsDeletedFalse(menuId).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
     }
+
+
 }
