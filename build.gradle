@@ -10,6 +10,12 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
+sourceSets {
+    main {
+        resources { srcDirs = ["$projectDir/src/main/resources"]
+        }
+    }
+}
 
 group = 'com.supercoding'
 version = '0.0.1-SNAPSHOT'
@@ -69,6 +75,7 @@ tasks.named('test') {
 
 def querydslDir = "$buildDir/generated/querydsl"
 
+
 querydsl {
     jpa = true
     querydslSourcesDir = querydslDir
@@ -81,4 +88,36 @@ configurations {
 }
 compileQuerydsl {
     options.annotationProcessorPath = configurations.querydsl
+}
+
+def frontendDir = "$projectDir/src/main/frontend"
+processResources { dependsOn "copyReactBuildFiles" }
+
+task installReact(type: Exec) {
+    workingDir "$frontendDir"
+    inputs.dir "$frontendDir"
+    group = BasePlugin.BUILD_GROUP
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine 'yarn.cmd', 'install' }
+    else {
+        commandLine "npm", "audit", "fix" commandLine 'yarn', 'install'
+    }
+}
+
+task buildReact(type: Exec) {
+    dependsOn "installReact"
+    workingDir "$frontendDir"
+    inputs.dir "$frontendDir"
+    group = BasePlugin.BUILD_GROUP
+    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
+        commandLine "npm.cmd", "run-script", "build"
+    } else {
+        commandLine "npm", "run-script", "build"
+    }
+}
+
+task copyReactBuildFiles(type: Copy) {
+    dependsOn "buildReact"
+    from "$frontendDir/dist"
+    into "$projectDir/src/main/resources/static"
 }
