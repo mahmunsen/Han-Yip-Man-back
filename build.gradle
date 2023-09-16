@@ -93,31 +93,9 @@ compileQuerydsl {
 def frontendDir = "$projectDir/src/main/frontend"
 processResources { dependsOn "copyReactBuildFiles" }
 
-task installReact(type: Exec) {
-    workingDir "$frontendDir"
-    inputs.dir "$frontendDir"
-    group = BasePlugin.BUILD_GROUP
-    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-        commandLine 'yarn.cmd', 'install' }
-    else {
-        commandLine "npm", "audit", "fix" commandLine 'yarn', 'install'
-    }
-}
 
-task buildReact(type: Exec) {
-    dependsOn "installReact"
-    workingDir "$frontendDir"
-    inputs.dir "$frontendDir"
-    group = BasePlugin.BUILD_GROUP
-    if (System.getProperty('os.name').toLowerCase(Locale.ROOT).contains('windows')) {
-        commandLine "npm.cmd", "run-script", "build"
-    } else {
-        commandLine "npm", "run-script", "build"
-    }
-}
 
 task copyReactBuildFiles(type: Copy) {
-    dependsOn "buildReact"
-    from "$frontendDir/dist"
+    from "$frontendDir"
     into "$projectDir/src/main/resources/static"
 }
