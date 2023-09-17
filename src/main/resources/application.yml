@@ -57,3 +57,9 @@ imp_secret: ENC(N8pL9GLWYo0bk/YZLya5Ey5hwF4ZTZdjPOWKq2MiC4F9CP/1iICWLtB49AYUYYy5
 
 #kakaopay
 kakaopay_key: ENC(YSfTSGO2d2UxBQbv19QK5oF8irUUvhGHewBI9b+Ykn+wF8dVKHegr5vbBxrFABBZ)
+
+#kakaoLogin
+kakao:
+  kakaoClientId: ENC(oL+d4FpRSgx20yyefg+dNGRs4s7xBSnzKJfZfpCej4uh5GrQ5DlWub/pnyOfgNoh)
+  kakaoSecretKey: ENC(F2kDtKjgeBKl9YV/i54HBIUJaUlGgG4J1fFMr71aT+3OgXp+Synbjqr5yqosM3bl)
+  kakaoRedirectUri: ENC(plR3M1YzATx6aQ+yyoRd6222Gq2bzpOxTcupLEZnKg8DfUE505J0MUtIdQd7gj/EN5WmolVUfb8=)

@@ -5,29 +5,24 @@ import com.supercoding.hanyipman.security.JwtAuthenticationEntryPoing;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
 import com.supercoding.hanyipman.security.filters.JwtAuthenticationFilter;
 import com.supercoding.hanyipman.security.filters.JwtExceptionFilter;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.filter.CorsFilter;
 
-@Configuration
-@AllArgsConstructor
-@EnableMethodSecurity // @PreAuthorize 어노테이션 사용 선언
+
+@RequiredArgsConstructor
 @EnableWebSecurity // 스프링 시큐리티 등등 기본적인 웹보안 활성화
 public class SecurityConfig {
+
     private final JwtAuthenticationEntryPoing jwtAuthenticationEntryPoing;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-
-
-    private JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Bean
     public AuthenticationManager authenticationManager(
@@ -55,7 +50,6 @@ public class SecurityConfig {
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoing)
                 .accessDeniedHandler(jwtAccessDeniedHandler)
-
         ;
 
         return httpSecurity.build();
