@@ -65,5 +65,11 @@ public class AddressController {
         addressService.setDefaultAddress(JwtToken.user(), defaultAddressId);
         return ApiUtils.success(HttpStatus.OK, "기본 주소가 변경되었습니다.", null);
     }
+
+    @Operation(summary = "주소 중복 확인", description = "내 배송지 리스트를 조회해 중복 검사를 시행합니다")
+    @GetMapping(value = "/duplication", headers = "X-API-VERSION=1")
+    public Response<Boolean> checkDuplicationAddress(String mapId) {
+        return ApiUtils.success(HttpStatus.OK, "카카오 mapId 중복 체크 검사 결과", addressService.checkDuplicationAddress(mapId));
+    }
 }
 

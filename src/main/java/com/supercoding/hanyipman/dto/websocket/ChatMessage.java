@@ -13,10 +13,12 @@ public class ChatMessage {
     private MessageType type;
     private String message;
     private String room;
+    private String userNickName;
 
-    public ChatMessage(MessageType type, String message) {
+    public ChatMessage(MessageType type, String message, String userNickName) {
         this.type = type;
         this.message = message;
+        this.userNickName = userNickName;
     }
 
 }
