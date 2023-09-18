@@ -1,6 +1,5 @@
 package com.supercoding.hanyipman.entity;
 
-import com.supercoding.hanyipman.dto.user.request.BuyerSignUpRequest;
 import lombok.*;
 
 import javax.persistence.*;
@@ -44,7 +43,7 @@ public class Buyer {
         }
     }
 
-    public static Buyer tobuyer(User user, BuyerSignUpRequest request, String file) {
+    public static Buyer toBuyer(User user, String file) {
         return Buyer.builder()
                 .user(user)
                 .profile(file)

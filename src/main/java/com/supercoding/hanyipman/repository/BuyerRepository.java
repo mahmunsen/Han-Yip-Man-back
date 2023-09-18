@@ -12,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface BuyerRepository extends JpaRepository<Buyer, Long> {
 
-    Buyer findByUser(User user);
+    Optional<Buyer> findByUser(User user);
 
     @Query("SELECT b from Buyer b JOIN fetch b.user u where u.id =:userId")
     Optional<Buyer> findBuyerByUserId(@Param("userId") Long userId);
