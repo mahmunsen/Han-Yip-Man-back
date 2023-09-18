@@ -93,13 +93,3 @@ configurations {
 compileQuerydsl {
     options.annotationProcessorPath = configurations.querydsl
 }
-
-def frontendDir = "$projectDir/src/main/frontend"
-processResources { dependsOn "copyReactBuildFiles" }
-
-
-
-task copyReactBuildFiles(type: Copy) {
-    from "$frontendDir"
-    into "$projectDir/src/main/resources/static"
-}
