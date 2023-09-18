@@ -21,6 +21,7 @@ public class ViewOrderDetailResponse {
     private String orderUid;
     private String createdAt;
     private String shopName;
+    private Long shopId; // 가게 아이디
     private String orderName; // 주문한 메뉴명
     private List<Map<String, Object>> orderMenus; // 메뉴들, 수량(첫번째) 가격(둘째) 옵션들 (셋째)
     private Integer defaultDeliveryPrice;
@@ -35,6 +36,7 @@ public class ViewOrderDetailResponse {
 
     public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop, List<Map<String, Object>> orderMenus, String orderName) throws ParseException {
         return ViewOrderDetailResponse.builder()
+                .shopId(shop.getId())
                 .shopName(shop.getName())
                 .orderName(orderName)
                 .orderMenus(orderMenus)

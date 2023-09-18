@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.controller.payment;
 
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.payment.request.kakaopay.KakaoPayCancelRequest;
 import com.supercoding.hanyipman.dto.payment.request.kakaopay.KakaoPayReadyRequest;
 import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
@@ -11,6 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -21,6 +23,7 @@ public class KakaoPayController {
 
     private final PaymentService paymentService;
 
+    @TimeTrace
     @Operation(summary= "(카카오페이) 단건결제준비 API ", description = "카카오서버에 정보전달하고 결제고유번호(TID) 받는 API")
     @PostMapping(path = "/ready", headers = "X-API-VERSION=1")
     public Response<Object> kakaoPayReady(@RequestBody KakaoPayReadyRequest kakaoPayReadyRequest) {
@@ -28,9 +31,7 @@ public class KakaoPayController {
         KakaoPayReadyResponse kakaoPayReadyResponse = paymentService.kakaopayReady(orderId, JwtToken.user());
         return ApiUtils.success(HttpStatus.OK.value(), "결제준비가 완료되었습니다.", kakaoPayReadyResponse);
     }
-
-
-
+    @TimeTrace
     @Operation(summary = "(카카오페이) 결제승인요청 API ", description = "approve_url")
     @GetMapping(path = "/approve/{order_id}")
     public Response<Object> kakaoPayApprove(@RequestParam String pg_token, @PathVariable(value = "order_id") Long orderId) {
@@ -39,6 +40,15 @@ public class KakaoPayController {
         return ApiUtils.success(HttpStatus.OK.value(), "결제가 완료되었습니다.", kakaoPayApproveResponse);
     }
 
+//    @TimeTrace
+//    @Operation(summary = "(카카오페이) 결제승인요청 API ", description = "approve_url")
+//    @GetMapping(path = "/approve/{order_id}")
+//    public Response<Object> kakaoPayApprove(@RequestParam String pg_token, @PathVariable(value = "order_id") Long orderId) {
+//        ResponseEntity<String> response  = paymentService.kakaopayApprove(pg_token, JwtToken.user(), orderId);
+//
+//        return ApiUtils.success(HttpStatus.OK.value(), "결제가 완료되었습니다.", response.getBody());
+//    }
+    @TimeTrace
     @Operation(summary = "(카카오페이) 결제진행중 취소", description = "cancel_url")
     @GetMapping(path = "/kakaoPayCancel/{order_id}")
     public Response<Object> kakaoPayCancel(@PathVariable(value = "order_id") Long orderId) {
@@ -57,8 +67,6 @@ public class KakaoPayController {
 
         return ApiUtils.success(HttpStatus.EXPECTATION_FAILED.value(), "결제가 실패하였습니다.", null);
     }
-
-
     @Operation(summary = "(카카오페이) 결제건 조회 API ", description = "결제건 상세정보 조회하는 API")
     @GetMapping(path = "/order/{tid}", headers = "X-API-VERSION=1")
     public Response<Object> kakaoPayViewPayment(@PathVariable("tid") String tid) {
@@ -67,7 +75,7 @@ public class KakaoPayController {
 
         return ApiUtils.success(HttpStatus.OK.value(), "결제내역 단건 조회에 성공하였습니다.", kakaoPayViewPayResponse);
     }
-
+    @TimeTrace
     @Operation(summary = "(카카오페이) 결제승인 후 결제취소 API ", description = "사용자가 결제된 건을 취소하는 API")
     @PostMapping(path = "/cancel", headers = "X-API-VERSION=1")
     public Response<Object> AfterkakaoPayCancelPayment(@RequestBody KakaoPayCancelRequest kakaoPayCancelRequest) {

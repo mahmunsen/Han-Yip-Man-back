@@ -10,6 +10,12 @@ plugins {
     id 'io.spring.dependency-management' version '1.0.15.RELEASE'
     id "com.ewerk.gradle.plugins.querydsl" version "1.0.10"
 }
+sourceSets {
+    main {
+        resources { srcDirs = ["$projectDir/src/main/resources"]
+        }
+    }
+}
 
 group = 'com.supercoding'
 version = '0.0.1-SNAPSHOT'
@@ -72,6 +78,7 @@ tasks.named('test') {
 }
 
 def querydslDir = "$buildDir/generated/querydsl"
+
 
 querydsl {
     jpa = true

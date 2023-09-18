@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.controller.payment;
 
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.payment.request.iamport.CancelPaymentRequest;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PostPaymentRequest;
 import com.supercoding.hanyipman.dto.payment.request.iamport.RegisterPaymentRequest;
@@ -25,7 +26,7 @@ public class IamportController {
 
     private final PaymentService paymentService;
 
-    /* todo 엑세스 토큰 */
+    /** 엑세스 토큰 */
     @Operation(summary = "(아임포트) 엑세스 토큰 API ", description = "아임포트로부터 엑세스 토큰을 발급받는 API")
     @PostMapping(path = "/getToken", headers = "X-API-VERSION=1")
     public Response<Object> getToken() {
@@ -33,7 +34,8 @@ public class IamportController {
         return ApiUtils.success(HttpStatus.OK.value(), "엑세스 토큰 발급에 성공했습니다. ", accessToken);
     }
 
-    /* todo 결제사전검증 (엑세스 토큰 발급과정 들어있음) */
+    /** 결제사전검증 (엑세스 토큰 발급과정 들어있음) */
+    @TimeTrace
     @Operation(summary = "(아임포트) 결제사전검증 API ", description = "아임포트에 결제번호와 결제예정금액을 사전에 등록하는 API")
     @PostMapping(path = "/prepare", headers = "X-API-VERSION=1")
     public Response<PaymentPrepareResponse> paymentPrepare(@RequestBody RegisterPaymentRequest registerPaymentRequest) {
@@ -49,6 +51,7 @@ public class IamportController {
         return ApiUtils.success(HttpStatus.OK.value(), "결제내역 단건조회에 성공하였습니다.", getOnePaymentResponse);
     }
 
+    @TimeTrace
     @Operation(summary = "(아임포트) 결제사후검증 API ", description = "(아임포트)실제결제된 금액과 (주문)결제예상금액이 맞는지 확인하는 API")
     @PostMapping(path = "/complete", headers = "X-API-VERSION=1")
     public Response<Object> verifyPayment(@RequestBody PostPaymentRequest postPaymentRequest) {
@@ -57,6 +60,7 @@ public class IamportController {
 
         return ApiUtils.success(HttpStatus.OK.value(), "결제사후검증에 성공하였습니다.", response.getBody());
     }
+    @TimeTrace
     @Operation(summary = "(아임포트) 승인 후 결제취소 API ", description = "승인된 결제를 취소/환불하는 API")
     @PostMapping(path = "/iamport/cancel", headers = "X-API-VERSION=1")
     public Response<Object> cancelPayment(@RequestBody CancelPaymentRequest cancelPaymentRequest) {
