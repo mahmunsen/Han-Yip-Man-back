@@ -9,26 +9,30 @@ import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.service.SseEventService;
 import com.supercoding.hanyipman.service.SseMessageService;
 import com.supercoding.hanyipman.utils.ApiUtils;
+import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@Api(tags = "Sse")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/sse")
 public class SseTestController {
     private final SseMessageService sseService;
 
-    @GetMapping
+    @Operation(summary = "서버 구독하기", description = "Sse 알림을 받기 위한 서버 구독URL")
+    @GetMapping(headers = "X-API-VERSION=1")
     public SseEmitter registerEmitter(@AuthenticationPrincipal CustomUserDetail auth)  {
         return sseService.registerSse(auth.getUserId());
     }
 
 
-    // TODO: sse 메시지 전송 예시 코드
-    @PostMapping
+    @Operation(summary = "서버 알림 테스트 URL", description = "Sse 알림을 테스트 하기 위한 URL")
+    @PostMapping(headers = "X-API-VERSION=1")
     public Response<?> sendMessage(
             @RequestBody SseTestRequest request,
             @AuthenticationPrincipal CustomUserDetail auth) {
