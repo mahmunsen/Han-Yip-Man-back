@@ -1,13 +1,18 @@
 package com.supercoding.hanyipman.controller;
 
+import org.springframework.boot.web.servlet.error.ErrorController;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 
 @Controller
-public class WebController {
+public class WebController implements ErrorController {
 
     @GetMapping("/{path:[^\\.]*}")
     public String forward() {
         return "forward:/";
+    }
+    @GetMapping({"/", "/error"})
+    public String getErrorPath() {
+        return "index.html";
     }
 }
