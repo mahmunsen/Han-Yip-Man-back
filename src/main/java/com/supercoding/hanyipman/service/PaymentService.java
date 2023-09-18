@@ -10,6 +10,7 @@ import com.supercoding.hanyipman.dto.payment.response.iamport.CancelPaymentRespo
 import com.supercoding.hanyipman.dto.payment.response.iamport.GetOnePaymentResponse;
 import com.supercoding.hanyipman.dto.payment.response.iamport.PaymentPrepareResponse;
 import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
+import com.supercoding.hanyipman.dto.vo.SendSseResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.enums.OrderStatus;
@@ -18,7 +19,6 @@ import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
-import com.supercoding.hanyipman.security.JwtToken;
 import org.springframework.beans.factory.annotation.Value;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
 import com.supercoding.hanyipman.error.CustomException;
@@ -53,7 +53,7 @@ public class PaymentService {
     private final CartRepository cartRepository;
     private final RestTemplate restTemplate;
     private final OrderService orderService;
-    private final SseService sseService;
+    private final SseMessageService sseService;
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
 
@@ -199,7 +199,7 @@ public class PaymentService {
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
             //주문 알림 기능
             OrderNoticeResponse orderNoticeResponse = orderService.findOrder(user.getId(), order.getId());
-            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, orderNoticeResponse);
+            sseService.sendSse(SendSseResponse.of(user.getId(), orderNoticeResponse));
 
             return ResponseEntity.ok("결제가 성공했습니다.");
         } else {
@@ -360,7 +360,7 @@ public class PaymentService {
             orderRepository.save(order);
 
             OrderNoticeResponse sseOrderResponse = orderService.findOrder(user.getId(), order.getId());
-            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, sseOrderResponse);
+            sseService.sendSse(SendSseResponse.of(user.getId(), sseOrderResponse));
 
             return kakaoPayApproveResponse.getBody();
         } else {
