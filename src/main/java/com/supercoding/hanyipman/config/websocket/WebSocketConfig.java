@@ -10,7 +10,7 @@ public class WebSocketConfig  {
     @Bean
     public SocketIOServer socketIOServer() {
         com.corundumstudio.socketio.Configuration config = new com.corundumstudio.socketio.Configuration();
-        config.setHostname("localhost");
+        config.setHostname("54.180.103.214");
         config.setPort(8088); // 포트를 필요에 따라 수정
 
         return new SocketIOServer(config);
