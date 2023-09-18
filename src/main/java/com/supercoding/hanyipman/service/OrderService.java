@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.cache.CacheKeyGenerator;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
@@ -18,6 +19,7 @@ import com.supercoding.hanyipman.repository.order.OrderRepository;
 import com.supercoding.hanyipman.security.UserRole;
 import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -216,15 +218,18 @@ public class OrderService {
 
     private void isSameSellerIdAndOrderShopSellerId(Order order, Seller seller) {
         // TODO: 최적화 가능
-        if(!order.getShop().getSeller().getId().equals(seller.getId())) throw new CustomException(OrderErrorCode.NOT_SAME_SHOP_SELLER);
+        if (!order.getShop().getSeller().getId().equals(seller.getId()))
+            throw new CustomException(OrderErrorCode.NOT_SAME_SHOP_SELLER);
     }
 
     private User findUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
     }
 
-    // 결제된 이후 해당 주문건 상세페이지 조회
-    @TimeTrace
+    /**
+     * 결제된 이후 해당 주문건 상세페이지 조회
+     */
+//    @Cacheable(value = "viewOrderDetail", keyGenerator = "cacheKeyGenerator")
     @Transactional
     public ViewOrderDetailResponse viewOrderDetail(User user, Long orderId) throws ParseException {
         // 해당 주문건의 소비자
