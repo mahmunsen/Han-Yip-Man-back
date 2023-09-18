@@ -74,7 +74,7 @@ public class UserService {
 
         User user = User.toBuyerSignup(request, encodingPassword);
         userRepository.save(user);
-        Buyer buyer = Buyer.tobuyer(user, uploadImageFile(file, user));
+        Buyer buyer = Buyer.toBuyer(user, uploadImageFile(file, user));
         Buyer savedBuyUser = buyerRepository.save(buyer);
         Address address = Address.toBuyerAddress(request, savedBuyUser);
         addressRepository.save(address);

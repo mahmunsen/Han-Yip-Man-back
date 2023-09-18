@@ -79,7 +79,7 @@ public class KakaoOauthService {
                         String encodingPassword = passwordEncoder.encode(userId);
                         User user = User.kakaoBuyerSignup(userInfo, encodingPassword);
                         userRepository.save(user);
-                        Buyer buyer = Buyer.tobuyer(user, profileImage);
+                        Buyer buyer = Buyer.toBuyer(user, profileImage);
                         buyerRepository.save(buyer);
                         System.out.println(nickname + "카카오 회원가입 성공");
 
