@@ -27,6 +27,7 @@ import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,7 +67,9 @@ public class PaymentService {
     @Value("${kakaopay_key}")
     private String kakaoKey;
 
-    /* todo 1. (아임포트) 토큰 발급 받기 (yml의 api_key, api_secret) */
+    /**
+     * 1. (아임포트) 토큰 발급 받기 (yml의 api_key, api_secret)
+     */
 
     public String getToken() {
         // 헤더
@@ -92,8 +95,9 @@ public class PaymentService {
         }
     }
 
-    /* todo 2.  (아임포트) 결제사전검증 (토큰 입력 없음) */
-    @TimeTrace
+    /**
+     * 2.  (아임포트) 결제사전검증 (토큰 입력 없음)
+     */
     @Transactional
     public PaymentPrepareResponse paymentPrepare(User user, Long orderId) {
         // 엑세스 토큰
@@ -131,7 +135,9 @@ public class PaymentService {
         }
     }
 
-    /* todo 3. (아임포트) 결제내역 단건 조회 */
+    /**
+     * 3. (아임포트) 결제내역 단건 조회
+     */
 
     public GetOnePaymentResponse paymentInfo(String imp_uid) {
         // 엑세스 토큰
@@ -153,7 +159,9 @@ public class PaymentService {
         }
     }
 
-    /* todo 4. (아임포트) 결제사후검증, 결제가 성공이어야만 주문접수가 된다 */
+    /**
+     * 4. (아임포트) 결제사후검증, 결제가 성공이어야만 주문접수가 된다
+     */
     @Transactional
     public ResponseEntity<String> verifyPayment(PostPaymentRequest postPaymentRequest, User user) {
         // Req 에서 추출한 merchant_uid, imp_uid  -> merchant_uid 디비에서 불러오는 것으로 변경됨
@@ -207,10 +215,12 @@ public class PaymentService {
         }
     }
 
-    /* todo 5. (아임포트) 결제취소 (사용자의 요청에 의한 전체 취소)
+    /**
+     * 5. (아임포트) 결제취소 (사용자의 요청에 의한 전체 취소)
      * 클라이언트에서 받은 주문번호(merchant_uid)를 사용해서 해당 주문의 결제정보를 Payments 테이블에서 조회
      * 아임포트 취소 API 를 호출하여 결제 취소를 요청
-     * */
+     */
+    @CacheEvict(value = "viewOrderDetail", allEntries = true)
     @Transactional
     public CancelPaymentResponse cancelPayment(CancelPaymentRequest cancelPaymentRequest, User user) {
         // imp_uid, merchant_uid: cancelPaymentReq -> payment db 에서 가져오기
@@ -263,7 +273,9 @@ public class PaymentService {
 
 
 
-    /* todo 1. (카카오페이) 결제준비 */
+    /**
+     * 1. (카카오페이) 결제준비
+     */
     @Transactional
     public KakaoPayReadyResponse kakaopayReady(Long orderId, User user) {
         Buyer buyer = getBuyer(user);
@@ -291,7 +303,7 @@ public class PaymentService {
         params.add("cid", "TC0ONETIME");
         params.add("partner_order_id", merchant_uid);
         params.add("partner_user_id", orderId);
-        params.add("item_name", orderName); // todo 추후 수정, 예시
+        params.add("item_name", orderName);
         params.add("quantity", 1);
         params.add("total_amount", order.getTotalPrice());
         params.add("tax_free_amount", 0);
@@ -308,7 +320,6 @@ public class PaymentService {
             kakaoPayReadyResponse.getBody().setMerchant_uid(merchant_uid);
             // 해당 주문건 매장의 업주
             Seller seller = getSeller(order);
-
             // 해당 결제건 여부
             isPaymentExistent(order);
             // 결제사전준비에서 payment 새로 생성 (tid 저장)
@@ -320,7 +331,9 @@ public class PaymentService {
     }
 
 
-    /* todo 2. (카카오페이) 결제승인요청 */
+    /**
+     * 2. (카카오페이) 결제승인요청
+     */
     @Transactional
     public KakaoPayApproveResponse kakaopayApprove(String pgToken, User user, Long orderId) {
         // 필요 파라미터들
@@ -335,10 +348,8 @@ public class PaymentService {
         checkPaymentStatus(payment);
 
         RestTemplate kakaoTemplate = new RestTemplate();
-
         // 카카오서버로 요청할 헤더
         HttpHeaders headers = setKakaoHeader();
-
         // 카카오서버로 요청할 바디
         MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
         params.add("cid", "TC0ONETIME");
@@ -368,7 +379,58 @@ public class PaymentService {
         }
     }
 
-    /* todo 3. (카카오페이) 결제내역 단건조회 */
+//    /**
+//     * 2. (카카오페이) 결제승인요청
+//     */
+//    @Transactional
+//    public ResponseEntity<String> kakaopayApprove(String pgToken, User user, Long orderId) {
+//        // 필요 파라미터들
+//        Order order = isOrderValid(user, orderId);
+//        Payment payment = getPayment(orderId);
+//        String tid = payment.getImpUid();
+//        String merchant_uid = payment.getMerchantUid();
+//
+//        // 해당 주문건의 상태값에 따른 처리
+//        checkOrderStatus(order);
+//        // 해당 결제건의 상태값에 따른 처리: 상태값이 "ready" 여야한다. "ready"가 아닌 경우 에러
+//        checkPaymentStatus(payment);
+//
+//        RestTemplate kakaoTemplate = new RestTemplate();
+//        // 카카오서버로 요청할 헤더
+//        HttpHeaders headers = setKakaoHeader();
+//        // 카카오서버로 요청할 바디
+//        MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
+//        params.add("cid", "TC0ONETIME");
+//        params.add("tid", tid);
+//        params.add("partner_order_id", merchant_uid);
+//        params.add("partner_user_id", orderId);
+//        params.add("pg_token", pgToken);
+//        params.add("total_amount", order.getTotalPrice()); // 필수는 아님
+//
+//        HttpEntity<?> httpEntity = new HttpEntity<>(params, headers);
+//
+//        ResponseEntity<KakaoPayApproveResponse> kakaoPayApproveResponse = kakaoTemplate.exchange(KAKAOPAY_BASE_URL + "/v1/payment/approve", HttpMethod.POST, httpEntity, KakaoPayApproveResponse.class);
+//
+//        if (kakaoPayApproveResponse.getStatusCode() == HttpStatus.OK && kakaoPayApproveResponse != null) {
+//            // 결제내역 디비에 저장
+//            order.setOrderStatus(OrderStatus.valueOf("PAID"));
+//            payment.setPaymentStatus("paid");
+//            paymentRepository.save(payment);
+//            orderRepository.save(order);
+//
+////            OrderNoticeResponse sseOrderResponse = orderService.findOrder(user.getId(), order.getId());
+////            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, sseOrderResponse);
+//
+//            return ResponseEntity.ok("결제가 성공했습니다.");
+//        } else {
+//            throw new CustomException(PaymentErrorCode.KAKAOPAY_API_COMMUNICATION_ERROR);
+//        }
+//    }
+
+
+    /**
+     * 3. (카카오페이) 결제내역 단건조회
+     */
     public KakaoPayViewPayResponse kakaopayViewOnePayment(String tid) {
 
         RestTemplate kakaoTemplate = new RestTemplate();
@@ -392,7 +454,10 @@ public class PaymentService {
         }
     }
 
-    /* todo 4. (카카오페이) 결제건 취소 */
+    /**
+     * 4. (카카오페이) 결제건 취소
+     */
+    @CacheEvict(value = "viewOrderDetail", allEntries = true)
     @Transactional
     public KakaoPayCancelResponse afterKakaoPayCancel(KakaoPayCancelRequest kakaoPayCancelRequest, User user) {
         // 주문번호
@@ -437,8 +502,10 @@ public class PaymentService {
     }
 
 
-    /* todo 5. (카카오페이) 결제중 취소 및 실패 */
-    //  결제중 취소할 때는 order, isDeleted 해주고 CANCELED, 장바구니 isDeleted = false로 바꿔주기
+    /**
+     * 5. (카카오페이) 결제중 취소 및 실패
+     */
+    //  결제중 취소할 때는 order, isDeleted = true 해주고 CANCELED, 장바구니 isDeleted = false로 바꿔주기
     @Transactional
     public void kakaoPayCancelOrFail(Long orderId) {
         Payment payment = getPayment(orderId);
@@ -458,37 +525,38 @@ public class PaymentService {
 
 
 
-    /* todo 외부 메소드: 결제건 */
+    // 외부 메소드: 결제건
     private Payment getPayment(Long orderId) {
         Payment payment = paymentRepository.findPaymentByOrderId(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
         return payment;
     }
 
-    /* todo 외부 메소드: 소비자와 주문건의 소비자의 일치여부 */
+    // 외부 메소드: 소비자와 주문건의 소비자의 일치여부
     private static void isBuyerAndOrderBuyerSame(Buyer buyer, Order order) {
         if (!(order.getBuyer().getId() == buyer.getId())) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
         }
     }
-    /* todo 외부 메소드: 주문건 */
+
+    // 외부 메소드: 주문건
     private Order getOrder(Long orderId) {
         Order order = orderRepository.findOrderByIdAndIsDeletedFalse(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NO_ORDER));
         return order;
     }
 
-    /* todo 외부 메소드: 소비자 */
+    // 외부 메소드: 소비자
     private Buyer getBuyer(User user) {
         Buyer buyer = buyerRepository.findBuyerByUserId(user.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_NOT_BUYER));
         return buyer;
     }
 
-    /* todo 외부 메소드: 사장님 */
+    // 외부 메소드: 사장님
     private Seller getSeller(Order order) {
         Seller seller = orderRepository.findSellerByShopId(order.getShop().getId()).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
         return seller;
     }
 
-    /* todo 외부 메소드: isOrderValid */
+    // 외부 메소드: isOrderValid
     private Order isOrderValid(User user, Long orderId) {
         Buyer buyer = getBuyer(user);
         Order order = getOrder(orderId);
@@ -498,7 +566,7 @@ public class PaymentService {
         } else throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER);
     }
 
-    /* todo 외부 메소드: 결제건 여부 체크 */
+    // 외부 메소드: 결제건 여부 체크
     private void isPaymentExistent(Order order) {
         Optional<Payment> optionalPayment = paymentRepository.findPaymentByOrderId(order.getId());
         if (optionalPayment.isPresent()) {
@@ -508,7 +576,7 @@ public class PaymentService {
         }
     }
 
-    /* todo 외부 메소드: 주문의 상태값 체크 (결제준비, 결제승인일 경우) */
+    // 외부 메소드: 주문의 상태값 체크 (결제준비, 결제승인일 경우)
     private static void checkOrderStatus(Order order) throws CustomException {
         if (order.getOrderStatus().equals("PAID")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_PAID);
@@ -520,10 +588,12 @@ public class PaymentService {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_IN_DELIVERY);
         } else if (order.getOrderStatus().equals("COMPLETE")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_COMPLETED);
+        } else if (order.getOrderStatus().equals("COOKING")) {
+            throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_COOKING);
         }
     }
 
-    /* todo 외부 메소드: 결제의 상태값 체크 (결제준비, 결제승인일 경우) */
+    // 외부 메소드: 결제의 상태값 체크 (결제준비, 결제승인일 경우)
     private static void checkPaymentStatus(Payment payment) {
         if (payment.getPaymentStatus().equals("paid")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_ALREADY_PAID);
@@ -533,7 +603,7 @@ public class PaymentService {
     }
 
 
-    /* todo 외부 메소드: 주문의 상태값 체크 (결제후 취소일 경우) */
+    // 외부 메소드: 주문의 상태값 체크 (결제후 취소일 경우)
     private static void checkOrderStatusAfterPay(Order order) throws CustomException {
         if (order.getOrderStatus().equals("WAIT")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND);
@@ -548,7 +618,7 @@ public class PaymentService {
         }
     }
 
-    /* todo 외부 메소드: 결제의 상태값 체크 (결제후 취소일 경우) */
+    // 외부 메소드: 결제의 상태값 체크 (결제후 취소일 경우)
     private static void checkPaymentStatusAfterPay(Payment payment) {
         if (payment.getPaymentStatus().equals("ready")) {
             throw new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND);
@@ -557,7 +627,7 @@ public class PaymentService {
         }
     }
 
-    /* todo 외부 메소드: (아임포트) HttpHeaders 셋팅 */
+    // 외부 메소드: (아임포트) HttpHeaders 셋팅
     private static HttpHeaders setHttpHeaders(String access_token) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.MULTIPART_FORM_DATA);
@@ -565,7 +635,7 @@ public class PaymentService {
         return headers;
     }
 
-    /* todo 외부 메소드: (카카오서버) HttpHeaders 셋팅 */
+    // 외부 메소드: (카카오서버) HttpHeaders 셋팅
     private HttpHeaders setKakaoHeader() {
         HttpHeaders headers = new HttpHeaders();
         headers.add("Authorization", " KakaoAK " + kakaoKey);
@@ -574,7 +644,7 @@ public class PaymentService {
         return headers;
     }
 
-    /* todo 외부 메소드: 해당 주문건의 카트들 */
+    // 외부 메소드: 해당 주문건의 카트들
     private List<Cart> getCarts(Long buyerId, Long orderId) {
         List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyerId, orderId);
         if (carts.isEmpty()) {
@@ -583,13 +653,13 @@ public class PaymentService {
         return carts;
     }
 
-    /* todo 외부 메소드: 주문명 */
+    // 외부 메소드: 주문명
     private static String getOrderName(List<Cart> carts, List<String> menuNames) {
         String orderName = IntStream.range(0, menuNames.size()).mapToObj(i -> (i == 0 ? menuNames.get(i) + " " + carts.get(i).getAmount() + "개" : "외 " + carts.stream().skip(1).mapToInt(cart -> cart.getAmount().intValue()).sum() + "개")).collect(Collectors.joining(" "));
         return orderName;
     }
 
-    /* todo 외부 메소드: 결제중 취소/실패 */
+    // 외부 메소드: 결제중 취소/실패
     private void paymentFailed(Long orderId, Order order) {
         // 주문건 상태값 변경
         order.setOrderStatus(OrderStatus.valueOf("CANCELED"));
