@@ -60,6 +60,6 @@ kakaopay_key: ENC(YSfTSGO2d2UxBQbv19QK5oF8irUUvhGHewBI9b+Ykn+wF8dVKHegr5vbBxrFAB
 
 #kakaoLogin
 kakao:
-  kakaoClientId: ENC(oL+d4FpRSgx20yyefg+dNGRs4s7xBSnzKJfZfpCej4uh5GrQ5DlWub/pnyOfgNoh)
-  kakaoSecretKey: ENC(F2kDtKjgeBKl9YV/i54HBIUJaUlGgG4J1fFMr71aT+3OgXp+Synbjqr5yqosM3bl)
-  kakaoRedirectUri: ENC(plR3M1YzATx6aQ+yyoRd6222Gq2bzpOxTcupLEZnKg8DfUE505J0MUtIdQd7gj/EN5WmolVUfb8=)
+  kakaoClientId: ENC(OB9U0A27oaPwtte/lz10qAz7gGWSbdQ+qU6UC3G3KqBNM5/PpchAXfqVNKVKk5nd)
+  kakaoSecretKey: ENC(H0tDdKNAAFMRuOWdbGk/d+rXjymMFapD+xvEohma012Wn7EnHc/VsnzZ1lp6MijV)
+  kakaoRedirectUri: ENC(au1nyEK2fTt2HPnIVtujfhTdIVFXVMs8kRkaLMiT9xxUPZg3W1n246XxfOiPPHaE26hopNYCq1E=)

@@ -43,7 +43,7 @@ public class Buyer {
         }
     }
 
-    public static Buyer tobuyer(User user, String file) {
+    public static Buyer toBuyer(User user, String file) {
         return Buyer.builder()
                 .user(user)
                 .profile(file)
