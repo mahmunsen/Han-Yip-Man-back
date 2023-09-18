@@ -25,8 +25,10 @@ public class KakaoController {
     private String kakaoClientId;
     @Value("${kakao.kakaoSecretKey}")
     private String kakaoSecretKey;
-    @Value("${kakao.kakaoRedirectUri}")
-    private String kakaoRedirectUri;
+//    @Value("${kakao.kakaoRedirectUri}")
+//    private String kakaoRedirectUri;
+    private String kakaoRedirectUri = "http://54.180.103.214:8080/auth/kakao";
+
 
     private final KakaoOauthService kakaoOauthService;
 
