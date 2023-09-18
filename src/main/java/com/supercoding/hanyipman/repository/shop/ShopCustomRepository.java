@@ -9,4 +9,6 @@ public interface ShopCustomRepository {
 
     Boolean existShopNameBySeller(String shopName, Long sellerId);
 
+    Boolean checkRegisterShopSellerByOption(Long optionId, Long sellerId);
+
 }
