@@ -21,6 +21,9 @@ import java.util.List;
 import static com.querydsl.core.types.dsl.Expressions.numberTemplate;
 import static com.supercoding.hanyipman.entity.QShop.shop;
 import static com.supercoding.hanyipman.entity.QReview.review;
+import static com.supercoding.hanyipman.entity.QMenuGroup.menuGroup;
+import static com.supercoding.hanyipman.entity.QMenu.menu;
+import static com.supercoding.hanyipman.entity.QOption.option;
 
 @Repository
 @RequiredArgsConstructor
@@ -104,6 +107,22 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                 .from(shop)
                 .where(
                         shop.name.eq(shopName),
+                        shop.seller.id.eq(sellerId)
+                )
+                .fetchFirst();
+        return fetchOne != null;
+    }
+
+    @Override
+    public Boolean checkRegisterShopSellerByOption(Long optionId, Long sellerId) {
+        Integer fetchOne = jpaQueryFactory
+                .selectOne()
+                .from(shop)
+                .join(shop.menuGroups, menuGroup)
+                .join(menuGroup.menus, menu)
+                .join(menu.options, option)
+                .where(
+                        option.id.eq(optionId),
                         shop.seller.id.eq(sellerId)
                 )
                 .fetchFirst();
