@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,7 +48,7 @@ public class AddressService {
     public List<AddressListResponse> getAddressList(User user) {
 //        buyerRepository.findByUser(user).getId();
 //        addressRepository.findAllByGetAddressList(user);
-        Buyer byUser = buyerRepository.findByUser(user);
+        Buyer byUser = buyerRepository.findByUser(user).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
 
         addressRepository.findAllByBuyer(byUser);
 
