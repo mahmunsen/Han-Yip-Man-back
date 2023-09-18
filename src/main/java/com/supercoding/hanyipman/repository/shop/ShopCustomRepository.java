@@ -11,4 +11,5 @@ public interface ShopCustomRepository {
 
     Boolean checkRegisterShopSellerByOption(Long optionId, Long sellerId);
 
+    Boolean checkRegisterShopSellerByOptionItem(Long optionItemId, Long sellerId);
 }

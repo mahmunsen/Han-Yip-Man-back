@@ -46,5 +46,20 @@ public class OptionController {
         return ApiUtils.success(HttpStatus.CREATED, "옵션 아이템 등록 성공", null);
     }
 
+    @Operation(summary = "옵션 아이템 수정", description = "옵션 아이템 정보를 입력하여 옵션 아이템 레코드를 수정합니다.")
+    @PutMapping(value = "option-items/{option_item_id}", headers = "X-API-VERSION=1")
+    public Response<Void> changeOptionItem(@PathVariable("option_item_id") Long optionItemId,
+                                           @RequestBody RegisterOptionItemRequest registerOptionItemRequest) {
+        optionService.changeOptionItem(registerOptionItemRequest, optionItemId);
+        return ApiUtils.success(HttpStatus.OK, "옵션 아이템 수정 성공", null);
+    }
+
+    @Operation(summary = "옵션 아이템이 속한 옵션 변경", description = "새로 속할 옵션과 변경할 옵션 아이템의 정보를 입력하여 옵션 아이템이 속한 옵션을 변경합니다.")
+    @PatchMapping(value = "option-items/{option_item_id}", headers = "X-API-VERSION=1")
+    public Response<Void> changeOptionItemByOption(@PathVariable("option_item_id") Long optionItemId,
+                                                   @RequestParam Long optionId) {
+        optionService.changeOptionItemByOption(optionItemId, optionId);
+        return ApiUtils.success(HttpStatus.OK, "옵션 아이템 수정 성공", null);
+    }
 
 }
