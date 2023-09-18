@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 public class KakaoController {
 
     @Value("${kakao.kakaoClientId}")
@@ -36,12 +36,11 @@ public class KakaoController {
     }
 
 
-    @Operation(summary = "카카오로그인", description = "회원이 소셜 로그인을 마치면 자동으로 실행되는 API입니다. 인가 코드를 이용해 토큰을 받고, 해당 토큰으로 사용자 정보를 조회합니다. 사용자 정보를 이용하여 서비스에 회원가입합니다.")
-    @GetMapping(value = "/kakao/callback")
+    @Operation(summary = "카카오로그인", description = "인가 코드를 이용해 토큰을 받고, 해당 토큰으로 사용자 정보를 조회합니다. 사용자 정보를 이용하여 서비스에 로그인 및 회원가입합니다.")
+    @GetMapping(value = "/kakao/login")
     public Response<LoginResponse> kakaoOauth(@RequestParam("code") String code) {
         LoginResponse loginResponse = kakaoOauthService.kakaoLoginOauth(code);
         return ApiUtils.success(HttpStatus.OK, loginResponse.getNickname() + " 카카오로그인 성공", loginResponse);
-
     }
 
 }
