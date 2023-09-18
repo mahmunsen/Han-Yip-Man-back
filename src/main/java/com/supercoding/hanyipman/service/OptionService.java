@@ -91,6 +91,17 @@ public class OptionService {
         optionRepository.save(newOption);
     }
 
+    @Transactional
+    public void deleteOption(Long optionId) {
+
+        Seller seller = JwtToken.user().validSeller();
+        Option option = validOption(optionId);
+        checkShopRegisterOption(optionId, seller.getId());
+        option.setDeleted(true);
+        optionRepository.save(option);
+
+    }
+
     public void changeOptionItemByOption(Long optionItemId, Long optionId) {
 
         Seller seller = JwtToken.user().validSeller();
@@ -114,12 +125,12 @@ public class OptionService {
     }
 
     private void checkShopRegisterOption(Long optionId, Long sellerId) {
-        if (!shopCustomRepository.checkRegisterShopSellerByOption(optionId, sellerId))
+        if (Boolean.FALSE.equals(shopCustomRepository.checkRegisterShopSellerByOption(optionId, sellerId)))
             throw new CustomException(ShopErrorCode.DIFFERENT_SELLER);
     }
 
     private void checkShopRegisterOptionItem(Long optionItemId, Long sellerId) {
-        if (!shopCustomRepository.checkRegisterShopSellerByOptionItem(optionItemId, sellerId))
+        if (Boolean.FALSE.equals(shopCustomRepository.checkRegisterShopSellerByOptionItem(optionItemId, sellerId)))
             throw new CustomException(ShopErrorCode.DIFFERENT_SELLER);
     }
 }

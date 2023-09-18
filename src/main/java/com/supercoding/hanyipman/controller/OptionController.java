@@ -13,6 +13,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.Path;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/seller-shops/options")
@@ -60,6 +62,13 @@ public class OptionController {
                                                    @RequestParam Long optionId) {
         optionService.changeOptionItemByOption(optionItemId, optionId);
         return ApiUtils.success(HttpStatus.OK, "옵션 아이템 수정 성공", null);
+    }
+
+    @Operation(summary = "옵션 제거", description = "옵션과 하위 옵션 아이템들을 제거합니다")
+    @DeleteMapping(value = "/{option_id}", headers = "X-API-VERSION=1")
+    public Response<Void> deleteOption(@PathVariable("option_id") Long optionId) {
+        optionService.deleteOption(optionId);
+        return ApiUtils.success(HttpStatus.OK, "옵션 삭제 성공", null);
     }
 
 }
