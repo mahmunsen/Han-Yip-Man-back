@@ -102,6 +102,15 @@ public class OptionService {
 
     }
 
+    @Transactional
+    public void deleteOptionItem(Long optionItemId) {
+        Seller seller = JwtToken.user().validSeller();
+        OptionItem optionItem = validOptionItem(optionItemId);
+        checkShopRegisterOptionItem(optionItemId, seller.getId());
+        optionItem.setIsDeleted(true);
+        optionItemRepository.save(optionItem);
+    }
+
     public void changeOptionItemByOption(Long optionItemId, Long optionId) {
 
         Seller seller = JwtToken.user().validSeller();

@@ -27,7 +27,7 @@ public class OptionController {
     @Operation(summary = "옵션 신규 등록", description = "옵션 정보를 입력하여 옵션 레코드를 생성합니다.")
     @PostMapping(value = "/menus/{menu_id}", headers = "X-API-VERSION=1")
     public Response<Void> registerOption(@PathVariable(value = "menu_id") Long menuId,
-                                            @RequestBody RegisterOptionRequest registerOptionRequest) {
+                                         @RequestBody RegisterOptionRequest registerOptionRequest) {
         optionService.registerOption(registerOptionRequest, menuId);
         return ApiUtils.success(HttpStatus.CREATED, "옵션 등록 성공", null);
     }
@@ -35,7 +35,7 @@ public class OptionController {
     @Operation(summary = "옵션 수정", description = "옵션 정보를 입력하여 옵션 레코드를 수정합니다.")
     @PutMapping(value = "/{option_id}", headers = "X-API-VERSION=1")
     public Response<Void> changeOptionName(@PathVariable(value = "option_id") Long optionId,
-                                            @RequestBody RegisterOptionRequest registerOptionRequest) {
+                                           @RequestBody RegisterOptionRequest registerOptionRequest) {
         optionService.changeOption(registerOptionRequest, optionId);
         return ApiUtils.success(HttpStatus.OK, "옵션 수정 성공", null);
     }
@@ -71,4 +71,10 @@ public class OptionController {
         return ApiUtils.success(HttpStatus.OK, "옵션 삭제 성공", null);
     }
 
+    @Operation(summary = "옵션 아이템 제거", description = "옵션 아이템을 제거합니다")
+    @DeleteMapping(value = "/option-items/{option_item_value}", headers = "X-API-VERSION=1")
+    public Response<Void> deleteOptionItem(@PathVariable(value = "option_item_value")Long optionItemValue) {
+        optionService.deleteOptionItem(optionItemValue);
+        return ApiUtils.success(HttpStatus.OK, "옵션 아이템 삭제 성공", null);
+    }
 }
