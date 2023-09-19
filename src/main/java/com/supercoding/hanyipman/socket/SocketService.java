@@ -21,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -57,7 +59,9 @@ public class SocketService {
             String userEmail = jwtTokenProvider.getUserEmail(token);
             User user = validateUser(userEmail);
             Order order = validateOrder(Long.valueOf(room.substring(5)));
-            OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId());
+            String storeName = order.getShop().getName();
+            String orderMenuName = order.getCarts().stream().max(Comparator.comparingInt(cart -> cart.getMenu().getPrice())).map(cart->cart.getMenu().getName()).orElse("메뉴명");
+            OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, orderMenuName);
             if (!order.getOrderStatus().equals(OrderStatus.CANCELED)) {
                 changeOrderStatus(order, orderStatus, user.getId());
             } else {
