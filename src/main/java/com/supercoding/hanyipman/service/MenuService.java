@@ -5,13 +5,11 @@ import com.supercoding.hanyipman.dto.Shop.seller.response.MenuResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.FilePath;
 import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.FileErrorCode;
-import com.supercoding.hanyipman.error.domain.MenuGroupErrorCode;
-import com.supercoding.hanyipman.error.domain.SellerErrorCode;
-import com.supercoding.hanyipman.error.domain.ShopErrorCode;
+import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.MenuGroupRepository;
 import com.supercoding.hanyipman.repository.MenuRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
+import com.supercoding.hanyipman.repository.shop.ShopCustomRepositoryImpl;
 import com.supercoding.hanyipman.security.JwtToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +30,7 @@ public class MenuService {
     private final MenuRepository menuRepository;
     private final AwsS3Service awsS3Service;
     private final SellerRepository sellerRepository;
+    private final ShopCustomRepositoryImpl shopCustomRepository;
 
 
     @Transactional
@@ -74,6 +73,62 @@ public class MenuService {
         return menus.stream().map(MenuResponse::from).collect(Collectors.toList());
     }
 
+    public void changeThumbnail(MultipartFile thumbnailImage, Long menuId) {
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+
+        String newThumbnailUrl = updateImageFile(thumbnailImage, menu, menu.getImageUrl());
+        menu.setImageUrl(newThumbnailUrl);
+        menuRepository.save(menu);
+    }
+
+    public void changeName(String name, Long menuId) {
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+
+        menu.setName(name);
+        menuRepository.save(menu);
+    }
+
+    public void changePrice(Integer price, Long menuId) {
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+
+        menu.setPrice(price);
+        menuRepository.save(menu);
+    }
+
+    public void changeDescription(String description, Long menuId) {
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+
+        menu.setDescription(description);
+        menuRepository.save(menu);
+    }
+
+    public void changeMenuGroup(Long menuGroupId, Long menuId) {
+
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        MenuGroup menuGroup = validMenuGroup(menuGroupId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+        menu.setMenuGroup(menuGroup);
+        menuRepository.save(menu);
+    }
+
+    @Transactional
+    public void deleteMenu(Long menuId) {
+        Seller seller = JwtToken.user().validSeller();
+        Menu menu = validMenu(menuId);
+        shopCustomRepository.checkRegisterShopSellerByMenu(menuId, seller.getId());
+        menu.setDeleted(true);
+    }
+
+
     private MenuGroup validMenuGroup(Long menuGroupId) {
         return menuGroupRepository.findByIdAndIsDeletedFalse(menuGroupId).orElseThrow(() -> new CustomException(MenuGroupErrorCode.NOT_FOUND_MENU_GROUP));
     }
@@ -82,10 +137,27 @@ public class MenuService {
         return sellerRepository.findByUser(user).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
     }
 
+    private Menu validMenu(Long menuId) {
+        return menuRepository.findByMenuIsDeletedFalse(menuId).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
+    }
+
     private String uploadImageFile(MultipartFile multipartFile, Menu menu) {
         String uniqueIdentifier = UUID.randomUUID().toString();
         try {
             if (multipartFile != null) {
+                return awsS3Service.uploadImage(multipartFile, FilePath.MENU_DIR.getPath() + menu.getId() + "/" + uniqueIdentifier);
+            }
+        }catch (IOException e) {
+            throw new CustomException(FileErrorCode.FILE_UPLOAD_FAILED);
+        }
+        return null;
+    }
+
+    private String updateImageFile(MultipartFile multipartFile, Menu menu, String originUrl) {
+        String uniqueIdentifier = UUID.randomUUID().toString();
+        try {
+            if (multipartFile != null) {
+                awsS3Service.removeFile(originUrl);
                 return awsS3Service.uploadImage(multipartFile, FilePath.MENU_DIR.getPath() + menu.getId() + "/" + uniqueIdentifier);
             }
         }catch (IOException e) {

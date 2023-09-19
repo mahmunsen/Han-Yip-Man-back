@@ -115,6 +115,21 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
     }
 
     @Override
+    public Boolean checkRegisterShopSellerByMenu(Long menuId, Long sellerId) {
+        Integer fetchOne = jpaQueryFactory
+                .selectOne()
+                .from(shop)
+                .join(shop.menuGroups, menuGroup)
+                .join(menuGroup.menus, menu)
+                .where(
+                        menu.id.eq(menuId),
+                        shop.seller.id.eq(sellerId)
+                )
+                .fetchFirst();
+        return fetchOne != null;
+    }
+
+    @Override
     public Boolean checkRegisterShopSellerByOption(Long optionId, Long sellerId) {
         Integer fetchOne = jpaQueryFactory
                 .selectOne()
