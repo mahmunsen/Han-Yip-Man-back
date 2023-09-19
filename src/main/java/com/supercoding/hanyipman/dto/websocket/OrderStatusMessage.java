@@ -17,6 +17,7 @@ public class OrderStatusMessage {
     private String message;
     private String storeName;
     private String orderMenuName;
+    private Integer orderPosition;
 
 
     public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId, String storeName, String orderMenuName) {

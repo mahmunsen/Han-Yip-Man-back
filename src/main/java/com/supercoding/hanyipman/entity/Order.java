@@ -3,17 +3,14 @@ package com.supercoding.hanyipman.entity;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.OrderErrorCode;
-import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import lombok.*;
 import org.hibernate.annotations.*;
 
-import javax.persistence.*;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-import java.sql.Timestamp;
+import javax.persistence.*;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 import static com.supercoding.hanyipman.enums.OrderStatus.WAIT;
@@ -74,6 +71,9 @@ public class Order {
     @ColumnDefault(value = "false")
     @Column(name = "is_deleted")
     private Boolean isDeleted;
+
+    @Column(name="sequence")
+    private Integer orderSequence;
 
     public static Order from(Buyer buyer, String orderUid, Address address, Shop shop, BuyerCoupon buyerCoupon, List<Cart> carts){
 

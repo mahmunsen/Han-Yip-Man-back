@@ -31,7 +31,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Optional<Order> findOrderFetchBuyerByOrderId(@Param("orderId") Long orderId);
 
 
-    @Query("SELECT o FROM Order o WHERE o.shop = :shop AND o.orderStatus IN (:orderStatusList) ORDER BY o.updatedAt")
+    @Query("SELECT o FROM Order o WHERE o.shop = :shop AND o.orderStatus IN (:orderStatusList) ORDER BY o.orderStatus, o.orderSequence")
     Optional<List<Order>> findOrderExceptCompleted(Shop shop, List<OrderStatus> orderStatusList);
 
     @Query("SELECT o FROM Order o " +
@@ -39,5 +39,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "WHERE o.id =:orderId" +
             " AND o.isDeleted = false")
     Optional<Order> findOrderByIdAndIsDeletedFalse(@Param("orderId") Long orderId);
+
+    @Query("SELECT o FROM Order o WHERE o.shop.seller = :seller AND o.orderStatus = :orderStatus")
+    Optional<List<Order>> findOrdersBySellerAndOrderStatus(Seller seller, OrderStatus orderStatus);
+
+//    @Query("SELECT o FROM Order o WHERE o.shop.seller = :seller AND o.orderStatus = :orderStatus ORDER BY o.orderSequence ASC LIMIT :start, :end ")
+    List<Order> findByOrderStatusAndShopAndOrderSequenceBetween(OrderStatus orderStatus, Shop shop, Integer start, Integer end);
+
+    List<Order> findByOrderStatusAndShopAndOrderSequenceAfter(OrderStatus orderStatus,Shop shop, Integer start);
 
 }
