@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.controller;
 
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
@@ -49,9 +50,8 @@ public class OrderController {
     }
 
 
-
-
-    /* TODO 결제 성공 시 주문내역 조회하는 API */
+    /** 결제 성공 시 주문내역 조회하는 API */
+    @TimeTrace
     @Operation(summary = "주문내역 조회", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
     @GetMapping(path = "/{order_id}", headers = "X-API-VERSION=1")
     public Response<Object> viewOrderDetail(@PathVariable("order_id") Long orderId) throws ParseException {

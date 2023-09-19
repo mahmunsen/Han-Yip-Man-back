@@ -16,6 +16,7 @@ public class LoginResponse {
     private String accessToken;
     private String role;
     private String profileUrl;
+    private String nickname;
 
 
     public static LoginResponse toLoginBuyerResponse(User user, String jwtToken, Buyer buyerUser) {
@@ -23,6 +24,7 @@ public class LoginResponse {
                 .accessToken(jwtToken)
                 .role(user.getRole())
                 .profileUrl(buyerUser.getProfile())
+                .nickname(user.getNickname())
                 .build();
     }
 

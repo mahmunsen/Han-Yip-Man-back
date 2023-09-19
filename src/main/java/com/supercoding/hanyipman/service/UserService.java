@@ -5,16 +5,13 @@ import com.supercoding.hanyipman.dto.user.request.LoginRequest;
 import com.supercoding.hanyipman.dto.user.response.LoginResponse;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.enums.FilePath;
-import com.supercoding.hanyipman.error.domain.FileErrorCode;
-import com.supercoding.hanyipman.error.domain.LoginErrorCode;
-import com.supercoding.hanyipman.error.domain.SellerErrorCode;
+import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.dto.user.request.SellerSignUpRequest;
 import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -77,7 +74,7 @@ public class UserService {
 
         User user = User.toBuyerSignup(request, encodingPassword);
         userRepository.save(user);
-        Buyer buyer = Buyer.tobuyer(user, request, uploadImageFile(file, user));
+        Buyer buyer = Buyer.toBuyer(user, uploadImageFile(file, user));
         Buyer savedBuyUser = buyerRepository.save(buyer);
         Address address = Address.toBuyerAddress(request, savedBuyUser);
         addressRepository.save(address);
@@ -104,7 +101,7 @@ public class UserService {
             Seller getLoginUser = sellerRepository.findByUser(loginUser).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
             loginResponse = LoginResponse.toLoginSellerResponse(loginUser, jwtToken, getLoginUser);
         } else {
-            Buyer getLoginUser = buyerRepository.findByUser(loginUser);
+            Buyer getLoginUser = buyerRepository.findByUser(loginUser).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
             loginResponse = LoginResponse.toLoginBuyerResponse(loginUser, jwtToken, getLoginUser);
         }
         return loginResponse;

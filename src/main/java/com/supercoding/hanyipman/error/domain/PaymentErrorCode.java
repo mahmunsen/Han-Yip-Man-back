@@ -12,6 +12,7 @@ public enum PaymentErrorCode implements ErrorCode {
     PAYMENT_COMMON_ALREADY_CANCELLED(HttpStatus.BAD_REQUEST.value(), "이미 취소된 주문건 입니다."),
     PAYMENT_COMMON_PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND.value(), "해당 주문건에 대한 결제건이 존재하지 않습니다."),
     PAYMENT_COMMON_ALREADY_TAKEOVER(HttpStatus.BAD_REQUEST.value(), "이미 접수된 주문건입니다."),
+    PAYMENT_COMMON_ALREADY_COOKING(HttpStatus.BAD_REQUEST.value(), "이미 조리중인 주문건입니다."),
     PAYMENT_COMMON_ALREADY_IN_DELIVERY(HttpStatus.BAD_REQUEST.value(), "배달중인 주문건입니다."),
     PAYMENT_COMMON_ALREADY_COMPLETED(HttpStatus.BAD_REQUEST.value(), "이미 완료된 주문건입니다."),
     PAYMENT_COMMON_NOT_BUYER(HttpStatus.FORBIDDEN.value(), "소비자가 아닙니다."),

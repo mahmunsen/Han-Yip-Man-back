@@ -11,12 +11,12 @@ import com.supercoding.hanyipman.error.domain.AddressErrorCode;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
+import com.supercoding.hanyipman.security.JwtToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -48,7 +48,7 @@ public class AddressService {
     public List<AddressListResponse> getAddressList(User user) {
 //        buyerRepository.findByUser(user).getId();
 //        addressRepository.findAllByGetAddressList(user);
-        Buyer byUser = buyerRepository.findByUser(user);
+        Buyer byUser = buyerRepository.findByUser(user).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
 
         addressRepository.findAllByBuyer(byUser);
 
@@ -111,6 +111,12 @@ public class AddressService {
             }
             return address;
         }).collect(Collectors.toList());
+    }
+
+    public Boolean checkDuplicationAddress(String mapId) {
+        Buyer buyer = JwtToken.user().validBuyer();
+
+        return addressRepository.existsAddressByMapIdAndBuyer(mapId, buyer);
     }
 }
 

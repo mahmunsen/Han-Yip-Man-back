@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
 
+import com.supercoding.hanyipman.dto.vo.SendSseResponse;
 import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.SseErrorCode;
@@ -17,10 +18,10 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 @Service
-public class SseService {
+public class SseEventService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 10 * 60 * 1000L; // 10분
+    private final Long timeOut = 10 *  60 * 1000L; // 10분
 
     public SseEmitter registerEmitter(Long userId){
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
@@ -46,18 +47,28 @@ public class SseService {
     }
 
     public <T> void validSendMessage(Long userId, EventName eventName, T data) {
-        SseEmitter emitter = sseRepository.findEmitterByUserId(userId).orElseThrow(() -> new CustomException(SseErrorCode.NOT_FOUND_EMITTER));
-        sendMessage(eventName, data, emitter);
+        try {
+            SseEmitter emitter = findUserByUserId(userId);
+            sendMessage(eventName, data, emitter);
+        }catch(CustomException e) {
+            log.error("SSE 알림을 실행시키지 못했습니다.");
+        }
     }
 
-    private <T> void sendMessage(EventName eventName, T data, SseEmitter emitter) {
+    public SseEmitter findUserByUserId(Long userId) {
+        return sseRepository.findEmitterByUserId(userId).orElseThrow(() -> new CustomException(SseErrorCode.NOT_FOUND_EMITTER));
+    }
+
+    public <T> void sendMessage(EventName eventName, T data, SseEmitter emitter) {
         try{
             emitter.send(SseEmitter.event()
                             .name(eventName.getEventName())
                             .data(data)
             );
-        }catch(IOException e) {
-            throw new CustomException(SseErrorCode.CANT_SEND_MESSAGE);
+        }catch(IOException e) { //TODO: 메시지 전송 비동기 처리 고려
+            log.info("SSE 알림을 실행시키지 못했습니다.");
+            sseRepository.addSendResponse(new SendSseResponse<>());
+//            throw new CustomException(SseErrorCode.CANT_SEND_MESSAGE);
         }
     }
 }
