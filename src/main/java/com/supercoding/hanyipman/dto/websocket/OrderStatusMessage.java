@@ -15,11 +15,15 @@ public class OrderStatusMessage {
     private com.supercoding.hanyipman.enums.OrderStatus orderStatus;
     private Long orderId;
     private String message;
+    private String storeName;
+    private String orderMenuName;
 
 
-    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId) {
+    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId, String storeName, String orderMenuName) {
         this.orderStatus = orderStatus;
         this.message = message;
         this.orderId = orderId;
+        this.storeName = storeName;
+        this.orderMenuName = orderMenuName;
     }
 }
