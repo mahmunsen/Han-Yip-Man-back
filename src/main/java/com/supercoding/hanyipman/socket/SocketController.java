@@ -45,7 +45,8 @@ public class SocketController {
 
     private DataListener<OrderStatusMessage> onOrderStatusReceived() {
         return (senderClient, data, ackSender) -> {
-            socketService.sendOrderStatus(data.getRoom(),"get_order_status_change", senderClient, data.getOrderStatus(), senderClient.get("token"));
+
+            socketService.sendOrderStatus(data,"get_order_status_change", senderClient,  senderClient.get("token"));
         };
     }
 

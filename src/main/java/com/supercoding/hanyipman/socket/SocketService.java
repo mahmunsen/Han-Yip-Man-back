@@ -6,6 +6,7 @@ import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.MessageType;
 import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
+import com.supercoding.hanyipman.entity.Seller;
 import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +43,7 @@ public class SocketService {
                     SocketIOClient client : senderClient.getNamespace().getRoomOperations(room).getClients()) {
                 if (!client.getSessionId().equals(senderClient.getSessionId())) {
                     client.sendEvent(eventName,
-                            new ChatMessage(MessageType.SERVER, message,user.getNickname() ));
+                            new ChatMessage(MessageType.SERVER, message, user.getNickname()));
                 }
             }
         } catch (CustomException e) {
@@ -52,16 +54,26 @@ public class SocketService {
     }
 
     @Transactional
-    public void sendOrderStatus(String room, String eventName, SocketIOClient senderClient, com.supercoding.hanyipman.enums.OrderStatus orderStatus, String token
+    public void sendOrderStatus(OrderStatusMessage data, String eventName, SocketIOClient senderClient, String token
     ) {
+        String room = data.getRoom();
+        Integer orderPosition = data.getOrderPosition();
+        OrderStatus orderStatus = data.getOrderStatus();
+
         try {
             validateToken(token, senderClient);
             String userEmail = jwtTokenProvider.getUserEmail(token);
             User user = validateUser(userEmail);
             Order order = validateOrder(Long.valueOf(room.substring(5)));
             String storeName = order.getShop().getName();
-            String orderMenuName = order.getCarts().stream().max(Comparator.comparingInt(cart -> cart.getMenu().getPrice())).map(cart->cart.getMenu().getName()).orElse("메뉴명");
+            String orderMenuName = order.getCarts().stream()
+                    .max(Comparator.comparingInt(cart -> cart.getMenu().getPrice()))
+                    .map(cart -> cart.getMenu().getName()).orElse("메뉴명");
+
+            setOrderPosition(order, orderPosition, orderStatus);
+
             OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, orderMenuName);
+
             if (!order.getOrderStatus().equals(OrderStatus.CANCELED)) {
                 changeOrderStatus(order, orderStatus, user.getId());
             } else {
@@ -111,6 +123,29 @@ public class SocketService {
         senderClient.sendEvent("get_error", new Response(false, errorCode, errorMessage, null));
         log.error("\u001B[31mcode: " + errorCode + "\u001B[0m");
         log.error("\u001B[31mmessage: " + errorMessage + "\u001B[0m");
+    }
+
+    private void setOrderPosition(Order order, Integer orderPositionToChange, OrderStatus orderStatus) {
+        Seller seller = order.getShop().getSeller();
+        List<Order> ordersInOrderStatus = orderRepository.findOrdersBySellerAndOrderStatus(seller, orderStatus).orElseThrow(null);
+        if (ordersInOrderStatus == null) {
+            order.setOrderSequence(1);
+        } else {
+            Integer oldPosition = order.getOrderSequence();
+            if (oldPosition > orderPositionToChange) {
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndOrderPositionBetween(orderStatus, orderPositionToChange, oldPosition - 1);
+                for (Order o : ordersToChangePosition) {
+                    o.setOrderSequence(o.getOrderSequence() + 1);
+                }
+            } else if (orderPositionToChange > oldPosition) {
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndOrderPositionBetween(orderStatus, oldPosition + 1, orderPositionToChange);
+                for (Order o : ordersToChangePosition) {
+                    o.setOrderSequence(o.getOrderSequence() - 1);
+                }
+            }
+            order.setOrderSequence(orderPositionToChange);
+        }
+
     }
 
 }

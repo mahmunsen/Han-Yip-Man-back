@@ -40,4 +40,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             " AND o.isDeleted = false")
     Optional<Order> findOrderByIdAndIsDeletedFalse(@Param("orderId") Long orderId);
 
+    @Query("SELECT o FROM Order o WHERE o.shop.seller = :seller AND o.orderStatus = :orderStatus")
+    Optional<List<Order>> findOrdersBySellerAndOrderStatus(Seller seller, OrderStatus orderStatus);
+
+    List<Order> findByOrderStatusAndOrderPositionBetween(OrderStatus orderStatus, Integer start, Integer end);
+
 }
