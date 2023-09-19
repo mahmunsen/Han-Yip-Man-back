@@ -11,20 +11,20 @@ import lombok.ToString;
 @ToString
 public class OrderStatusMessage {
 
-    private String room;
     private com.supercoding.hanyipman.enums.OrderStatus orderStatus;
     private Long orderId;
     private String message;
     private String storeName;
     private String orderMenuName;
-    private Integer orderPosition;
+    private Integer orderSequence;
 
 
-    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId, String storeName, String orderMenuName) {
+    public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId, String storeName, String orderMenuName, Integer orderSequence) {
         this.orderStatus = orderStatus;
         this.message = message;
         this.orderId = orderId;
         this.storeName = storeName;
         this.orderMenuName = orderMenuName;
+        this.orderSequence = orderSequence;
     }
 }

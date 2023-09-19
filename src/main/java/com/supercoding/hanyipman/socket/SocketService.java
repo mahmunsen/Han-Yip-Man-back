@@ -6,7 +6,7 @@ import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.MessageType;
 import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
-import com.supercoding.hanyipman.entity.Seller;
+import com.supercoding.hanyipman.entity.Shop;
 import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
@@ -56,23 +56,24 @@ public class SocketService {
     @Transactional
     public void sendOrderStatus(OrderStatusMessage data, String eventName, SocketIOClient senderClient, String token
     ) {
-        String room = data.getRoom();
-        Integer orderPosition = data.getOrderPosition();
+        Long orderId = data.getOrderId();
+        Integer orderSequence = data.getOrderSequence();
         OrderStatus orderStatus = data.getOrderStatus();
+
 
         try {
             validateToken(token, senderClient);
             String userEmail = jwtTokenProvider.getUserEmail(token);
             User user = validateUser(userEmail);
-            Order order = validateOrder(Long.valueOf(room.substring(5)));
+            Order order = validateOrder(Long.valueOf(orderId));
             String storeName = order.getShop().getName();
             String orderMenuName = order.getCarts().stream()
                     .max(Comparator.comparingInt(cart -> cart.getMenu().getPrice()))
                     .map(cart -> cart.getMenu().getName()).orElse("메뉴명");
 
-            setOrderPosition(order, orderPosition, orderStatus);
+            setOrderPosition(order, orderSequence, orderStatus);
 
-            OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, orderMenuName);
+            OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, orderMenuName, orderSequence);
 
             if (!order.getOrderStatus().equals(OrderStatus.CANCELED)) {
                 changeOrderStatus(order, orderStatus, user.getId());
@@ -80,7 +81,7 @@ public class SocketService {
                 //고객이 이미 취소한 건에 대해 사장이 주문 취소 요청 시 에러
                 throw new CustomException(OrderErrorCode.ORDER_ALREADY_CANCELED);
             }
-            for (SocketIOClient client : senderClient.getNamespace().getRoomOperations(room).getClients()) {
+            for (SocketIOClient client : senderClient.getNamespace().getRoomOperations("order" + orderId).getClients()) {
                 client.sendEvent(eventName, orderStatusMessage);
             }
             senderClient.sendEvent(eventName, orderStatusMessage);
@@ -126,25 +127,41 @@ public class SocketService {
     }
 
     private void setOrderPosition(Order order, Integer orderPositionToChange, OrderStatus orderStatus) {
-        Seller seller = order.getShop().getSeller();
-        List<Order> ordersInOrderStatus = orderRepository.findOrdersBySellerAndOrderStatus(seller, orderStatus).orElseThrow(null);
-        if (ordersInOrderStatus == null) {
-            order.setOrderSequence(1);
-        } else {
-            Integer oldPosition = order.getOrderSequence();
+        Shop shop = order.getShop();
+        Integer oldPosition = order.getOrderSequence();
+        OrderStatus oldOrderStatus = order.getOrderStatus();
+        log.info("이전 위치 : " + oldPosition);
+        log.info("이전 위치 : " + orderPositionToChange);
+        if (orderStatus.equals(oldOrderStatus)) {
             if (oldPosition > orderPositionToChange) {
-                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndOrderPositionBetween(orderStatus, orderPositionToChange, oldPosition - 1);
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus,shop, orderPositionToChange, oldPosition - 1);
                 for (Order o : ordersToChangePosition) {
                     o.setOrderSequence(o.getOrderSequence() + 1);
                 }
             } else if (orderPositionToChange > oldPosition) {
-                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndOrderPositionBetween(orderStatus, oldPosition + 1, orderPositionToChange);
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus, shop,oldPosition + 1, orderPositionToChange);
                 for (Order o : ordersToChangePosition) {
                     o.setOrderSequence(o.getOrderSequence() - 1);
                 }
             }
             order.setOrderSequence(orderPositionToChange);
+        } else {
+            log.info("주문상태 다름");
+            log.info("이전 위치 : " + oldPosition);
+            log.info("이전 위치 : " + orderPositionToChange);
+            List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(oldOrderStatus,shop, oldPosition);
+            for (Order o : ordersToChangePosition) {
+                o.setOrderSequence(o.getOrderSequence() - 1);
+            }
+            List<Order> ordersToChangePositionInNewOrderStatus = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(orderStatus, shop,orderPositionToChange-1);
+            for (Order o : ordersToChangePositionInNewOrderStatus) {
+                log.info("hhi");
+                o.setOrderSequence(o.getOrderSequence() + 1);
+            }
+            order.setOrderSequence(orderPositionToChange);
         }
+
+
 
     }
 
