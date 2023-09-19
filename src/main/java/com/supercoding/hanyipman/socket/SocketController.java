@@ -47,6 +47,7 @@ public class SocketController {
         return (senderClient, data, ackSender) -> {
 
             socketService.sendOrderStatus(data,"get_order_status_change", senderClient,  senderClient.get("token"));
+            log.info("주문상태 변경");
         };
     }
 
