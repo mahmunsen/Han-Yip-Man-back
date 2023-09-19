@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class BuyerSignUpRequest {
+public class BuyerSignUpRequest implements SignUpRequest {
     @JsonProperty(value = "email")
     private String email;
     @JsonProperty(value = "password")

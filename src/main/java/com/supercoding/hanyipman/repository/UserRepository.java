@@ -11,8 +11,6 @@ import java.util.Optional;
 public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
 
-//    Optional<User> findByEmailAndBuyerIsNotEmpty(String email);
-
     @Query("select u from User u where u.email = ?1 and u.role ='BUYER'")
     Optional<User> findByEmailAndBuyer(String email);
 }

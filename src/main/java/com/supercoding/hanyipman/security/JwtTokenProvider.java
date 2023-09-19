@@ -38,7 +38,13 @@ public class JwtTokenProvider {
         claims.put("email", loginUser.getEmail());
         claims.put("role", loginUser.getRole());
 
-        return Jwts.builder().setSubject(loginUser.getEmail()).setClaims(claims).setIssuedAt(now).setExpiration(tokenValidMillisecond).signWith(SignatureAlgorithm.HS256, secretKeySource).compact();
+        return Jwts.builder()
+                .setSubject(loginUser.getEmail())
+                .setClaims(claims)
+                .setIssuedAt(now)
+                .setExpiration(tokenValidMillisecond)
+                .signWith(SignatureAlgorithm.HS256, secretKeySource)
+                .compact();
     }
 
     // 토큰으로부터 클레임을 만들고, 이를 통해 User 객체를 생성하여 객체반환
