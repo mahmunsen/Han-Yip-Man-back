@@ -17,6 +17,9 @@ public class OrderStatusMessage {
     private String storeName;
     private String orderMenuName;
     private Integer orderSequence;
+    private  Boolean result;
+    private  Integer status;
+    private  String errorMessage;
 
 
     public OrderStatusMessage(com.supercoding.hanyipman.enums.OrderStatus orderStatus, String message, Long orderId, String storeName, String orderMenuName, Integer orderSequence) {
@@ -26,5 +29,11 @@ public class OrderStatusMessage {
         this.storeName = storeName;
         this.orderMenuName = orderMenuName;
         this.orderSequence = orderSequence;
+    }
+
+    public OrderStatusMessage(Boolean result, Integer status, String errorMessage) {
+        this.result = result;
+        this.status = status;
+        this.errorMessage = errorMessage;
     }
 }
