@@ -66,10 +66,13 @@ dependencies {
     annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
     //socketio
-    implementation 'com.corundumstudio.socketio:netty-socketio:1.7.19'
+
+    implementation 'com.corundumstudio.socketio:netty-socketio:2.0.3'
+
 
     //Oauth2
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
 
 }
 
