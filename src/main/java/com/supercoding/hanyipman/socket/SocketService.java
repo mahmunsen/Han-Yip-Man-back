@@ -54,39 +54,41 @@ public class SocketService {
     }
 
     @Transactional
-    public void sendOrderStatus(OrderStatusMessage data, String eventName, SocketIOClient senderClient, String token
+    public OrderStatusMessage sendOrderStatus(OrderStatusMessage data, String eventName, SocketIOClient senderClient, String token
     ) {
         Long orderId = data.getOrderId();
         Integer orderSequence = data.getOrderSequence();
         OrderStatus orderStatus = data.getOrderStatus();
 
-
         try {
             validateToken(token, senderClient);
             String userEmail = jwtTokenProvider.getUserEmail(token);
             User user = validateUser(userEmail);
-            Order order = validateOrder(Long.valueOf(orderId));
+            Order order = validateOrder(orderId);
+
             String storeName = order.getShop().getName();
-            String orderMenuName = order.getCarts().stream()
+            String maxPriceMenuName = order.getCarts().stream()
                     .max(Comparator.comparingInt(cart -> cart.getMenu().getPrice()))
                     .map(cart -> cart.getMenu().getName()).orElse("메뉴명");
 
-            setOrderPosition(order, orderSequence, orderStatus);
+            setOrderSequence(order, orderSequence, orderStatus);
 
-            OrderStatusMessage orderStatusMessage = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, orderMenuName, orderSequence);
-
-            if (!order.getOrderStatus().equals(OrderStatus.CANCELED)) {
-                changeOrderStatus(order, orderStatus, user.getId());
-            } else {
-                //고객이 이미 취소한 건에 대해 사장이 주문 취소 요청 시 에러
+            //고객이 이미 취소한 건에 대해 사장이 주문 취소 요청 시 에러
+            if (order.getOrderStatus().equals(OrderStatus.CANCELED))
                 throw new CustomException(OrderErrorCode.ORDER_ALREADY_CANCELED);
-            }
+
+            changeOrderStatus(order, orderStatus, user.getId());
+
+            OrderStatusMessage orderStatusMessage
+                    = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, maxPriceMenuName, orderSequence);
+
             for (SocketIOClient client : senderClient.getNamespace().getRoomOperations("order" + orderId).getClients()) {
                 client.sendEvent(eventName, orderStatusMessage);
             }
-            senderClient.sendEvent(eventName, orderStatusMessage);
+            return orderStatusMessage;
         } catch (CustomException e) {
             sendErrorMessage(e.getErrorCode().getCode(), e.getErrorMessage(), senderClient);
+            return new OrderStatusMessage(false, e.getErrorCode().getCode(), e.getErrorMessage());
         }
 
     }
@@ -126,41 +128,36 @@ public class SocketService {
         log.error("\u001B[31mmessage: " + errorMessage + "\u001B[0m");
     }
 
-    private void setOrderPosition(Order order, Integer orderPositionToChange, OrderStatus orderStatus) {
+    private void setOrderSequence(Order order, Integer orderPositionToChange, OrderStatus orderStatus) {
         Shop shop = order.getShop();
+        //요청 전 위치와 주문 상태
         Integer oldPosition = order.getOrderSequence();
         OrderStatus oldOrderStatus = order.getOrderStatus();
-        log.info("이전 위치 : " + oldPosition);
-        log.info("이전 위치 : " + orderPositionToChange);
+
         if (orderStatus.equals(oldOrderStatus)) {
             if (oldPosition > orderPositionToChange) {
-                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus,shop, orderPositionToChange, oldPosition - 1);
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus, shop, orderPositionToChange, oldPosition - 1);
                 for (Order o : ordersToChangePosition) {
                     o.setOrderSequence(o.getOrderSequence() + 1);
                 }
             } else if (orderPositionToChange > oldPosition) {
-                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus, shop,oldPosition + 1, orderPositionToChange);
+                List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceBetween(orderStatus, shop, oldPosition + 1, orderPositionToChange);
                 for (Order o : ordersToChangePosition) {
                     o.setOrderSequence(o.getOrderSequence() - 1);
                 }
             }
             order.setOrderSequence(orderPositionToChange);
         } else {
-            log.info("주문상태 다름");
-            log.info("이전 위치 : " + oldPosition);
-            log.info("이전 위치 : " + orderPositionToChange);
-            List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(oldOrderStatus,shop, oldPosition);
+            List<Order> ordersToChangePosition = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(oldOrderStatus, shop, oldPosition);
             for (Order o : ordersToChangePosition) {
                 o.setOrderSequence(o.getOrderSequence() - 1);
             }
-            List<Order> ordersToChangePositionInNewOrderStatus = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(orderStatus, shop,orderPositionToChange-1);
+            List<Order> ordersToChangePositionInNewOrderStatus = orderRepository.findByOrderStatusAndShopAndOrderSequenceAfter(orderStatus, shop, orderPositionToChange - 1);
             for (Order o : ordersToChangePositionInNewOrderStatus) {
-                log.info("hhi");
                 o.setOrderSequence(o.getOrderSequence() + 1);
             }
             order.setOrderSequence(orderPositionToChange);
         }
-
 
 
     }

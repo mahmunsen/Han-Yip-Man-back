@@ -46,8 +46,9 @@ public class SocketController {
     private DataListener<OrderStatusMessage> onOrderStatusReceived() {
         return (senderClient, data, ackSender) -> {
 
-            socketService.sendOrderStatus(data,"get_order_status_change", senderClient,  senderClient.get("token"));
-            log.info("주문상태 변경");
+            OrderStatusMessage response = socketService.sendOrderStatus(data,"get_order_status_change", senderClient,  senderClient.get("token"));
+            ackSender.sendAckData(response);
+            log.info("주문 ID [{}] 주문상태 [{}]의 {} 순서로 변경",response.getOrderId(), response.getOrderStatus(),response.getOrderSequence());
         };
     }
 
