@@ -48,7 +48,7 @@ public class MenuResponse {
         private List<OptionItemDto> optionItems;
 
         public static OptionResponse from(Option option) {
-            return OptionResponse.builder()
+            return Boolean.TRUE.equals(option.getIsDeleted()) ? null : OptionResponse.builder()
                     .optionId(option.getId())
                     .optionName(option.getName())
                     .maxSelected(option.getMaxSelected())
@@ -67,7 +67,7 @@ public class MenuResponse {
             private Integer optionItemPrice;
 
             public static OptionItemDto from(OptionItem optionItem) {
-                return OptionItemDto.builder()
+                return Boolean.TRUE.equals(optionItem.getIsDeleted()) ? null : OptionItemDto.builder()
                         .optionItemId(optionItem.getId())
                         .optionItemName(optionItem.getName())
                         .optionItemPrice(optionItem.getPrice())

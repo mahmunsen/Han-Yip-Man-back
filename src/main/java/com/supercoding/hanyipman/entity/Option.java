@@ -45,6 +45,11 @@ public class Option {
         optionItems.add(optionItem);
     }
 
+    public void setDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        optionItems.forEach(optionItem -> optionItem.setIsDeleted(isDeleted));
+    }
+
     public void addOptionItemList(List<OptionItem> optionItemList) {
 
         if (optionItems == null) {

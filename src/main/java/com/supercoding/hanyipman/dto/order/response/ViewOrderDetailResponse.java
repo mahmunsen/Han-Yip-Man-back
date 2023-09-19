@@ -1,8 +1,10 @@
 package com.supercoding.hanyipman.dto.order.response;
+
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Payment;
 import com.supercoding.hanyipman.entity.Shop;
 import com.supercoding.hanyipman.utils.DateUtils;
+import com.supercoding.hanyipman.utils.PhoneUtils;
 import lombok.*;
 
 import java.text.ParseException;
@@ -21,6 +23,7 @@ public class ViewOrderDetailResponse {
     private String orderUid;
     private String createdAt;
     private String shopName;
+    private Long shopId; // 가게 아이디
     private String orderName; // 주문한 메뉴명
     private List<Map<String, Object>> orderMenus; // 메뉴들, 수량(첫번째) 가격(둘째) 옵션들 (셋째)
     private Integer defaultDeliveryPrice;
@@ -35,6 +38,7 @@ public class ViewOrderDetailResponse {
 
     public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop, List<Map<String, Object>> orderMenus, String orderName) throws ParseException {
         return ViewOrderDetailResponse.builder()
+                .shopId(shop.getId())
                 .shopName(shop.getName())
                 .orderName(orderName)
                 .orderMenus(orderMenus)
@@ -46,9 +50,10 @@ public class ViewOrderDetailResponse {
                 .orderStatus(order.getOrderStatus().getStatus())
                 .address(deliveryAddress)
                 .payMethod(payment.getPaymentMethod())
-                .phoneNum(order.getBuyer().getUser().getPhoneNum())
+//              .phoneNum(order.getBuyer().getUser().getPhoneNum())
+                .phoneNum(PhoneUtils.formattedPhoneNumber(order.getBuyer().getUser().getPhoneNum()))
                 .shopTelphoneNum(shop.getPhoneNum())
-                .canceledAt(order.getOrderStatus().getStatus() == "CANCELED"? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
+                .canceledAt(order.getOrderStatus().getStatus() == "CANCELED" ? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
                 .build();
     }
 }

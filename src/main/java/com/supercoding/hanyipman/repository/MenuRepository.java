@@ -18,6 +18,9 @@ public interface MenuRepository extends JpaRepository<Menu, Long> {
     @Query("SELECT m FROM Menu m where m.id =:menuId")
     Optional<Menu> findMenuByMenuId(@Param("menuId") Long menuId);
 
+    @Query("SELECT m FROM Menu m where m.id =:menuId AND m.isDeleted = false")
+    Optional<Menu> findByMenuIsDeletedFalse(Long menuId);
+
     @Query("SELECT COALESCE(MAX(m.sequence), 0) FROM Menu m WHERE m.menuGroup = :menuGroup")
     Integer findMaxSequenceByShop(@Param("menuGroup") MenuGroup menuGroup);
 

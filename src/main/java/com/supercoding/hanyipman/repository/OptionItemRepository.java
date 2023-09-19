@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OptionItemRepository extends JpaRepository<OptionItem, Long> {
@@ -15,5 +16,6 @@ public interface OptionItemRepository extends JpaRepository<OptionItem, Long> {
     @Query("SELECT oi FROM OptionItem oi where oi.id in :options")
     List<OptionItem> findByOptionItemIds(@Param("options") List<Long> options);
 
+    Optional<OptionItem> findByIdAndIsDeletedFalse(Long optionItemId);
 
 }

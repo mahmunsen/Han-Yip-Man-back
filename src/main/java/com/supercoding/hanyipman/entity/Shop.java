@@ -1,6 +1,9 @@
 package com.supercoding.hanyipman.entity;
 
 import com.supercoding.hanyipman.dto.Shop.seller.request.RegisterShopRequest;
+import com.supercoding.hanyipman.error.CustomException;
+import com.supercoding.hanyipman.error.domain.SellerErrorCode;
+import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import lombok.*;
 import org.hibernate.annotations.*;
 
@@ -83,6 +86,12 @@ public class Shop {
 
     @OneToMany(mappedBy = "shop",cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Review> reviews;
+
+    public void checkRegisterSeller(Long sellerId) {
+        if (!(Objects.equals(this.seller.getId(), sellerId))) {
+            throw new CustomException(ShopErrorCode.DIFFERENT_SELLER);
+        }
+    }
 
     public void addMenuGroup(MenuGroup menuGroup) {
         menuGroup.setShop(this);
