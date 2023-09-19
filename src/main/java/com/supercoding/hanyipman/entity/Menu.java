@@ -72,6 +72,11 @@ public class Menu {
         });
     }
 
+    public void setDeleted(Boolean isDeleted) {
+        this.isDeleted = isDeleted;
+        options.forEach(option -> option.setDeleted(isDeleted));
+    }
+
     public static Menu from(RegisterMenuRequest registerMenuRequest, MenuGroup menuGroup, Integer sequence) {
         return Menu.builder()
                 .menuGroup(menuGroup)
