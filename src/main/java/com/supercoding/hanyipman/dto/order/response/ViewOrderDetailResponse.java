@@ -1,8 +1,10 @@
 package com.supercoding.hanyipman.dto.order.response;
+
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Payment;
 import com.supercoding.hanyipman.entity.Shop;
 import com.supercoding.hanyipman.utils.DateUtils;
+import com.supercoding.hanyipman.utils.PhoneUtils;
 import lombok.*;
 
 import java.text.ParseException;
@@ -48,9 +50,10 @@ public class ViewOrderDetailResponse {
                 .orderStatus(order.getOrderStatus().getStatus())
                 .address(deliveryAddress)
                 .payMethod(payment.getPaymentMethod())
-                .phoneNum(order.getBuyer().getUser().getPhoneNum())
+//              .phoneNum(order.getBuyer().getUser().getPhoneNum())
+                .phoneNum(PhoneUtils.formattedPhoneNumber(order.getBuyer().getUser().getPhoneNum()))
                 .shopTelphoneNum(shop.getPhoneNum())
-                .canceledAt(order.getOrderStatus().getStatus() == "CANCELED"? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
+                .canceledAt(order.getOrderStatus().getStatus() == "CANCELED" ? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
                 .build();
     }
 }
