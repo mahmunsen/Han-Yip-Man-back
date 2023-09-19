@@ -44,7 +44,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if(request.getCookies() != null){
             Optional<Cookie> first = Arrays.stream(request.getCookies()).filter(cookie -> cookie.getName().equals(HttpHeaders.AUTHORIZATION)).findFirst();
             if(first.isPresent()) authorizationHeader = first.get().getValue();
-            log.info("Cookie: {}", request.getCookies().toString());
         }
 
 
