@@ -30,6 +30,8 @@ public class ShopOrderResponse {
     private Instant orderedTime;
     @ApiModelProperty(value="주문 메뉴 필드", dataType = "List<OrderMenuResponse>")
     private List<ShopOrdersMenuResponse> menuResponses;
+    private Integer orderSequence;
+
 
 
 
@@ -42,6 +44,7 @@ public class ShopOrderResponse {
                 .address(order.getAddress().getAddress()+" "+order.getAddress().getDetailAddress())
                 .orderedTime(order.getUpdatedAt())
                 .menuResponses(order.getCarts().stream().map(cart -> ShopOrdersMenuResponse.from(cart)).collect(Collectors.toList()))
+                .orderSequence(order.getOrderSequence())
                 .build();
 
     }

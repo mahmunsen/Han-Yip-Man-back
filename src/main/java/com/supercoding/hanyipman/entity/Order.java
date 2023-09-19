@@ -72,7 +72,7 @@ public class Order {
     @Column(name = "is_deleted")
     private Boolean isDeleted;
 
-    @Column(name="position")
+    @Column(name="sequence")
     private Integer orderSequence;
 
     public static Order from(Buyer buyer, String orderUid, Address address, Shop shop, BuyerCoupon buyerCoupon, List<Cart> carts){
