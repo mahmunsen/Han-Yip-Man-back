@@ -75,7 +75,7 @@ public class OrderController {
     }
 
     @TimeTrace
-    @Operation(summary = "SSE 소비자 주문 알림 테스트", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
+    @Operation(summary = "SSE 소비자 주문 알림 테스트", description = "사장님이 주문 상태를 변경하면 소비자에게 알림을 발생시킴")
     @GetMapping(path = "/buyer/{order_id}", headers = "X-API-VERSION=1")
     public Response<Object> noticeOrderByBuyer(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
