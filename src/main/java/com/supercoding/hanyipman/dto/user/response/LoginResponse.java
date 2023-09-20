@@ -1,7 +1,6 @@
 package com.supercoding.hanyipman.dto.user.response;
 
 import com.supercoding.hanyipman.entity.Buyer;
-import com.supercoding.hanyipman.entity.Seller;
 import com.supercoding.hanyipman.entity.User;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -28,7 +27,7 @@ public class LoginResponse {
                 .build();
     }
 
-    public static LoginResponse toLoginSellerResponse(User user, String jwtToken, Seller buyerUser) {
+    public static LoginResponse toLoginSellerResponse(User user, String jwtToken) {
         return LoginResponse.builder()
                 .accessToken(jwtToken)
                 .role(user.getRole())

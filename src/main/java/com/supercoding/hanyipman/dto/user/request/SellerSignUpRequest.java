@@ -8,14 +8,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class SellerSignUpRequest {
+public class SellerSignUpRequest implements SignUpRequest {
     private String email;
     private String password;
     private String passwordCheck;
     private String phoneNumber;
     private String nickName;
     private String businessNumber;
-
 
 
 }
