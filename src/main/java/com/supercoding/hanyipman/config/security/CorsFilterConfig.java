@@ -15,6 +15,7 @@ public class CorsFilterConfig implements WebMvcConfigurer{
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowCredentials(true)
+                .allowedMethods("GET","POST", "PATCH", "PUT", "DELETE")
                 .exposedHeaders("X-API-VERSION")
                 .allowedOriginPatterns("*")
                 .allowedHeaders("*");
