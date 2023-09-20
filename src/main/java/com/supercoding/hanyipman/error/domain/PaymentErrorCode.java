@@ -19,6 +19,7 @@ public enum PaymentErrorCode implements ErrorCode {
     PAYMENT_COMMON_NOT_FOUND_SELLER(HttpStatus.NOT_FOUND.value(), "판매자를 찾을 수 없습니다."),
     PAYMENT_COMMON_NO_ORDER(HttpStatus.NOT_FOUND.value(), "결제할 주문건이 존재하지 않습니다."),
     PAYMENT_COMMON_MISMATCH_ORDER_AND_BUYER(HttpStatus.BAD_REQUEST.value(), "주문건의 소비자와 결제건의 소비자가 일치하지 않습니다."),
+    PAYMENT_COMMON_NOT_FOUND_PROVIDER(HttpStatus.BAD_REQUEST.value(), "해당 결제 수단이 존재하지 않습니다."),
 
     // 아임포트
     IM_PORT_NON_EXISTENT_MEMBER(HttpStatus.NOT_FOUND.value(), "존재하지 않는 회원입니다."),

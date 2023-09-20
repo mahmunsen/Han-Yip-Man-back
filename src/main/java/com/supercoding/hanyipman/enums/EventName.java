@@ -7,7 +7,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum EventName {
     NOTICE_ORDER("NoticeOrder"),
-    CUR_DRON_POSITION("getCurDronPosition"),
+    NOTICE_ORDER_STATUS("NoticeOrderStatus"),
+    DRON_LOCATION("DronLocation"),
     SUBSCRIBE("SubScribe");
 
     private final String eventName;

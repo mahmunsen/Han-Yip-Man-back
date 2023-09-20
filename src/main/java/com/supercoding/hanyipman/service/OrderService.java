@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.service;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeSellerResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
@@ -17,7 +18,6 @@ import com.supercoding.hanyipman.repository.order.OrderRepository;
 import com.supercoding.hanyipman.security.UserRole;
 import com.supercoding.hanyipman.utils.DateUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -97,17 +97,27 @@ public class OrderService {
     }
 
     @TimeTrace
-    public OrderNoticeResponse findOrder(Long userId, Long orderId) {
+    public OrderNoticeSellerResponse findOrderNoticeToSeller(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
+        Order order = findOrderFetchCarts(orderId, buyer);
+        return OrderNoticeSellerResponse.from(order);
+    }
+    @TimeTrace
+    public OrderNoticeBuyerResponse findOrderNoticeToBuyer(Long userId, Long orderId) {
+        Buyer buyer = findBuyerByUserId(userId);
+        Payment payment = findPaymentByOrderId(orderId);
+        Order  order = findOrderFetchCarts(orderId, buyer);
 
+        return OrderNoticeBuyerResponse.from(order, payment);
+    }
+
+    private Order findOrderFetchCarts(Long orderId, Buyer buyer) {
         Order order = emOrderRepository.findOrderByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
         List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
         List<Cart> joinItems = findCartsJoinItems(carts);
         order.setCarts(joinItems);
-
-        return OrderNoticeResponse.from(order);
+        return order;
     }
-
 
 
 
@@ -223,6 +233,11 @@ public class OrderService {
     private User findUserByUserId(Long userId) {
         return userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
     }
+
+    private Payment findPaymentByOrderId(Long orderId) {
+        return paymentRepository.findPaymentByOrderId(orderId).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
+    }
+
 
     /**
      * 결제된 이후 해당 주문건 상세페이지 조회
