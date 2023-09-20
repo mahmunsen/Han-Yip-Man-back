@@ -54,7 +54,7 @@ public class PaymentService {
     private final CartRepository cartRepository;
     private final RestTemplate restTemplate;
     private final OrderService orderService;
-    private final SseMessageService sseService;
+    private final SseEventService sseService;
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
 
@@ -207,7 +207,7 @@ public class PaymentService {
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
             //주문 알림 기능
             OrderNoticeResponse orderNoticeResponse = orderService.findOrder(user.getId(), order.getId());
-            sseService.sendSse(SendSseResponse.of(user.getId(), orderNoticeResponse));
+            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, orderNoticeResponse);
 
             return ResponseEntity.ok("결제가 성공했습니다.");
         } else {
@@ -371,7 +371,7 @@ public class PaymentService {
             orderRepository.save(order);
 
             OrderNoticeResponse sseOrderResponse = orderService.findOrder(user.getId(), order.getId());
-            sseService.sendSse(SendSseResponse.of(user.getId(), sseOrderResponse));
+            sseService.validSendMessage(user.getId(), EventName.NOTICE_ORDER, sseOrderResponse);
 
             return kakaoPayApproveResponse.getBody();
         } else {

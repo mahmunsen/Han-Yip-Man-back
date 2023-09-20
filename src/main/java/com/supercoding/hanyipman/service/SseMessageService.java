@@ -21,9 +21,10 @@ import java.util.Optional;
 public class SseMessageService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 10 *  60 * 1000L; // 10분
+    private final Long timeOut = 45 * 1000L; // 10분
 
     public SseEmitter registerSse(Long userId){
+        log.info("sse구독");
         findUserByUserId(userId);
         SseEmitter sseEmitter = generateSse(userId);
         sseRepository.save(userId, sseEmitter);
@@ -62,13 +63,8 @@ public class SseMessageService {
     }
     private SseEmitter generateSse(Long userId) {
         SseEmitter sseEmitter = new SseEmitter(timeOut);
-        sseEmitter.onTimeout(() -> {
-            log.info("호출: sse 타임아웃");
-            sseEmitter.complete();
-        });
+        sseEmitter.onTimeout(sseEmitter::complete);
         sseEmitter.onCompletion(() -> {
-            log.info("호출: sse 완료");
-            sseEmitter.complete();
             sseRepository.delete(userId);
         });
         sendSse(SendSseResponse.of(userId, "연결"));

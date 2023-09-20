@@ -12,22 +12,26 @@ import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+@Slf4j
 @Api(tags = "Sse")
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/sse")
 public class SseTestController {
-    private final SseMessageService sseService;
+    private final SseEventService sseService;
 
     @Operation(summary = "서버 구독하기", description = "Sse 알림을 받기 위한 서버 구독URL")
-    @GetMapping(headers = "X-API-VERSION=1")
+    @GetMapping(headers = "X-API-VERSION=1", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter registerEmitter(@AuthenticationPrincipal CustomUserDetail auth)  {
-        return sseService.registerSse(auth.getUserId());
+        log.info("Sse 구독");
+        return sseService.registerEmitter(auth.getUserId());
     }
 
 
@@ -37,7 +41,7 @@ public class SseTestController {
             @RequestBody SseTestRequest request,
             @AuthenticationPrincipal CustomUserDetail auth) {
         SendSseResponse<SseTestResponse> send = SendSseResponse.of(auth.getUserId(), new SseTestResponse(request.getTitle(), request.getContent()));
-        sseService.sendSse(send);
+        sseService.validSendMessage(auth.getUserId(), EventName.NOTICE_ORDER, send);
         return ApiUtils.success(HttpStatus.OK, "메시지가 전송됐습니다.", null);
     }
 }
