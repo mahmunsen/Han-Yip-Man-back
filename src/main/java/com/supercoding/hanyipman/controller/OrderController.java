@@ -2,7 +2,8 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeSellerResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
@@ -64,11 +65,21 @@ public class OrderController {
     }
 
     @TimeTrace
-    @Operation(summary = "SSE 주문 알림 테스트 URL", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
-    @GetMapping(path = "/test/{order_id}", headers = "X-API-VERSION=1")
-    public Response<Object> asdf(@PathVariable("order_id") Long orderId) {
+    @Operation(summary = "SSE 사장님 주문 알림 테스트 URL", description = "소비자가 음식을 주문하면 사장님 한테 알림을 발생시킴")
+    @GetMapping(path = "/seller/{order_id}", headers = "X-API-VERSION=1")
+    public Response<Object> noticeOrderBySeller(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
-        OrderNoticeResponse viewOrderDetailResponse = orderService.findOrder(userId, orderId);
+        OrderNoticeSellerResponse viewOrderDetailResponse = orderService.findOrderNoticeToSeller(userId, orderId);
+        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER, viewOrderDetailResponse);
+        return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", viewOrderDetailResponse);
+    }
+
+    @TimeTrace
+    @Operation(summary = "SSE 소비자 주문 알림 테스트", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
+    @GetMapping(path = "/buyer/{order_id}", headers = "X-API-VERSION=1")
+    public Response<Object> noticeOrderByBuyer(@PathVariable("order_id") Long orderId) {
+        Long userId = JwtToken.user().getId();
+        OrderNoticeBuyerResponse viewOrderDetailResponse = orderService.findOrderNoticeToBuyer(userId, orderId);
         sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER, viewOrderDetailResponse);
         return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", viewOrderDetailResponse);
     }
