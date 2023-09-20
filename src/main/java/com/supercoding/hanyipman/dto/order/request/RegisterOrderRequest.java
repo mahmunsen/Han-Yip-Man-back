@@ -11,6 +11,4 @@ import lombok.NoArgsConstructor;
 public class RegisterOrderRequest {
     @ApiModelProperty(value = "구매자 쿠폰 ID", example = "1")
     private Long buyerCouponId;
-    @ApiModelProperty(value = "구매자 주소 ID", example = "1")
-    private Long addressId;
 }

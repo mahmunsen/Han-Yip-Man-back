@@ -48,13 +48,13 @@ public class OrderService {
 
     @TimeTrace
     @Transactional
-    public Long order(Long userId, Long addressId, Long buyerCouponId) {
+    public Long order(Long userId, Long buyerCouponId) {
 
         // 사용자 검증 및 주소 fetch join
         Buyer buyer = findBuyerByUserId(userId);
 
         // 주소 조회
-        Address address = findAddressByAddressIdAndBuyer(addressId, buyer);
+        Address address = buyer.getDefaultAddress();
 
         // 쿠폰 조회   쿠폰 <-> 구매자쿠폰 fetch join
         BuyerCoupon coupon = null;
