@@ -25,6 +25,7 @@ import static com.supercoding.hanyipman.entity.QMenuGroup.menuGroup;
 import static com.supercoding.hanyipman.entity.QMenu.menu;
 import static com.supercoding.hanyipman.entity.QOption.option;
 import static com.supercoding.hanyipman.entity.QOptionItem.optionItem;
+import static org.hibernate.internal.util.NullnessHelper.coalesce;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,10 +54,7 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                         .desc());
                 break;
             case COUNT_REVIEW:
-                orderSpecifiers.add(new CaseBuilder()
-                        .when(review.in(shop.reviews)).then(review.count())
-                        .otherwise(0L)
-                        .desc());
+                orderSpecifiers.add(review.id.count().desc());
                 break;
             default:
                 // 기본 정렬 설정: 거리, 평균 별점이 같은 경우 최신 순으로
@@ -72,33 +70,30 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                                             shop.thumbnail,
                                             shop.description,
                                             shop.minOrderPrice,
-                                            JPAExpressions
-                                                    .select(review.score.avg())
-                                                    .from(review)
-                                                    .where(review.in(shop.reviews)),
-                                            JPAExpressions
-                                                    .select(review.count())
-                                                    .from(review)
-                                                    .where(review.in(shop.reviews)),
+                                            review.score.avg().coalesce(0.0),
+                                            review.id.count(),
                                             shop.minOrderPrice,
                                             shop.defaultDeliveryPrice,
                                             distance.round().intValue()
                                                     ))
                 .from(shop)
+                .leftJoin(shop.reviews, review)
                 .where(
+                        cursorValue(request.getCursorValue(), shopSortType, distance, request.getCursorId()),
                         isDeletedFalse(),
-                        ltShopId(request.getCursor()),
                         eqCategoryId(request.getCategoryId()),
                         distance.round().intValue().lt(1000),
                         containsSearchKeyword(request.getSearchKeyword())
                 )
                 .orderBy(orderSpecifiers.toArray(new OrderSpecifier[0]))
+                .groupBy(shop)
                 .limit(request.getSize())
                 .fetch();
 
-        Long nextCursor = calcNextCursor(result);
+        Long nextCursorId = calcNextCursorId(result);
+        String nextCursorValue = calcNextCursorValue(result, shopSortType);
 
-        return new ViewShopListResponse(result, nextCursor);
+        return new ViewShopListResponse(result, nextCursorId, nextCursorValue);
     }
 
     @Override
@@ -193,7 +188,49 @@ public class ShopCustomRepositoryImpl implements ShopCustomRepository {
                 longitude, latitude, shop.address.longitude, shop.address.latitude);
     }
 
-    private Long calcNextCursor(List<ShopList> result) {
-        return result.isEmpty() ? null : result.get(result.size() - 1).getShopId();
+    private BooleanExpression cursorValue(String cursorValue, ShopSortType shopSortType, NumberExpression<Double> distance, Long cursorId) {
+        if (cursorValue == null || cursorId == null) return null;
+        switch (shopSortType) {
+            case DISTANCE:
+                return distance.round().intValue().gt(Integer.valueOf(cursorValue)).or(
+                        distance.round().intValue().eq(Integer.valueOf(cursorValue))
+                                .and(shop.id.gt(cursorId))
+                );
+            case AVG_RATING:
+                return review.score.avg().lt(Double.valueOf(cursorValue)).or(
+                        review.score.avg().eq(Double.valueOf(cursorValue))
+                                .and(shop.id.gt(cursorId))
+                );
+            case COUNT_REVIEW:
+                return review.count().gt(Long.valueOf(cursorValue)).or(
+                        review.count().eq(Long.valueOf(cursorValue))
+                                .and(shop.id.gt(cursorId))
+                );
+            default:
+                // 기본 정렬 설정: 거리, 평균 별점이 같은 경우 최신 순으로
+                return ltShopId(cursorId);
+        }
     }
+    @TimeTrace
+    private Long calcNextCursorId(List<ShopList> result) {
+        return result.isEmpty() ? null : result.stream()
+                .mapToLong(ShopList::getShopId)
+                .min()
+                .orElse(0L);
+    }
+    @TimeTrace
+    private String calcNextCursorValue(List<ShopList> result, ShopSortType shopSortType) {
+        switch (shopSortType) {
+            case DISTANCE:
+                return result.isEmpty() ? null : String.valueOf(result.get(result.size() - 1).getDistance());
+            case AVG_RATING:
+                return result.isEmpty() ? null : String.valueOf(result.get(result.size() - 1).getAvgRating());
+            case COUNT_REVIEW:
+                return result.isEmpty() ? null : String.valueOf(result.get(result.size() - 1).getReviewCount());
+            default:
+                // 기본 정렬 설정: 거리, 평균 별점이 같은 경우 최신 순으로
+                return null;
+        }
+    }
+
 }

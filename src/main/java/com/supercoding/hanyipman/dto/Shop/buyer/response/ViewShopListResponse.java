@@ -14,6 +14,6 @@ import java.util.List;
 public class ViewShopListResponse {
 
     private List<ShopList> shopLists;
-    private Long nextCursor;
-
+    private Long nextCursorId;
+    private String nextCursorValue;
 }
