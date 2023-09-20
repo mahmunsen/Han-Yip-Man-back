@@ -1,5 +1,6 @@
 package com.supercoding.hanyipman.dto.vo;
 
+import com.supercoding.hanyipman.enums.EventName;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,8 +13,14 @@ public class SendSseResponse<T> {
     private Long userId;
     @Setter private Long sendCount;
     private T data;
+    private EventName eventName;
+
     public static <T> SendSseResponse<T> of(Long userId, T data){
-        return new SendSseResponse<>(userId, 0L, data);
+        return new SendSseResponse<>(userId, 0L, data, null);
+    }
+
+    public static <T> SendSseResponse<T> of(Long userId, T data, EventName name){
+        return new SendSseResponse<>(userId, 0L, data, name);
     }
 
     public boolean isValidCount(){

@@ -9,6 +9,7 @@ import com.supercoding.hanyipman.repository.SseRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -21,7 +22,7 @@ import java.io.IOException;
 public class SseEventService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 10 *  60 * 1000L; // 10분
+    private final Long timeOut = 45 * 1000L;
 
     public SseEmitter registerEmitter(Long userId){
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
@@ -32,34 +33,39 @@ public class SseEventService {
 
     private SseEmitter generateSse(Long userId) {
         SseEmitter sseEmitter = new SseEmitter(timeOut);
-        sseEmitter.onTimeout(() -> {
-            log.info("호출: sse 타임아웃");
-            sseEmitter.complete();
-        });
+        sseEmitter.onTimeout(sseEmitter::complete);
         sseEmitter.onCompletion(() -> {
             log.info("호출: sse 완료");
-            sseEmitter.complete();
             sseRepository.delete(userId);
         });
-        sendMessage(EventName.SUBSCRIBE, "hello", sseEmitter);
+        sendMessage(userId, EventName.SUBSCRIBE, "연결", sseEmitter);
 
         return sseEmitter;
     }
 
     public <T> void validSendMessage(Long userId, EventName eventName, T data) {
         try {
-            SseEmitter emitter = findUserByUserId(userId);
-            sendMessage(eventName, data, emitter);
+            SseEmitter emitter = findSseByUserId(userId);
+            sendMessage(userId, eventName, data, emitter);
         }catch(CustomException e) {
             log.error("SSE 알림을 실행시키지 못했습니다.");
         }
     }
 
-    public SseEmitter findUserByUserId(Long userId) {
+    @Scheduled( cron = "0 * * * * *")
+    public void resendSse(){
+        log.info("Sse Scheduling");
+        sseRepository.findAllSendResponseAndClear().forEach((send) -> {
+            SseEmitter sse = findSseByUserId(send.getUserId());
+            sendMessage(send.getUserId(), send.getEventName(), send.getData(), sse);
+        });
+    }
+
+    public SseEmitter findSseByUserId(Long userId) {
         return sseRepository.findEmitterByUserId(userId).orElseThrow(() -> new CustomException(SseErrorCode.NOT_FOUND_EMITTER));
     }
 
-    public <T> void sendMessage(EventName eventName, T data, SseEmitter emitter) {
+    private <T> void sendMessage(Long userId, EventName eventName, T data, SseEmitter emitter) {
         try{
             emitter.send(SseEmitter.event()
                             .name(eventName.getEventName())
@@ -67,8 +73,7 @@ public class SseEventService {
             );
         }catch(IOException e) { //TODO: 메시지 전송 비동기 처리 고려
             log.info("SSE 알림을 실행시키지 못했습니다.");
-            sseRepository.addSendResponse(new SendSseResponse<>());
-//            throw new CustomException(SseErrorCode.CANT_SEND_MESSAGE);
+            sseRepository.addSendResponse(SendSseResponse.of(userId, emitter, eventName));
         }
     }
 }
