@@ -35,7 +35,6 @@ public class SseEventService {
         SseEmitter sseEmitter = new SseEmitter(timeOut);
         sseEmitter.onTimeout(sseEmitter::complete);
         sseEmitter.onCompletion(() -> {
-            log.info("호출: sse 완료");
             sseRepository.delete(userId);
         });
         sendMessage(userId, EventName.SUBSCRIBE, "연결", sseEmitter);
@@ -72,7 +71,7 @@ public class SseEventService {
                             .data(data)
             );
         }catch(IOException e) { //TODO: 메시지 전송 비동기 처리 고려
-            log.info("SSE 알림을 실행시키지 못했습니다.");
+            log.error("SSE 알림을 실행시키지 못했습니다.");
             sseRepository.addSendResponse(SendSseResponse.of(userId, emitter, eventName));
         }
     }

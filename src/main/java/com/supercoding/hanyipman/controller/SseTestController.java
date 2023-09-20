@@ -30,7 +30,6 @@ public class SseTestController {
     @Operation(summary = "서버 구독하기", description = "Sse 알림을 받기 위한 서버 구독URL")
     @GetMapping(headers = "X-API-VERSION=1", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter registerEmitter(@AuthenticationPrincipal CustomUserDetail auth)  {
-        log.info("Sse 구독");
         return sseService.registerEmitter(auth.getUserId());
     }
 
