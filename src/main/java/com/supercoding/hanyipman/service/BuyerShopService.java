@@ -2,7 +2,6 @@ package com.supercoding.hanyipman.service;
 
 import com.supercoding.hanyipman.dto.Shop.buyer.request.ViewShopListRequest;
 import com.supercoding.hanyipman.dto.Shop.buyer.response.*;
-import com.supercoding.hanyipman.dto.Shop.seller.response.MenuGroupResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
@@ -11,7 +10,7 @@ import com.supercoding.hanyipman.error.domain.MenuErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import com.supercoding.hanyipman.error.domain.UserErrorCode;
 import com.supercoding.hanyipman.repository.BuyerRepository;
-import com.supercoding.hanyipman.repository.MenuRepository;
+import com.supercoding.hanyipman.repository.menu.MenuRepository;
 import com.supercoding.hanyipman.repository.shop.ShopCustomRepositoryImpl;
 import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.repository.shop.ShopRepository;

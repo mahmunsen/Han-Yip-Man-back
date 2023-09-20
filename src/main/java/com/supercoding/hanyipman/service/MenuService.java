@@ -7,7 +7,7 @@ import com.supercoding.hanyipman.enums.FilePath;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.MenuGroupRepository;
-import com.supercoding.hanyipman.repository.MenuRepository;
+import com.supercoding.hanyipman.repository.menu.MenuRepository;
 import com.supercoding.hanyipman.repository.SellerRepository;
 import com.supercoding.hanyipman.repository.shop.ShopCustomRepositoryImpl;
 import com.supercoding.hanyipman.security.JwtToken;
