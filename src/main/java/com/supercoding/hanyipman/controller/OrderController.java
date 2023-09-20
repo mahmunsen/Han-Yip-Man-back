@@ -2,10 +2,7 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeSellerResponse;
-import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
-import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
+import com.supercoding.hanyipman.dto.order.response.*;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
@@ -41,11 +38,11 @@ public class OrderController {
     //TODO: 임시 테스트 url 실제는 api/payment url에서 주문과 결제가 이뤄짐
     @Operation(summary = "주문 등록", description = "장바구니에 담겨진 메뉴들을 주문함")
     @PostMapping(headers = "X-API-VERSION=1")
-    public Response<Void> order(@RequestBody RegisterOrderRequest request,
+    public Response<OrderIdResponse> order(@RequestBody RegisterOrderRequest request,
                                 @AuthenticationPrincipal CustomUserDetail auth) {
-        orderService.order(auth.getUserId(), request.getBuyerCouponId());
+        Long orderId = orderService.order(auth.getUserId(), request.getBuyerCouponId());
 
-        return ApiUtils.success(HttpStatus.CREATED, "성공적으로 주문됐습니다.", null);
+        return ApiUtils.success(HttpStatus.CREATED, "성공적으로 주문됐습니다.", new OrderIdResponse(orderId));
     }
 
     @Operation(summary = "주문목록 조회", description = "주문했던 목록을 가져옴")
