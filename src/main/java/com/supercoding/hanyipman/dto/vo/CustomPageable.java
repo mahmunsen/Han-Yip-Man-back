@@ -45,6 +45,7 @@ public class CustomPageable {
         return cursor;
     }
     public Integer getSize() {
+        if(size == null) return 10;
         return size;
     }
 
