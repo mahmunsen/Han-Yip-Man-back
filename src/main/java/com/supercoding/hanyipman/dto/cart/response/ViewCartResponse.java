@@ -35,7 +35,6 @@ public class ViewCartResponse {
         Integer price = menuPrice;
         if(optionItems == null) {
             this.optionItems = new ArrayList<>();
-            return;
         }
         price += optionItems.stream()
                 .mapToInt(OptionItemResponse::getOptionPrice)
