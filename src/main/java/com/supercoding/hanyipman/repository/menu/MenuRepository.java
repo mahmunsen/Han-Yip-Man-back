@@ -1,4 +1,4 @@
-package com.supercoding.hanyipman.repository;
+package com.supercoding.hanyipman.repository.menu;
 
 import com.supercoding.hanyipman.entity.Menu;
 import com.supercoding.hanyipman.entity.MenuGroup;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface MenuRepository extends JpaRepository<Menu, Long> {
+public interface MenuRepository extends JpaRepository<Menu, Long>, MenuCustomRepository {
     @Query("SELECT m FROM Menu m where m.id =:menuId")
     Optional<Menu> findMenuByMenuId(@Param("menuId") Long menuId);
 

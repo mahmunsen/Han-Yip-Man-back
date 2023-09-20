@@ -9,6 +9,8 @@ import com.supercoding.hanyipman.entity.*;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.*;
 import com.supercoding.hanyipman.repository.*;
+import com.supercoding.hanyipman.repository.menu.MenuCustomRepositoryImpl;
+import com.supercoding.hanyipman.repository.menu.MenuRepository;
 import com.supercoding.hanyipman.repository.shop.ShopRepository;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
@@ -37,6 +39,7 @@ public class CartService {
     private final CartOptionItemRepository cartOptionItemRepository;
     private final CartRepository cartRepository;
     private final EmCartRepository emCartRepository;
+    private final MenuCustomRepositoryImpl menuCustomRepository;
 
     @TimeTrace
     @Transactional
@@ -52,7 +55,7 @@ public class CartService {
         // 가게 찾기
         Shop shop = shopRepository.findShopByShopId(shopId).orElseThrow(() -> new CustomException(ShopErrorCode.NOT_FOUND_SHOP));
         // 담으려는 메뉴 찾기
-        Menu menu = findMenuByMenuId(menuId);
+        Menu menu = menuCustomRepository.findMenuByShop(shop.getId(), menuId).orElseThrow(() -> new CustomException(MenuErrorCode.NOT_FOUND_MENU));
         // 장바구니 생성
         Cart cart = Cart.from(buyer, shop, menu, amount);
         // 생성된 엔티티 저장
