@@ -2,14 +2,17 @@ package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.request.RegisterOrderRequest;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
+import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.OrderService;
+import com.supercoding.hanyipman.service.SseEventService;
 import com.supercoding.hanyipman.utils.ApiUtils;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -29,6 +32,7 @@ import java.text.ParseException;
 public class OrderController {
 
     private final OrderService orderService;
+    private final SseEventService sseEventService;
 
 
     //TODO: 임시 테스트 url 실제는 api/payment url에서 주문과 결제가 이뤄짐
@@ -57,5 +61,15 @@ public class OrderController {
     public Response<Object> viewOrderDetail(@PathVariable("order_id") Long orderId) throws ParseException {
         ViewOrderDetailResponse viewOrderDetailResponse = orderService.viewOrderDetail(JwtToken.user(), orderId);
         return ApiUtils.success(HttpStatus.OK.value(), "주문 내역 조회에 성공하였습니다.", viewOrderDetailResponse);
+    }
+
+    @TimeTrace
+    @Operation(summary = "SSE 주문 알림 테스트 URL", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
+    @GetMapping(path = "/test/{order_id}", headers = "X-API-VERSION=1")
+    public Response<Object> asdf(@PathVariable("order_id") Long orderId) {
+        Long userId = JwtToken.user().getId();
+        OrderNoticeResponse viewOrderDetailResponse = orderService.findOrder(userId, orderId);
+        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER, viewOrderDetailResponse);
+        return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", viewOrderDetailResponse);
     }
 }

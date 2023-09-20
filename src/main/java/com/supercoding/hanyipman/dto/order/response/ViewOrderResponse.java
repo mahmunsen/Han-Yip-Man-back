@@ -10,7 +10,10 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.supercoding.hanyipman.utils.DateUtils.yearMonthDayHourMinuteSecond;
@@ -43,8 +46,10 @@ public class ViewOrderResponse {
     }
 
     private static List<String> convertMenuNames(Order order) {
-        return order.getCarts().stream()
-                .map(cart -> convertNameAndAmount(cart.getMenu().getName(), cart.getAmount().intValue())).collect(Collectors.toList());
+        if(order.getCarts().size() == 0) return new ArrayList<>();
+        return order.getCarts().stream().filter(Objects::nonNull)
+                .map(cart -> convertNameAndAmount(cart.getMenu().getName(), cart.getAmount().intValue()))
+                .collect(Collectors.toList());
     }
 
     private static List<String> convertOptionNames(Order order) {

@@ -11,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -31,5 +32,16 @@ public class EmOrderRepository {
                 .setFirstResult(0)
                 .setMaxResults(pageable.getSize())
                 .getResultList();
+    }
+
+    public Optional<Order> findOrderByOrderId(Long orderId) {
+        return Optional.ofNullable(em.createQuery("SELECT o FROM Order o " +
+                        "JOIN fetch o.shop s " +
+                        "JOIN fetch o.address " +
+                        "JOIN fetch o.buyer b " +
+                        "WHERE o.id =:orderId ", Order.class)
+                .setParameter("orderId", orderId)
+                .getSingleResult());
+
     }
 }

@@ -97,10 +97,10 @@ public class OrderService {
     }
 
     @TimeTrace
-    protected OrderNoticeResponse findOrder(Long userId, Long orderId) {
+    public OrderNoticeResponse findOrder(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
 
-        Order order = findOrderByOrderId(orderId);
+        Order order = emOrderRepository.findOrderByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
         List<Cart> carts = emCartRepository.findCartsByPaidCartForOrderDetail(buyer.getId(), orderId);
         List<Cart> joinItems = findCartsJoinItems(carts);
         order.setCarts(joinItems);
