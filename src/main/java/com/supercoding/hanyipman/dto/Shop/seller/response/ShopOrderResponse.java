@@ -35,7 +35,7 @@ public class ShopOrderResponse {
                 .orderId(order.getId())
                 .totalAmount(order.getTotalPrice())
                 .address(order.getAddress().getAddress()+" "+order.getAddress().getDetailAddress())
-                .orderedTime(order.getUpdatedAt())
+                .orderedTime(order.getCreatedAt())
                 .menuResponses(order.getCarts().stream().map(cart -> ShopOrdersMenuResponse.from(cart)).collect(Collectors.toList()))
                 .orderSequence(order.getOrderSequence())
                 .build();
