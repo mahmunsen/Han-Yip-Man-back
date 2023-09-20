@@ -20,5 +20,6 @@ public class ViewShopListRequest {
     private Integer size;
     private String searchKeyword;
     private String sortType;
-    private Long cursor;
+    private Long cursorId;
+    private String cursorValue;
 }
