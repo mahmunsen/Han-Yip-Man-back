@@ -682,9 +682,13 @@ public class PaymentService {
     private void setOrderSequence(Order order) {
         Shop shop = order.getShop();
         List<Order> ordersOfShop = orderRepository.findByShopAndOrderStatus(shop, OrderStatus.PAID).orElse(null);
-        Integer orderPosition = ordersOfShop.stream()
-                .max(Comparator.comparingInt(orderOfShop -> orderOfShop.getOrderSequence()))
-                .map(orderOfShop -> orderOfShop.getOrderSequence()).orElse(0);
+        Integer orderPosition = 0;
+        if (ordersOfShop != null) {
+            orderPosition = ordersOfShop.stream()
+                    .max(Comparator.comparingInt(orderOfShop -> orderOfShop.getOrderSequence()))
+                    .map(orderOfShop -> orderOfShop.getOrderSequence()).orElse(0);
+        }
+
         order.setOrderSequence(orderPosition);
     }
 
