@@ -1,6 +1,8 @@
 package com.supercoding.hanyipman.dto.order.response;
 
 import com.supercoding.hanyipman.entity.Order;
+import com.supercoding.hanyipman.entity.Payment;
+import com.supercoding.hanyipman.enums.PaymentProvidor;
 import com.supercoding.hanyipman.utils.DateUtils;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -27,6 +29,7 @@ public class OrderNoticeResponse {
     private Integer totalAmount;
     @ApiModelProperty(value = "주소", dataType = "String")
     private String address;
+    private String addressDetail;
     @ApiModelProperty(value="주문시간", dataType = "Instant")
     private String orderedTime;
     @ApiModelProperty(value="결제수단", dataType = "Instant")
@@ -34,9 +37,8 @@ public class OrderNoticeResponse {
 
 
 
-// TODO : 결제 로직 정해지기 전 응답 객체에 payment 빼놓음
-//    public static OrderNoticeBuyerResponse from(Order order, Payment payment) {
-    public static OrderNoticeResponse from(Order order) {
+    public static OrderNoticeResponse from(Order order, Payment payment) {
+//    public static OrderNoticeResponse from(Order order) {
 
         return OrderNoticeResponse.builder()
                 .orderId(order.getId())
@@ -45,10 +47,12 @@ public class OrderNoticeResponse {
                 .menuNames(setMenuNames(order))
                 .totalAmount(order.getTotalPrice())
                 .address(order.getAddress().getAddress())
+                .addressDetail(order.getAddress().getDetailAddress())
                 .orderedTime(DateUtils.convertToString(order.getCreatedAt()))
-//                .paymentProvider(PaymentProvidor.convertEnToKo(payment.getPaymentMethod()))
+                .paymentProvider(PaymentProvidor.convertEnToKo(payment.getPaymentMethod()))
                 .build();
     }
+
     public static String setMenuNames(Order order) {
         if(order.getCarts() == null || order.getCarts().size() == 0) return "";
         String menuNames = order.getCarts().get(0).getMenu().getName();
