@@ -75,13 +75,12 @@ public class AddressService {
         if (addressList.stream().noneMatch(address -> address.getId().equals(defaultAddressId)))
             throw new CustomException(AddressErrorCode.MY_ADDRESS_ONLY);
 
-        addressList.stream().map(address -> {
+        addressList.stream().peek(address -> {
             if (address.getId().equals(defaultAddressId)) {
                 address.setIsDefault(true);
             } else {
                 address.setIsDefault(false);
             }
-            return address;
         }).collect(Collectors.toList());
     }
 
