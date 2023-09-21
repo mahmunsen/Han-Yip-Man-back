@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface BuyerCouponRepository extends JpaRepository<BuyerCoupon, Long> {
 
-    boolean existsBuyerCouponByCoupon(Coupon coupon);
+    boolean existsBuyerCouponByCouponAndBuyer(Coupon coupon,Buyer buyer);
 
     List<BuyerCoupon> findBuyerCouponsByBuyerOrderByEnabledDescCreatedAtDesc(Buyer buyer);
 

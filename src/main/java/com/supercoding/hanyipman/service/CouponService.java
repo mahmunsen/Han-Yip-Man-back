@@ -38,7 +38,7 @@ public class CouponService {
         Coupon coupon = validateCoupon(couponCode);
 
         // 해당 쿠폰 코드가 등록 된 적이 있나? 있으면 에러 발생, 없으면 새로운 쿠폰 저장,
-        if (buyerCouponRepository.existsBuyerCouponByCoupon(coupon))
+        if (buyerCouponRepository.existsBuyerCouponByCouponAndBuyer(coupon,buyer))
             throw new CustomException(CouponErrorCode.REGISTERED_BEFORE);
 
         buyerCouponRepository.save(BuyerCoupon.from(coupon, buyer));
