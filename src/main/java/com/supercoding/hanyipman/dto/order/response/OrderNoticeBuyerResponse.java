@@ -1,8 +1,6 @@
 package com.supercoding.hanyipman.dto.order.response;
 
 import com.supercoding.hanyipman.entity.Order;
-import com.supercoding.hanyipman.entity.Payment;
-import com.supercoding.hanyipman.enums.PaymentProvidor;
 import com.supercoding.hanyipman.utils.DateUtils;
 import io.swagger.annotations.ApiModelProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -36,8 +34,9 @@ public class OrderNoticeBuyerResponse {
 
 
 
-
-    public static OrderNoticeBuyerResponse from(Order order, Payment payment) {
+// TODO : 결제 로직 정해지기 전 응답 객체에 payment 빼놓음
+//    public static OrderNoticeBuyerResponse from(Order order, Payment payment) {
+    public static OrderNoticeBuyerResponse from(Order order) {
 
         return OrderNoticeBuyerResponse.builder()
                 .orderId(order.getId())
@@ -47,7 +46,7 @@ public class OrderNoticeBuyerResponse {
                 .totalAmount(order.getTotalPrice())
                 .address(order.getAddress().getAddress())
                 .orderedTime(DateUtils.convertToString(order.getCreatedAt()))
-                .paymentProvider(PaymentProvidor.convertEnToKo(payment.getPaymentMethod()))
+//                .paymentProvider(PaymentProvidor.convertEnToKo(payment.getPaymentMethod()))
                 .build();
     }
     public static String setMenuNames(Order order) {

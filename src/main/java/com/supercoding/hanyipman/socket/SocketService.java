@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.socket;
 
 import com.corundumstudio.socketio.SocketIOClient;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.MessageType;
@@ -8,6 +9,7 @@ import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Shop;
 import com.supercoding.hanyipman.entity.User;
+import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.OrderErrorCode;
@@ -17,6 +19,7 @@ import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
 import com.supercoding.hanyipman.service.OrderService;
+import com.supercoding.hanyipman.service.SseEventService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +36,7 @@ public class SocketService {
     private final JwtTokenProvider jwtTokenProvider;
     private final UserRepository userRepository;
     private final OrderService orderService;
+    private final SseEventService sseEventService;
 
     public void sendMessage(String room, String eventName, SocketIOClient senderClient, String message, String token) {
         try {
@@ -81,6 +85,9 @@ public class SocketService {
 
             OrderStatusMessage orderStatusMessage
                     = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, maxPriceMenuName, orderSequence);
+            OrderNoticeBuyerResponse orderNoticeBuyerResponse = orderService.findOrderNoticeToBuyer(order.getBuyer().getUser().getId(), orderId);
+            sseEventService.validSendMessage(order.getBuyer().getUser().getId(), EventName.NOTICE_ORDER, orderNoticeBuyerResponse);
+
 
             for (SocketIOClient client : senderClient.getNamespace().getRoomOperations("order" + orderId).getClients()) {
                 client.sendEvent(eventName, orderStatusMessage);
@@ -102,7 +109,8 @@ public class SocketService {
             }
         } catch (CustomException e) {
             sendErrorMessage(e.getErrorCode().getCode(), e.getErrorMessage(), client);
-            client.disconnect();
+//            TODO : 토큰 정보 맞지 않았을 때 어떻게 소켓 끊고 응답 보낼것인가.
+//            client.disconnect();
         }
         return checkToken;
     }
