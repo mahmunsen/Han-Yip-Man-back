@@ -1,8 +1,10 @@
 package com.supercoding.hanyipman.service;
+
+import com.corundumstudio.socketio.SocketIOServer;
+import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeSellerResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
-import com.supercoding.hanyipman.advice.annotation.TimeTrace;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderResponse;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
@@ -23,7 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -44,6 +49,7 @@ public class OrderService {
     private final BuyerRepository buyerRepository;
     private final CartOptionItemRepository cartOptionItemRepository;
     private final PaymentRepository paymentRepository;
+    private final SocketIOServer socketIOServer;
 
 
     @TimeTrace
@@ -76,7 +82,6 @@ public class OrderService {
         // 주문 엔티티 생성 후 저장  // 장바구니 <-> 주문 연결
         Order order = Order.from(buyer, orderUid, address, carts.get(0).getShop(), coupon, cartsJoinItems);
         orderRepository.save(order); //TODO: 주문 상세보기에서 할인된 금액이 필요할 경우 변경될 수 있음
-
         // 주문 식별값 ID 반환
         return order.getId();
     }
@@ -108,7 +113,7 @@ public class OrderService {
         Payment payment = findPaymentByOrderId(orderId);
         Order  order = findOrderFetchCarts(orderId, buyer);
 
-        return OrderNoticeResponse.from(order);
+        return OrderNoticeResponse.from(order, payment);
     }
 
     private Order findOrderFetchCarts(Long orderId, Buyer buyer) {
