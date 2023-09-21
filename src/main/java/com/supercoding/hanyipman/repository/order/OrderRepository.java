@@ -48,4 +48,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByOrderStatusAndShopAndOrderSequenceAfter(OrderStatus orderStatus,Shop shop, Integer start);
 
+    Optional<List<Order>> findByShopAndOrderStatus(Shop shop, OrderStatus orderStatus);
+
 }
