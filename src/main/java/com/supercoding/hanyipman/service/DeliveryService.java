@@ -2,15 +2,20 @@ package com.supercoding.hanyipman.service;
 
 
 import com.supercoding.hanyipman.dto.delivery.response.DeliveryLocation;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.vo.SendSseResponse;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
+import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.AddressErrorCode;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
+import com.supercoding.hanyipman.error.domain.OrderErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
+import com.supercoding.hanyipman.repository.order.EmOrderRepository;
+import com.supercoding.hanyipman.repository.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +26,7 @@ import java.util.Optional;
 import java.util.stream.IntStream;
 
 import static com.supercoding.hanyipman.enums.EventName.NOTICE_DRON_LOCATION;
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_BUYER;
 
 
 @Slf4j
@@ -28,14 +34,17 @@ import static com.supercoding.hanyipman.enums.EventName.NOTICE_DRON_LOCATION;
 @Service
 public class DeliveryService {
     private final BuyerRepository buyerRepository;
+    private final OrderService orderService;
+    private final EmOrderRepository orderRepository;
     private final SseMessageService sseMessageService;
     private final AddressRepository addressRepository;
     private final Integer END_TIME = 60;
 
     @Transactional(readOnly = true)
-    public void getDeliveryLocation(Long userId, Long startAddrId, Long endAddrId) {
-        Address startAddress = findAddressByAddressId(startAddrId);
-        Address endAddress = findAddressByAddressId(endAddrId);
+    public void getDeliveryLocation(Long userId, Long orderId) {
+        Order order = findOrderByOrderId(orderId);
+        Address startAddress = order.getShop().getAddress();
+        Address endAddress = order.getAddress();
         findBuyerByUserId(userId);
 
         // 1차 구현 시작지점, 끝 지점 둘 다 +, + 라 가정하고 작성 추후 변경 예정
@@ -58,10 +67,11 @@ public class DeliveryService {
                 log.info("드론 배달 위치 전송 중 에러가 발생했습니다.");
             }
         }
+        //TODO: 배달이 끝나고 배달 완료 메시지 반환
     }
 
-    private Address findAddressByAddressId(Long startAddrId) {
-        return addressRepository.findById(startAddrId).orElseThrow(() -> new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND));
+    private Order findOrderByOrderId(Long orderId) {
+        return orderRepository.findOrderByOrderId(orderId).orElseThrow(() -> new CustomException(OrderErrorCode.ORDER_NOT_FOUND));
     }
 
     private Buyer findBuyerByUserId(Long userId) {

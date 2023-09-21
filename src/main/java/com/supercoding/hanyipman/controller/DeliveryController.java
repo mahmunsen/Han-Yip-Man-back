@@ -21,9 +21,8 @@ public class DeliveryController {
     private final DeliveryService deliveryService;
 
     @GetMapping(headers = "X-API-VERSION=1")
-    public void getDeliveryLocation(@RequestParam("startAddrId") Long startAddrId,
-                                           @RequestParam("endAddrId") Long endAddrId,
+    public void getDeliveryLocation(@RequestParam("orderId") Long orderId,
                                            @AuthenticationPrincipal CustomUserDetail auth) {
-        deliveryService.getDeliveryLocation(auth.getUserId(), startAddrId, endAddrId);
+        deliveryService.getDeliveryLocation(auth.getUserId(), orderId);
     }
 }
