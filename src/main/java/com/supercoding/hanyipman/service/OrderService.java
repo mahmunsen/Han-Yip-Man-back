@@ -105,10 +105,12 @@ public class OrderService {
     @TimeTrace
     public OrderNoticeBuyerResponse findOrderNoticeToBuyer(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
-        Payment payment = findPaymentByOrderId(orderId);
+        //TODO : 결제 로직 정해지기 전 응답 객체에 payment 빼놓음
+//        Payment payment = findPaymentByOrderId(orderId);
         Order  order = findOrderFetchCarts(orderId, buyer);
 
-        return OrderNoticeBuyerResponse.from(order, payment);
+//        return OrderNoticeBuyerResponse.from(order, payment);
+        return OrderNoticeBuyerResponse.from(order);
     }
 
     private Order findOrderFetchCarts(Long orderId, Buyer buyer) {
