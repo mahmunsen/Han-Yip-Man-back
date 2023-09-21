@@ -202,8 +202,8 @@ public class PaymentService {
         if (expectedPrice.equals(amount)) {
             payment.setImpUid(impUid); // 결제에 imp_uid 저장
             payment.setPaymentStatus(status); // 결제 상태값, ready -> paid 로 저장
-            order.setOrderStatus(OrderStatus.valueOf("PAID")); // 주문 상태값, WAIT -> PAID로 변경
             setOrderSequence(order);
+            order.setOrderStatus(OrderStatus.valueOf("PAID")); // 주문 상태값, WAIT -> PAID로 변경
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
             //주문 알림 기능
             OrderNoticeSellerResponse orderNoticeResponse = orderService.findOrderNoticeToSeller(user.getId(), order.getId());
@@ -314,7 +314,6 @@ public class PaymentService {
         HttpEntity<?> httpEntity = new HttpEntity<>(params, headers);
 
         ResponseEntity<KakaoPayReadyResponse> kakaoPayReadyResponse = kakaoTemplate.exchange(KAKAOPAY_BASE_URL + "/v1/payment/ready", HttpMethod.POST, httpEntity, KakaoPayReadyResponse.class);
-
         if (kakaoPayReadyResponse.getStatusCode() == HttpStatus.OK && kakaoPayReadyResponse.getBody() != null) {
             // 응답값으로 merchant_uid 포함
             kakaoPayReadyResponse.getBody().setMerchant_uid(merchant_uid);
@@ -365,8 +364,8 @@ public class PaymentService {
 
         if (kakaoPayApproveResponse.getStatusCode() == HttpStatus.OK && kakaoPayApproveResponse != null) {
             // 결제내역 디비에 저장
-            order.setOrderStatus(OrderStatus.valueOf("PAID"));
             setOrderSequence(order);
+            order.setOrderStatus(OrderStatus.valueOf("PAID"));
             payment.setPaymentStatus("paid");
             paymentRepository.save(payment);
             orderRepository.save(order);
@@ -682,11 +681,14 @@ public class PaymentService {
     private void setOrderSequence(Order order) {
         Shop shop = order.getShop();
         List<Order> ordersOfShop = orderRepository.findByShopAndOrderStatus(shop, OrderStatus.PAID).orElse(null);
-        Integer orderPosition = ordersOfShop.stream()
-                .max(Comparator.comparingInt(orderOfShop -> orderOfShop.getOrderSequence()))
-                .map(orderOfShop -> orderOfShop.getOrderSequence()).orElse(0);
+
+        Integer orderPosition = 0;
+        if (ordersOfShop.size() != 0) {
+            orderPosition = ordersOfShop.stream()
+                    .max(Comparator.comparingInt(orderOfShop -> orderOfShop.getOrderSequence()))
+                    .map(orderOfShop -> orderOfShop.getOrderSequence()).orElse(0)+1;
+        }
         order.setOrderSequence(orderPosition);
     }
-
 }
 
