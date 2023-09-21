@@ -33,7 +33,6 @@ public class OrderController {
     private final SseEventService sseEventService;
 
 
-    //TODO: 임시 테스트 url 실제는 api/payment url에서 주문과 결제가 이뤄짐
     @Operation(summary = "주문 등록", description = "장바구니에 담겨진 메뉴들을 주문함")
     @PostMapping(headers = "X-API-VERSION=1")
     public Response<OrderIdResponse> order(@RequestBody RegisterOrderRequest request,
@@ -56,7 +55,7 @@ public class OrderController {
     @TimeTrace
     @Operation(summary = "주문내역 조회", description = "결제 이후(결제 성공 시/결제 취소시) 주문내역 조회")
     @GetMapping(path = "/{order_id}", headers = "X-API-VERSION=1")
-    public Response<Object> viewOrderDetail(@PathVariable("order_id") Long orderId) throws ParseException {
+    public Response<ViewOrderDetailResponse> viewOrderDetail(@PathVariable("order_id") Long orderId) throws ParseException {
         ViewOrderDetailResponse viewOrderDetailResponse = orderService.viewOrderDetail(JwtToken.user(), orderId);
         return ApiUtils.success(HttpStatus.OK.value(), "주문 내역 조회에 성공하였습니다.", viewOrderDetailResponse);
     }
@@ -64,7 +63,7 @@ public class OrderController {
     @TimeTrace
     @Operation(summary = "SSE 사장님 주문 알림 테스트 URL", description = "소비자가 음식을 주문하면 사장님 한테 알림을 발생시킴")
     @GetMapping(path = "/seller/{order_id}", headers = "X-API-VERSION=1")
-    public Response<Object> noticeOrderBySeller(@PathVariable("order_id") Long orderId) {
+    public Response<OrderNoticeResponse> noticeOrderBySeller(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
         OrderNoticeResponse orderNotice = orderService.findOrderNotice(userId, orderId);
         sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER_SELLER, orderNotice);
@@ -74,7 +73,7 @@ public class OrderController {
     @TimeTrace
     @Operation(summary = "SSE 소비자 주문 알림 테스트", description = "사장님이 주문 상태를 변경하면 소비자에게 알림을 발생시킴")
     @GetMapping(path = "/buyer/{order_id}", headers = "X-API-VERSION=1")
-    public Response<Object> noticeOrderByBuyer(@PathVariable("order_id") Long orderId) {
+    public Response<OrderNoticeResponse> noticeOrderByBuyer(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
         OrderNoticeResponse viewOrderDetailResponse = orderService.findOrderNotice(userId, orderId);
         sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER_BUYER, viewOrderDetailResponse);

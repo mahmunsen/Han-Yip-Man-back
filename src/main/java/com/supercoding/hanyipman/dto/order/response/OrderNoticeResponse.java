@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "사장님 가게 주문 조회")
+@Schema(description = "사장님, 소비자 알림")
 public class OrderNoticeResponse {
     @ApiModelProperty(value="주문 식별값 필드", dataType = "Long")
     private Long orderId;
