@@ -49,9 +49,6 @@ public class MyInfoService {
 
         }
         Buyer buyer = buyerRepository.findByUser(user).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
-        if (buyer == null) {
-            throw new CustomException(BuyerErrorCode.INVALID_BUYER);
-        }
 
         List<Address> addressList = addressRepository.findAllByBuyer(buyer);
         List<MyInfoAddressResponse> myInfoAddressResponses = addressList.stream().map(MyInfoAddressResponse::toMyAddressResponse).collect(Collectors.toList());
@@ -70,7 +67,6 @@ public class MyInfoService {
         validatePasswordConfirmation(password, passwordCheck, request);
         Seller seller = sellerRepository.findByUser(user).orElseThrow(() -> new CustomException(SellerErrorCode.NOT_SELLER));
 
-        // TODO: 영속성 적용해서 데이터 업데이트 하기
         sellerRepository.save(seller.updateBusinessNum(seller, request));
         userRepository.save(sellerUpdateMyInfo(user, seller, request));
     }

@@ -31,5 +31,16 @@ public class MyInfoAddressResponse {
                 .roadAddress(addressList.getRoadAddress())
                 .mapId(addressList.getMapId())
                 .build();
+    }  public static MyInfoAddressResponse toNullAddressResponse() {
+        return MyInfoAddressResponse.builder()
+                .addressNumber(null)
+                .address(null)
+                .detailAddress(null)
+                .latitude(null)
+                .longitude(null)
+                .isDefault(null)
+                .roadAddress(null)
+                .mapId(null)
+                .build();
     }
 }

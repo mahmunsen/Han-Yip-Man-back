@@ -57,7 +57,7 @@ public class AddressService {
             throw new CustomException(AddressErrorCode.ADDRESS_DATA_EXCEED_LIMIT);
         Address address = addressRepository.findByBuyerAndId(buyer, addressId).orElseThrow(() -> new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND));
         // 삭제하려는 주소가 기본 주소로 등록되어 있을 때 최근 주소를 기본주소로 설정
-        if (address.getIsDefault()) {
+        if (Boolean.TRUE.equals(address.getIsDefault())) {
             List<Address> addresses = addressRepository.findAllByBuyerAndIsDefaultFalseOrderByIdDesc(buyer);
             setDefaultAddress(buyer, addresses.get(0).getId());
         }
@@ -75,6 +75,7 @@ public class AddressService {
         if (addressList.stream().noneMatch(address -> address.getId().equals(defaultAddressId)))
             throw new CustomException(AddressErrorCode.MY_ADDRESS_ONLY);
 
+        // 기본값이 해당 값만 true 나머지는 모두 false처리
         addressList.stream().peek(address -> {
             if (address.getId().equals(defaultAddressId)) {
                 address.setIsDefault(true);
@@ -101,7 +102,7 @@ public class AddressService {
 
     // 카카오 mapId 중복 예외처리
     private void validateUniqueAddressId(Buyer buyer, AddressRegisterRequest request) {
-        if (addressRepository.existsAddressByMapIdAndBuyer(request.getMapId(), buyer))
+        if (Boolean.TRUE.equals(addressRepository.existsAddressByMapIdAndBuyer(request.getMapId(), buyer)))
             throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
     }
 

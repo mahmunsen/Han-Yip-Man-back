@@ -1,8 +1,9 @@
 package com.supercoding.hanyipman.controller;
 
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
-import com.supercoding.hanyipman.dto.myInfo.response.MyInfoResponse;
 import com.supercoding.hanyipman.dto.myInfo.request.SellerUpdateInfoRequest;
+import com.supercoding.hanyipman.dto.myInfo.response.MyInfoAddressResponse;
+import com.supercoding.hanyipman.dto.myInfo.response.MyInfoResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.MyInfoService;
@@ -25,7 +26,10 @@ public class MyInfoController {
     @GetMapping(value = "/users/my-info", headers = "X-API-VERSION=1")
     @Operation(summary = "구매자, 판매자 마이페이지 API", description = "회원은 나의정보 및 등록주소 표시, 사장은 나의정보 포시")
     public Response<MyInfoResponse> buyerUserMyInfo() {
-        return ApiUtils.success(HttpStatus.OK, "마이페이지 응답 성공", myInfoService.getUserInfoForMyPage(JwtToken.user()));
+        MyInfoResponse userInfoForMyPage = myInfoService.getUserInfoForMyPage(JwtToken.user());
+        if (userInfoForMyPage.getAddressList().isEmpty())
+            userInfoForMyPage.getAddressList().add(MyInfoAddressResponse.toNullAddressResponse());
+        return ApiUtils.success(HttpStatus.OK, "마이페이지 응답 성공", userInfoForMyPage);
     }
 
     @PatchMapping(value = "/sellers/my-info", headers = "X-API-VERSION=1")

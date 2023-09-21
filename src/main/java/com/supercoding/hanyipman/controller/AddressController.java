@@ -36,7 +36,9 @@ public class AddressController {
     @GetMapping(headers = "X-API-VERSION=1")
     @Operation(summary = "주소 조회", description = "나의 등록된 주소 모두를 불러옵니다.")
     public Response<List<AddressListResponse>> getAddressList() {
-        return ApiUtils.success(HttpStatus.OK, JwtToken.user().getEmail() + " 유저의 등록된 주소입니다.", addressService.getAddressList(JwtToken.user().validBuyer()));
+        List<AddressListResponse> addressList = addressService.getAddressList(JwtToken.user().validBuyer());
+        if (addressList.isEmpty()) addressList.add(AddressListResponse.toNullAddressResponse());
+        return ApiUtils.success(HttpStatus.OK, JwtToken.user().getEmail() + " 유저의 등록된 주소입니다.", addressList);
     }
 
     // 주소 수정
@@ -55,6 +57,7 @@ public class AddressController {
         String deleteAddress = addressService.sellerDeleteAddress(JwtToken.user().getBuyer(), addressId);
         return ApiUtils.success(HttpStatus.NO_CONTENT, deleteAddress + " 주소 삭제 완료", null);
     }
+
     // 기본 주소 등록
     @Operation(summary = "기본 주소 설정", description = "기본 배송지로 선택할 주소를 선택합니다.")
     @PostMapping(value = "/set-default-address", headers = "X-API-VERSION=1")
