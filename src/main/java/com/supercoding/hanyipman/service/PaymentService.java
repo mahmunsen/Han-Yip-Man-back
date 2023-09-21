@@ -34,6 +34,7 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -202,6 +203,7 @@ public class PaymentService {
             payment.setImpUid(impUid); // 결제에 imp_uid 저장
             payment.setPaymentStatus(status); // 결제 상태값, ready -> paid 로 저장
             order.setOrderStatus(OrderStatus.valueOf("PAID")); // 주문 상태값, WAIT -> PAID로 변경
+            setOrderSequence(order);
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
             //주문 알림 기능
             OrderNoticeSellerResponse orderNoticeResponse = orderService.findOrderNoticeToSeller(user.getId(), order.getId());
@@ -364,6 +366,7 @@ public class PaymentService {
         if (kakaoPayApproveResponse.getStatusCode() == HttpStatus.OK && kakaoPayApproveResponse != null) {
             // 결제내역 디비에 저장
             order.setOrderStatus(OrderStatus.valueOf("PAID"));
+            setOrderSequence(order);
             payment.setPaymentStatus("paid");
             paymentRepository.save(payment);
             orderRepository.save(order);
@@ -674,6 +677,15 @@ public class PaymentService {
             cart.setIsDeleted(false);
             cartRepository.save(cart);
         });
+    }
+
+    private void setOrderSequence(Order order) {
+        Shop shop = order.getShop();
+        List<Order> ordersOfShop = orderRepository.findByShopAndOrderStatus(shop, OrderStatus.PAID).orElse(null);
+        Integer orderPosition = ordersOfShop.stream()
+                .max(Comparator.comparingInt(orderOfShop -> orderOfShop.getOrderSequence()))
+                .map(orderOfShop -> orderOfShop.getOrderSequence()).orElse(0);
+        order.setOrderSequence(orderPosition);
     }
 
 }
