@@ -7,8 +7,6 @@ import com.supercoding.hanyipman.dto.user.CustomUserDetail;
 import com.supercoding.hanyipman.dto.vo.CustomPageable;
 import com.supercoding.hanyipman.dto.vo.PageResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
-import com.supercoding.hanyipman.entity.Address;
-import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.security.JwtToken;
 import com.supercoding.hanyipman.service.OrderService;
@@ -68,9 +66,9 @@ public class OrderController {
     @GetMapping(path = "/seller/{order_id}", headers = "X-API-VERSION=1")
     public Response<Object> noticeOrderBySeller(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
-        OrderNoticeSellerResponse viewOrderDetailResponse = orderService.findOrderNoticeToSeller(userId, orderId);
-        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER, viewOrderDetailResponse);
-        return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", viewOrderDetailResponse);
+        OrderNoticeResponse orderNotice = orderService.findOrderNotice(userId, orderId);
+        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER_SELLER, orderNotice);
+        return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", orderNotice);
     }
 
     @TimeTrace
@@ -78,8 +76,8 @@ public class OrderController {
     @GetMapping(path = "/buyer/{order_id}", headers = "X-API-VERSION=1")
     public Response<Object> noticeOrderByBuyer(@PathVariable("order_id") Long orderId) {
         Long userId = JwtToken.user().getId();
-        OrderNoticeBuyerResponse viewOrderDetailResponse = orderService.findOrderNoticeToBuyer(userId, orderId);
-        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER, viewOrderDetailResponse);
+        OrderNoticeResponse viewOrderDetailResponse = orderService.findOrderNotice(userId, orderId);
+        sseEventService.validSendMessage(userId, EventName.NOTICE_ORDER_BUYER, viewOrderDetailResponse);
         return ApiUtils.success(HttpStatus.OK.value(), "성공적으로 주문알림이 됐습니다.", viewOrderDetailResponse);
     }
 }

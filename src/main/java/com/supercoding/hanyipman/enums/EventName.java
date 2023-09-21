@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum EventName {
-    NOTICE_ORDER("NoticeOrder"),
-    NOTICE_ORDER_STATUS("NoticeOrderStatus"),
-    DRON_LOCATION("DronLocation"),
+    NOTICE_ORDER_BUYER("NoticeOrderBuyer"),
+    NOTICE_ORDER_SELLER("NoticeOrderSeller"),
+    NOTICE_DRON_LOCATION("NoticeDronLocation"),
     SUBSCRIBE("SubScribe");
 
     private final String eventName;

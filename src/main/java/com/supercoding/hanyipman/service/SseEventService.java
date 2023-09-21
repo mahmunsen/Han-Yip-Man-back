@@ -22,7 +22,7 @@ import java.io.IOException;
 public class SseEventService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 45 * 1000L;
+    private final Long timeOut =  24 * 60 * 60 * 1000L;
 
     public SseEmitter registerEmitter(Long userId){
         userRepository.findById(userId).orElseThrow(() -> new CustomException(UserErrorCode.NON_EXISTENT_MEMBER));
@@ -37,7 +37,7 @@ public class SseEventService {
         sseEmitter.onCompletion(() -> {
             sseRepository.delete(userId);
         });
-        sendMessage(userId, EventName.SUBSCRIBE, "연결", sseEmitter);
+        sendMessage(userId, EventName.SUBSCRIBE.getEventName(), "연결", sseEmitter);
 
         return sseEmitter;
     }
@@ -45,7 +45,7 @@ public class SseEventService {
     public <T> void validSendMessage(Long userId, EventName eventName, T data) {
         try {
             SseEmitter emitter = findSseByUserId(userId);
-            sendMessage(userId, eventName, data, emitter);
+            sendMessage(userId, eventName.getEventName(), data, emitter);
         }catch(CustomException e) {
             log.error("SSE 알림을 실행시키지 못했습니다.");
         }
@@ -56,7 +56,7 @@ public class SseEventService {
         log.info("Sse Scheduling");
         sseRepository.findAllSendResponseAndClear().forEach((send) -> {
             SseEmitter sse = findSseByUserId(send.getUserId());
-            sendMessage(send.getUserId(), send.getEventName(), send.getData(), sse);
+            sendMessage(send.getUserId(),send.getEventName() , send.getData(), sse);
         });
     }
 
@@ -64,15 +64,15 @@ public class SseEventService {
         return sseRepository.findEmitterByUserId(userId).orElseThrow(() -> new CustomException(SseErrorCode.NOT_FOUND_EMITTER));
     }
 
-    private <T> void sendMessage(Long userId, EventName eventName, T data, SseEmitter emitter) {
+    private <T> void sendMessage(Long userId, String eventName, T data, SseEmitter emitter) {
         try{
             emitter.send(SseEmitter.event()
-                            .name(eventName.getEventName())
+                            .name(eventName)
                             .data(data)
             );
         }catch(IOException e) { //TODO: 메시지 전송 비동기 처리 고려
             log.error("SSE 알림을 실행시키지 못했습니다.");
-            sseRepository.addSendResponse(SendSseResponse.of(userId, emitter, eventName));
+            sseRepository.addSendResponse(SendSseResponse.of(userId, data, eventName));
         }
     }
 }

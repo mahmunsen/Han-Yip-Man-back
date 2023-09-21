@@ -1,7 +1,7 @@
 package com.supercoding.hanyipman.socket;
 
 import com.corundumstudio.socketio.SocketIOClient;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
 import com.supercoding.hanyipman.dto.websocket.MessageType;
@@ -85,8 +85,8 @@ public class SocketService {
 
             OrderStatusMessage orderStatusMessage
                     = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, maxPriceMenuName, orderSequence);
-            OrderNoticeBuyerResponse orderNoticeBuyerResponse = orderService.findOrderNoticeToBuyer(order.getBuyer().getUser().getId(), orderId);
-            sseEventService.validSendMessage(order.getBuyer().getUser().getId(), EventName.NOTICE_ORDER, orderNoticeBuyerResponse);
+            OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(order.getBuyer().getUser().getId(), orderId);
+            sseEventService.validSendMessage(order.getBuyer().getUser().getId(), EventName.NOTICE_ORDER_SELLER, orderNoticeResponse);
 
 
             for (SocketIOClient client : senderClient.getNamespace().getRoomOperations("order" + orderId).getClients()) {
