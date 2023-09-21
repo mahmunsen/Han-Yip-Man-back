@@ -1,5 +1,5 @@
 package com.supercoding.hanyipman.service;
-import com.supercoding.hanyipman.dto.order.response.OrderNoticeBuyerResponse;
+import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeSellerResponse;
 import com.supercoding.hanyipman.dto.order.response.ViewOrderDetailResponse;
 import com.supercoding.hanyipman.advice.annotation.TimeTrace;
@@ -73,7 +73,7 @@ public class OrderService {
         // 주문 uid 생성
         String orderUid = generateOrderUid();
 
-        // 주문 엔티티 생성 후 저장  // 장바구니 <-> 주문 연결 
+        // 주문 엔티티 생성 후 저장  // 장바구니 <-> 주문 연결
         Order order = Order.from(buyer, orderUid, address, carts.get(0).getShop(), coupon, cartsJoinItems);
         orderRepository.save(order); //TODO: 주문 상세보기에서 할인된 금액이 필요할 경우 변경될 수 있음
 
@@ -103,14 +103,12 @@ public class OrderService {
         return OrderNoticeSellerResponse.from(order);
     }
     @TimeTrace
-    public OrderNoticeBuyerResponse findOrderNoticeToBuyer(Long userId, Long orderId) {
+    public OrderNoticeResponse findOrderNotice(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
-        //TODO : 결제 로직 정해지기 전 응답 객체에 payment 빼놓음
-//        Payment payment = findPaymentByOrderId(orderId);
+        Payment payment = findPaymentByOrderId(orderId);
         Order  order = findOrderFetchCarts(orderId, buyer);
 
-//        return OrderNoticeBuyerResponse.from(order, payment);
-        return OrderNoticeBuyerResponse.from(order);
+        return OrderNoticeResponse.from(order);
     }
 
     private Order findOrderFetchCarts(Long orderId, Buyer buyer) {

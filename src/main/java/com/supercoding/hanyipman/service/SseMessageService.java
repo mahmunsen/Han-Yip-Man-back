@@ -8,6 +8,7 @@ import com.supercoding.hanyipman.repository.SseRepository;
 import com.supercoding.hanyipman.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -21,7 +22,7 @@ import java.util.Optional;
 public class SseMessageService {
     private final SseRepository sseRepository;
     private final UserRepository userRepository;
-    private final Long timeOut = 45 * 1000L; // 10분
+    private final Long timeOut = 24 * 60 * 60 * 1000L; // 10분
 
     public SseEmitter registerSse(Long userId){
         log.info("sse구독");
@@ -35,7 +36,7 @@ public class SseMessageService {
     public void sendSse(SendSseResponse<?> sendSseResponse) {
         sseRepository.findEmitterByUserId(sendSseResponse.getUserId()).ifPresent(sse -> {
             try {
-                sse.send(sendSseResponse.getData());
+                sse.send(sendSseResponse, MediaType.APPLICATION_JSON);
             } catch (IOException e) {
                 log.error("sendSse(): SSE 알림을 실행시키지 못했습니다.");
                 if(sendSseResponse.isValidCount()) sseRepository.addSendResponse(sendSseResponse);

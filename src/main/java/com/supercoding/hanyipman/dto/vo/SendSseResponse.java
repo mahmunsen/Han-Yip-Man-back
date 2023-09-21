@@ -13,13 +13,13 @@ public class SendSseResponse<T> {
     private Long userId;
     @Setter private Long sendCount;
     private T data;
-    private EventName eventName;
+    private String eventName;
 
     public static <T> SendSseResponse<T> of(Long userId, T data){
         return new SendSseResponse<>(userId, 0L, data, null);
     }
 
-    public static <T> SendSseResponse<T> of(Long userId, T data, EventName name){
+    public static <T> SendSseResponse<T> of(Long userId, T data, String name){
         return new SendSseResponse<>(userId, 0L, data, name);
     }
 

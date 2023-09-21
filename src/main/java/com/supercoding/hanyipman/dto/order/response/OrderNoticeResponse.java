@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Schema(description = "사장님 가게 주문 조회")
-public class OrderNoticeBuyerResponse {
+@Schema(description = "사장님, 소비자 알림")
+public class OrderNoticeResponse {
     @ApiModelProperty(value="주문 식별값 필드", dataType = "Long")
     private Long orderId;
     @ApiModelProperty(value="주문 UID 필드", dataType = "String")
@@ -36,9 +36,9 @@ public class OrderNoticeBuyerResponse {
 
 // TODO : 결제 로직 정해지기 전 응답 객체에 payment 빼놓음
 //    public static OrderNoticeBuyerResponse from(Order order, Payment payment) {
-    public static OrderNoticeBuyerResponse from(Order order) {
+    public static OrderNoticeResponse from(Order order) {
 
-        return OrderNoticeBuyerResponse.builder()
+        return OrderNoticeResponse.builder()
                 .orderId(order.getId())
                 .orderUId(order.getOrderUid())
                 .orderStatus(order.getOrderStatus().name())
