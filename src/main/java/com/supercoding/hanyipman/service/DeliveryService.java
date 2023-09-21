@@ -8,12 +8,14 @@ import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.entity.Order;
+import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.OrderErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.order.EmOrderRepository;
+import com.supercoding.hanyipman.repository.order.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -31,6 +33,7 @@ public class DeliveryService {
     private final BuyerRepository buyerRepository;
     private final OrderService orderService;
     private final EmOrderRepository orderRepository;
+    private final OrderRepository orderRepositoryToSave;
     private final SseMessageService sseMessageService;
     private final AddressRepository addressRepository;
     private final Integer END_TIME = 60;
@@ -38,7 +41,7 @@ public class DeliveryService {
     private final SocketIOServer socketIOServer;
 
     @Async
-    @Transactional(readOnly = true)
+    @Transactional
     public void getDeliveryLocation(Long buyerId,Long sellerId, Long orderId) {
         Order order = findOrderByOrderId(orderId);
         Address startAddress = order.getShop().getAddress();
@@ -68,6 +71,8 @@ public class DeliveryService {
             }
         }
         //TODO: 배달이 끝나고 배달 완료 메시지 반환
+        order.setOrderStatus(OrderStatus.COMPLETE);
+        orderRepositoryToSave.save(order);
         OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(buyerId, orderId);
         for (SocketIOClient client : socketIOServer.getRoomOperations("user"+buyerId).getClients()) {
             client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
