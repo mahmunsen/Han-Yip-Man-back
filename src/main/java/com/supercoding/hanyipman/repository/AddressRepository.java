@@ -5,7 +5,6 @@ import com.supercoding.hanyipman.entity.Buyer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -15,14 +14,6 @@ import java.util.Optional;
 public interface AddressRepository extends JpaRepository<Address, Long> {
 
     List<Address> findAllByBuyer(Buyer buyer);
-
-    @Query("select count(a) from Address a join a.buyer b  where b.id=:buyer_id")
-    Integer findAllByUserCountId(@Param("buyer_id") Long buyerId);
-
-
-    @Query("select count(a) from Address a where a.mapId=:map_id")
-    Integer existsAllByMapId(@Param("map_id") String mapId);
-
 
     @Query("select a from Address a where a.buyer = ?1 and a.id = ?2")
     Optional<Address> findByBuyerAndId(Buyer buyer, Long id);
