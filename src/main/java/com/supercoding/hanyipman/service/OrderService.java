@@ -110,7 +110,7 @@ public class OrderService {
     @TimeTrace
     public OrderNoticeResponse findOrderNotice(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
-//        Payment payment = findPaymentByOrderId(orderId);
+        Payment payment = findPaymentByOrderId(orderId);
         Order  order = findOrderFetchCarts(orderId, buyer);
 
         return OrderNoticeResponse.from(order, payment);
