@@ -110,7 +110,7 @@ public class OrderService {
     @TimeTrace
     public OrderNoticeResponse findOrderNotice(Long userId, Long orderId) {
         Buyer buyer = findBuyerByUserId(userId);
-        Payment payment = findPaymentByOrderId(orderId);
+//        Payment payment = findPaymentByOrderId(orderId);
         Order  order = findOrderFetchCarts(orderId, buyer);
 
         return OrderNoticeResponse.from(order, payment);
@@ -280,7 +280,7 @@ public class OrderService {
         // 해당 결제건
         Payment payment = paymentRepository.findPaymentByOrderId(order.getId()).orElseThrow(() -> new CustomException(PaymentErrorCode.PAYMENT_COMMON_PAYMENT_NOT_FOUND));
 
-        return new ViewOrderDetailResponse().toDto(order, payment, address, order.getShop(), orderMenus, orderName);
+        return new ViewOrderDetailResponse().toDto(order, payment, address, order.getShop(), orderMenus, orderName, order.getAddress().getLatitude(), order.getAddress().getLongitude());
     }
 
     // 주문건
