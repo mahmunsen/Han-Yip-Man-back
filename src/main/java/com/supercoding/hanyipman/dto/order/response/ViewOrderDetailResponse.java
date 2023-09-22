@@ -34,9 +34,11 @@ public class ViewOrderDetailResponse {
     private String payMethod;
     private String phoneNum;
     private String shopTelphoneNum;
+    private Double latitude;
+    private Double longitude;
     private String canceledAt;
 
-    public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop, List<Map<String, Object>> orderMenus, String orderName) throws ParseException {
+    public ViewOrderDetailResponse toDto(Order order, Payment payment, String deliveryAddress, Shop shop, List<Map<String, Object>> orderMenus, String orderName, Double latitude, Double longitude) throws ParseException {
         return ViewOrderDetailResponse.builder()
                 .shopId(shop.getId())
                 .shopName(shop.getName())
@@ -54,6 +56,8 @@ public class ViewOrderDetailResponse {
                 .phoneNum(PhoneUtils.formattedPhoneNumber(order.getBuyer().getUser().getPhoneNum()))
                 .shopTelphoneNum(shop.getPhoneNum())
                 .canceledAt(order.getOrderStatus().getStatus() == "CANCELED" ? DateUtils.convertToString(payment.getCancellationDate(), yearMonthDayHourMinuteSecond) : null)
+                .latitude(latitude)
+                .longitude(longitude)
                 .build();
     }
 }
