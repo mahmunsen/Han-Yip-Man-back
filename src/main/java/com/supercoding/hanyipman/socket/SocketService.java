@@ -1,6 +1,7 @@
 package com.supercoding.hanyipman.socket;
 
 import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.vo.Response;
 import com.supercoding.hanyipman.dto.websocket.ChatMessage;
@@ -9,7 +10,6 @@ import com.supercoding.hanyipman.dto.websocket.OrderStatusMessage;
 import com.supercoding.hanyipman.entity.Order;
 import com.supercoding.hanyipman.entity.Shop;
 import com.supercoding.hanyipman.entity.User;
-import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.OrderErrorCode;
@@ -18,6 +18,7 @@ import com.supercoding.hanyipman.error.domain.WebSocketErrorCode;
 import com.supercoding.hanyipman.repository.UserRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
 import com.supercoding.hanyipman.security.JwtTokenProvider;
+import com.supercoding.hanyipman.service.DeliveryService;
 import com.supercoding.hanyipman.service.OrderService;
 import com.supercoding.hanyipman.service.SseEventService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_BUYER;
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_SELLER;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -37,6 +41,8 @@ public class SocketService {
     private final UserRepository userRepository;
     private final OrderService orderService;
     private final SseEventService sseEventService;
+    private final DeliveryService deliveryService;
+    private final SocketIOServer socketIOServer;
 
     public void sendMessage(String room, String eventName, SocketIOClient senderClient, String message, String token) {
         try {
@@ -69,6 +75,8 @@ public class SocketService {
             String userEmail = jwtTokenProvider.getUserEmail(token);
             User user = validateUser(userEmail);
             Order order = validateOrder(orderId);
+            Long buyerUserId = order.getBuyer().getUser().getId();
+            Long sellerUserId = order.getShop().getSeller().getUser().getId();
 
             String storeName = order.getShop().getName();
             String maxPriceMenuName = order.getCarts().stream()
@@ -85,12 +93,24 @@ public class SocketService {
 
             OrderStatusMessage orderStatusMessage
                     = new OrderStatusMessage(orderStatus, "주문 상태가 정상 변경되었습니다.", order.getId(), storeName, maxPriceMenuName, orderSequence);
-            OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(order.getBuyer().getUser().getId(), orderId);
-            sseEventService.validSendMessage(order.getBuyer().getUser().getId(), EventName.NOTICE_ORDER_SELLER, orderNoticeResponse);
+
+
+            OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(buyerUserId, orderId);
+            for (SocketIOClient client : socketIOServer.getRoomOperations("user"+sellerUserId).getClients()) {
+                client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
+            }
+            for (SocketIOClient client : socketIOServer.getRoomOperations("user"+buyerUserId).getClients()) {
+                client.sendEvent(NOTICE_ORDER_BUYER.getEventName(), orderNoticeResponse);
+            }
+
 
 
             for (SocketIOClient client : senderClient.getNamespace().getRoomOperations("order" + orderId).getClients()) {
-                client.sendEvent(eventName, orderStatusMessage);
+                client.sendEvent(eventName);
+            }
+            if (orderStatus.equals(OrderStatus.DELIVERY)) {
+
+                deliveryService.getDeliveryLocation(order.getBuyer().getUser().getId(),sellerUserId, orderId);
             }
             return orderStatusMessage;
         } catch (CustomException e) {
@@ -126,7 +146,7 @@ public class SocketService {
 
     private void changeOrderStatus(Order order, com.supercoding.hanyipman.enums.OrderStatus orderStatus, Long userId) {
 
-        if (orderStatus.equals("CANCELED")) orderService.IntentionalCancelOrder(order.getId(), userId);
+        if (orderStatus.equals(OrderStatus.CANCELED)) orderService.IntentionalCancelOrder(order.getId(), userId);
         order.setOrderStatus(orderStatus);
     }
 

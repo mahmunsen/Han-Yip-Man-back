@@ -1,15 +1,15 @@
 package com.supercoding.hanyipman.service;
 
 
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.supercoding.hanyipman.dto.delivery.response.DeliveryLocation;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
-import com.supercoding.hanyipman.dto.vo.SendSseResponse;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
 import com.supercoding.hanyipman.entity.Order;
-import com.supercoding.hanyipman.enums.EventName;
+import com.supercoding.hanyipman.enums.OrderStatus;
 import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.AddressErrorCode;
 import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.error.domain.OrderErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
@@ -21,14 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.util.Optional;
-import java.util.concurrent.*;
-import java.util.stream.IntStream;
-
-import static com.supercoding.hanyipman.enums.EventName.NOTICE_DRON_LOCATION;
-import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_BUYER;
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_DRONE_LOCATION;
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_SELLER;
 
 
 @Slf4j
@@ -36,43 +31,55 @@ import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_BUYER;
 @Service
 public class DeliveryService {
     private final BuyerRepository buyerRepository;
+    private final OrderService orderService;
     private final EmOrderRepository orderRepository;
+    private final OrderRepository orderRepositoryToSave;
     private final SseMessageService sseMessageService;
-    private final ExecutorService threadPools = new ThreadPoolExecutor(20, 50, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>());
-
+    private final AddressRepository addressRepository;
     private final Integer END_TIME = 60;
+    private final SseEventService sseEventService;
+    private final SocketIOServer socketIOServer;
 
     @Async
-    @Transactional(readOnly = true)
-    public void getDeliveryLocation(Long userId, Long orderId) {
-        threadPools.submit(() -> {
-            Order order = findOrderByOrderId(orderId);
-            Address startAddress = order.getShop().getAddress();
-            Address endAddress = order.getAddress();
-            findBuyerByUserId(userId);
+    @Transactional
+    public void getDeliveryLocation(Long buyerId,Long sellerId, Long orderId) {
+        Order order = findOrderByOrderId(orderId);
+        Address startAddress = order.getShop().getAddress();
+        Address endAddress = order.getAddress();
+        findBuyerByUserId(buyerId);
 
-            // 1차 구현 시작지점, 끝 지점 둘 다 +, + 라 가정하고 작성 추후 변경 예정
-            Double startLatitude = startAddress.getLatitude();
-            Double startLongitude = startAddress.getLongitude();
-            Double endLatitude = endAddress.getLatitude();
-            Double endLongitude = endAddress.getLongitude();
+        // 1차 구현 시작지점, 끝 지점 둘 다 +, + 라 가정하고 작성 추후 변경 예정
+        Double startLatitude = startAddress.getLatitude();
+        Double startLongitude = startAddress.getLongitude();
+        Double endLatitude = endAddress.getLatitude();
+        Double endLongitude = endAddress.getLongitude();
 
-            Double moveLatitude = Math.abs(startLatitude - endLatitude);;
-            Double moveLongitude = Math.abs(startLongitude - endLongitude);
-            if(startLatitude > endLatitude) moveLatitude = -moveLatitude;
-            if(startLongitude > endLongitude) moveLongitude = -moveLongitude;
-            for(int i = 0; i < END_TIME; i++) {
-                DeliveryLocation deliveryLocation = new DeliveryLocation(startLatitude + moveLatitude / END_TIME * i, startLongitude + moveLongitude / END_TIME * i);
-                sseMessageService.sendSse(SendSseResponse.of(userId, deliveryLocation, NOTICE_DRON_LOCATION.getEventName()));
-                try{
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    log.info("드론 배달 위치 전송 중 에러가 발생했습니다.");
-                }
+        Double moveLatitude = Math.abs(startLatitude - endLatitude);;
+        Double moveLongitude = Math.abs(startLongitude - endLongitude);
+        if(startLatitude > endLatitude) moveLatitude = -moveLatitude;
+        if(startLongitude > endLongitude) moveLongitude = -moveLongitude;
+
+        for(int i = 0; i < END_TIME; i++) {
+            DeliveryLocation deliveryLocation = new DeliveryLocation(startLatitude + moveLatitude / END_TIME * i, startLongitude + moveLongitude / END_TIME * i);
+            for (SocketIOClient client : socketIOServer.getRoomOperations("user"+buyerId).getClients()) {
+                client.sendEvent(NOTICE_DRONE_LOCATION.getEventName(), deliveryLocation);
             }
-        });
-
+            try{
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                log.info("드론 배달 위치 전송 중 에러가 발생했습니다.");
+            }
+        }
         //TODO: 배달이 끝나고 배달 완료 메시지 반환
+        order.setOrderStatus(OrderStatus.COMPLETE);
+        orderRepositoryToSave.save(order);
+        OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(buyerId, orderId);
+        for (SocketIOClient client : socketIOServer.getRoomOperations("user"+buyerId).getClients()) {
+            client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
+        }
+        for (SocketIOClient client : socketIOServer.getRoomOperations("user"+sellerId).getClients()) {
+            client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
+        }
     }
 
     private Order findOrderByOrderId(Long orderId) {

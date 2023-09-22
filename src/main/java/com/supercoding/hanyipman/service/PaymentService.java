@@ -1,32 +1,35 @@
 package com.supercoding.hanyipman.service;
 
+import com.corundumstudio.socketio.SocketIOClient;
+import com.corundumstudio.socketio.SocketIOServer;
 import com.supercoding.hanyipman.dto.order.response.OrderNoticeResponse;
 import com.supercoding.hanyipman.dto.payment.request.iamport.CancelPaymentRequest;
+import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
 import com.supercoding.hanyipman.dto.payment.request.iamport.PostPaymentRequest;
 import com.supercoding.hanyipman.dto.payment.request.kakaopay.KakaoPayCancelRequest;
 import com.supercoding.hanyipman.dto.payment.response.iamport.AccessTokenResponse;
 import com.supercoding.hanyipman.dto.payment.response.iamport.CancelPaymentResponse;
 import com.supercoding.hanyipman.dto.payment.response.iamport.GetOnePaymentResponse;
 import com.supercoding.hanyipman.dto.payment.response.iamport.PaymentPrepareResponse;
-import com.supercoding.hanyipman.dto.payment.response.kakaopay.*;
-import com.supercoding.hanyipman.dto.vo.SendSseResponse;
+import com.supercoding.hanyipman.dto.payment.response.kakaopay.KakaoPayApproveResponse;
+import com.supercoding.hanyipman.dto.payment.response.kakaopay.KakaoPayCancelResponse;
+import com.supercoding.hanyipman.dto.payment.response.kakaopay.KakaoPayReadyResponse;
+import com.supercoding.hanyipman.dto.payment.response.kakaopay.KakaoPayViewPayResponse;
 import com.supercoding.hanyipman.entity.*;
-import com.supercoding.hanyipman.enums.EventName;
 import com.supercoding.hanyipman.enums.OrderStatus;
+import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.CartErrorCode;
+import com.supercoding.hanyipman.error.domain.PaymentErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
+import com.supercoding.hanyipman.repository.BuyerRepository;
+import com.supercoding.hanyipman.repository.PaymentRepository;
 import com.supercoding.hanyipman.repository.BuyerCouponRepository;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
-import org.springframework.beans.factory.annotation.Value;
-import com.supercoding.hanyipman.dto.payment.request.iamport.PaymentPrepareRequest;
-import com.supercoding.hanyipman.error.CustomException;
-import com.supercoding.hanyipman.error.domain.PaymentErrorCode;
-import com.supercoding.hanyipman.repository.BuyerRepository;
-import com.supercoding.hanyipman.repository.PaymentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -43,7 +46,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_BUYER;
+import static com.supercoding.hanyipman.enums.EventName.NOTICE_ORDER_SELLER;
 
 @Slf4j
 @Service
@@ -58,7 +61,9 @@ public class PaymentService {
     private final RestTemplate restTemplate;
     private final OrderService orderService;
     private final SseMessageService sseService;
+    private final SocketIOServer socketIOServer;
     private final BuyerCouponRepository buyerCouponRepository;
+
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
 
@@ -212,7 +217,9 @@ public class PaymentService {
             orderRepository.save(order); // 주문 엔티티 업데이트(주문 상태 변경)
             //주문 알림 기능
             OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(user.getId(), order.getId());
-            sseService.sendSse(SendSseResponse.of(user.getId() ,orderNoticeResponse, NOTICE_ORDER_BUYER.getEventName()));
+            for (SocketIOClient client : socketIOServer.getRoomOperations("user"+order.getShop().getSeller().getUser().getId()).getClients()) {
+                client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
+            }
 
             return ResponseEntity.ok("결제가 성공했습니다.");
         } else {
@@ -376,8 +383,10 @@ public class PaymentService {
             paymentRepository.save(payment);
             orderRepository.save(order);
 
-            OrderNoticeResponse sseOrderResponse = orderService.findOrderNotice(user.getId(), order.getId());
-            sseService.sendSse(SendSseResponse.of(user.getId(), sseOrderResponse, NOTICE_ORDER_BUYER.getEventName()));
+            OrderNoticeResponse orderNoticeResponse = orderService.findOrderNotice(user.getId(), order.getId());
+            for (SocketIOClient client : socketIOServer.getRoomOperations("user"+order.getShop().getSeller().getUser().getId()).getClients()) {
+                client.sendEvent(NOTICE_ORDER_SELLER.getEventName(), orderNoticeResponse);
+            }
 
             return kakaoPayApproveResponse.getBody();
         } else {

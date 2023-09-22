@@ -8,7 +8,7 @@ import lombok.Getter;
 public enum EventName {
     NOTICE_ORDER_BUYER("NoticeOrderBuyer"),
     NOTICE_ORDER_SELLER("NoticeOrderSeller"),
-    NOTICE_DRON_LOCATION("NoticeDronLocation"),
+    NOTICE_DRONE_LOCATION("NoticeDroneLocation"),
     SUBSCRIBE("SubScribe");
 
     private final String eventName;
