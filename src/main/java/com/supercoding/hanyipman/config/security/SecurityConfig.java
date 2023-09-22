@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)// 세션 방식 사용하지 않음
                 .and()
                 .authorizeHttpRequests()// HTTP 요청에 대한 설정을 명시
-                .antMatchers("/**").permitAll()// 앞 패턴에 대해 BUYER 권한 사용자만 접근 가능
+                .antMatchers("/**").permitAll()// 앞 패턴에 대해 모든 사용자 접근 가능
                 .antMatchers("/api/**").hasAuthority(UserRole.BUYER.name())// 앞 패턴에 대해 BUYER 권한 사용자만 접근 가능
                 .antMatchers("/api/**").hasAuthority(UserRole.SELLER.name())// 앞 패턴에 대해 SELLER 권한 사용자만 접근 가능
                 .anyRequest().authenticated()
@@ -64,18 +64,3 @@ public class SecurityConfig {
         return httpSecurity.build();
     }
 }
-
-/*
-.antMatchers()
-: 페이지에 접근할 수 있는 권한을 설정한다.
-.loginPage
-: 로그인 페이지
-.loginProcessingUrl
-: 구현한 로그인 페이지
-defaultSuccessUrl
-: 로그인 성공 시 제공할 페이지
-failureUrl
-: 로그인 실패 시 제공할 페이지
-csrf().disable()
-: 사이트 간 요청 위조(Cross-Site Request Forgery) 공격 방지 기능 키기
-*/

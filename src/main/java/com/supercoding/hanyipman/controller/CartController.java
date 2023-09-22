@@ -51,8 +51,8 @@ public class CartController {
 
     @Operation(summary = "장바구니 조회", description = "사용자가 담았던 장바구니 리스트를 반환한다.")
     @GetMapping(headers = "X-API-VERSION=1")
-    public Response<PageResponse<ViewCartResponse>> viewAllCartsV2(CustomPageable pageable){
-        PageResponse<ViewCartResponse> cartsResponse =  cartService.findUnpaidCartsAndOptionItemsV2(pageable);
+    public Response<List<ViewCartResponse>> viewAllCartsV2(){
+        List<ViewCartResponse> cartsResponse =  cartService.findUnpaidCartsAndOptionItemsV2();
         return ApiUtils.success(HttpStatus.OK, "장바구니를 성공적으로 가져왔습니다.", cartsResponse);
     }
 

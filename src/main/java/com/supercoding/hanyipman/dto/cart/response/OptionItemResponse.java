@@ -15,14 +15,14 @@ public class OptionItemResponse {
     private final Long cartId;
     private final Long optionItemId;
     private final String optionItemName;
-    private final Integer optionPrice;
+    private final Integer optionItemPrice;
 
     public static OptionItemResponse from(CartOptionItem optionItem) {
         return OptionItemResponse.builder()
                 .cartId(optionItem.getCart().getId())
                 .optionItemId(optionItem.getId())
                 .optionItemName(optionItem.getOptionItem().getName())
-                .optionPrice(optionItem.getOptionItem().getPrice())
+                .optionItemPrice(optionItem.getOptionItem().getPrice())
                 .build();
     }
 }

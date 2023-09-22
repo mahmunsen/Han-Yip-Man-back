@@ -126,12 +126,11 @@ public class CartService {
     }
     @TimeTrace
     @Transactional(readOnly = true)
-    public PageResponse<ViewCartResponse> findUnpaidCartsAndOptionItemsV2(CustomPageable pageable) {
+    public List<ViewCartResponse> findUnpaidCartsAndOptionItemsV2() {
         //구매자 찾기
         Buyer buyer = findBuyerByUserId(JwtToken.user().getId());
         //options, totalPrice 제외 가져오기
-        List<ViewCartResponse> carts = emCartRepository.findPageableCartsByUnpaidCart(buyer.getId(), pageable).stream().map(ViewCartResponse::from).collect(Collectors.toList());
-        calCursorIdx(pageable, carts);
+        List<ViewCartResponse> carts = emCartRepository.findCartsByUnpaidCart(buyer.getId()).stream().map(ViewCartResponse::from).collect(Collectors.toList());
 
         //Cart Ids추출
         List<Long> cartIds = carts.stream().map(ViewCartResponse::getCartId).collect(Collectors.toList());
@@ -146,7 +145,7 @@ public class CartService {
         carts.forEach(cart -> cart.setOptionItems(coiMap.get(cart.getCartId())));
         carts.forEach(ViewCartResponse::calTotalPrice);
 
-        return PageResponse.from(carts, pageable);
+        return carts;
     }
 
     private static void calCursorIdx(CustomPageable pageable, List<ViewCartResponse> carts) {

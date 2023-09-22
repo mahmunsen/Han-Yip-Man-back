@@ -5,12 +5,9 @@ import com.supercoding.hanyipman.dto.address.request.AddressRegisterRequest;
 import com.supercoding.hanyipman.dto.address.response.AddressListResponse;
 import com.supercoding.hanyipman.entity.Address;
 import com.supercoding.hanyipman.entity.Buyer;
-import com.supercoding.hanyipman.entity.User;
 import com.supercoding.hanyipman.error.CustomException;
 import com.supercoding.hanyipman.error.domain.AddressErrorCode;
-import com.supercoding.hanyipman.error.domain.BuyerErrorCode;
 import com.supercoding.hanyipman.repository.AddressRepository;
-import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.security.JwtToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,65 +20,72 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AddressService {
     private final AddressRepository addressRepository;
-    private final BuyerRepository buyerRepository;
 
-    //TODO 주소등록
+    // 주소등록
+    @TimeTrace
     @Transactional
-    public String registerAddress(User user, AddressRegisterRequest request) {
-        requestNullCheck(request);
-        if (user.getBuyer().getId() == null) throw new CustomException(BuyerErrorCode.INVALID_BUYER);
-
-        if (addressRepository.existsAllByMapId(request.getMapId()) >= 1)
-            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
-
-        Buyer buyer = buyerRepository.findById(user.getBuyer().getId()).orElseThrow(() -> new CustomException(BuyerErrorCode.INVALID_BUYER));
+    public String registerAddress(Buyer buyer, AddressRegisterRequest request) {
+        mapIdNullCheck(request);
+        validateUniqueAddressId(buyer, request);
         Address address = Address.toAddAddress(buyer, request);
-
-        Address save = addressRepository.save(address);
-        setDefaultAddress(user, address.getId());
-        return save.getAddress();
+        addressRepository.save(address);
+        setDefaultAddress(buyer, address.getId());
+        return address.getAddress();
     }
 
-    // Todo 주소 목록 조회
-    @TimeTrace//9월7일 Total time = 0.083849917s
-    @Transactional
-    public List<AddressListResponse> getAddressList(User user) {
-//        buyerRepository.findByUser(user).getId();
-//        addressRepository.findAllByGetAddressList(user);
-        Buyer byUser = buyerRepository.findByUser(user).orElseThrow(() -> new CustomException(BuyerErrorCode.NOT_BUYER));
-
-        addressRepository.findAllByBuyer(byUser);
-
-        return addressRepository.findAllByBuyer(byUser).stream().map(AddressListResponse::toaAddressListResponse).collect(Collectors.toList());
+    // 주소 목록 조회
+    @TimeTrace
+    public List<AddressListResponse> getAddressList(Buyer buyer) {
+        return addressRepository.findAllByBuyer(buyer).stream().map(AddressListResponse::toaAddressListResponse).collect(Collectors.toList());
     }
 
-    // Todo 주소 수정
+    // 주소 수정
+    @TimeTrace
     @Transactional
-    public Long patchAddress(User user, Long addressId, AddressRegisterRequest request) {
-        requestNullCheck(request);
-        Address address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId).orElseThrow(() -> new CustomException(AddressErrorCode.UNCHANGEABLE_ADDRESS));
+    public Long patchAddress(Buyer buyer, Long addressId, AddressRegisterRequest request) {
+        mapIdNullCheck(request);
+        Address address = addressRepository.findByBuyerAndId(buyer, addressId).orElseThrow(() -> new CustomException(AddressErrorCode.UNCHANGEABLE_ADDRESS));
         patchSetAdd(address, request);
         return address.getId();
     }
 
-
-    // Todo 주소 삭제
+    //  주소 삭제
+    @TimeTrace
     @Transactional
-    public String sellerDeleteAddress(User user, Long addressId) {
-        if (addressRepository.countAddressByBuyer(user.getBuyer()) <= 1)
+    public String sellerDeleteAddress(Buyer buyer, Long addressId) {
+        if (addressRepository.countAddressByBuyer(buyer) <= 1)
             throw new CustomException(AddressErrorCode.ADDRESS_DATA_EXCEED_LIMIT);
-
-        Address address = addressRepository.findByBuyerAndId(user.getBuyer(), addressId).orElseThrow(() -> new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND));
-
-        if (address.getIsDefault()) {
-            List<Address> addresses = addressRepository.findAllByBuyerAndIsDefaultFalseOrderByIdDesc(user.getBuyer());
-            setDefaultAddress(user, addresses.get(0).getId());
+        Address address = addressRepository.findByBuyerAndId(buyer, addressId).orElseThrow(() -> new CustomException(AddressErrorCode.ADDRESS_NOT_FOUND));
+        // 삭제하려는 주소가 기본 주소로 등록되어 있을 때 최근 주소를 기본주소로 설정
+        if (Boolean.TRUE.equals(address.getIsDefault())) {
+            List<Address> addresses = addressRepository.findAllByBuyerAndIsDefaultFalseOrderByIdDesc(buyer);
+            setDefaultAddress(buyer, addresses.get(0).getId());
         }
 
-        addressRepository.deleteAddressByAddress(user.getBuyer(), address.getId());
+        addressRepository.deleteAddressByAddress(buyer, address.getId());
         return address.getAddress();
     }
 
+    // 기본 주소 등록
+    @TimeTrace
+    @Transactional
+    public void setDefaultAddress(Buyer buyer, Long defaultAddressId) {
+        List<Address> addressList = addressRepository.findAllByBuyer(buyer);
+        // 나의 주소가 맞는지 확인
+        if (addressList.stream().noneMatch(address -> address.getId().equals(defaultAddressId)))
+            throw new CustomException(AddressErrorCode.MY_ADDRESS_ONLY);
+
+        // 기본값이 해당 값만 true 나머지는 모두 false처리
+        addressList.stream().peek(address -> {
+            if (address.getId().equals(defaultAddressId)) {
+                address.setIsDefault(true);
+            } else {
+                address.setIsDefault(false);
+            }
+        }).collect(Collectors.toList());
+    }
+
+    // 주소 수정 set
     public void patchSetAdd(Address address, AddressRegisterRequest request) {
         address.setAddress(request.getAddress());
         address.setDetailAddress(request.getAddressDetail());
@@ -91,31 +95,19 @@ public class AddressService {
         address.setRoadAddress(request.getRoadAddress());
     }
 
-    public void requestNullCheck(AddressRegisterRequest request) {
-        if (request.getAddress() == null || "".equals(request.getAddress()) || request.getAddressDetail() == null || "".equals(request.getAddressDetail()) || request.getLatitude() == null || request.getLongitude() == null || request.getMapId() == null || "".equals(request.getMapId()) ||request.getRoadAddress() == null || "".equals(request.getRoadAddress()))
-            throw new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA);
+    // mapId null 체크
+    public void mapIdNullCheck(AddressRegisterRequest request) {
+        if (request.getMapId() == null) throw new CustomException(AddressErrorCode.EMPTY_ADDRESS_DATA);
     }
 
-    @Transactional
-    public void setDefaultAddress(User user, Long defaultAddressId) {
-        List<Address> addressList = addressRepository.findAllByBuyer(user.getBuyer());
-
-        if (addressList.stream().noneMatch(address -> address.getId().equals(defaultAddressId)))
-            throw new CustomException(AddressErrorCode.MY_ADDRESS_ONLY);
-
-        addressList.stream().map(address -> {
-            if (address.getId().equals(defaultAddressId)) {
-                address.setIsDefault(true);
-            } else {
-                address.setIsDefault(false);
-            }
-            return address;
-        }).collect(Collectors.toList());
+    // 카카오 mapId 중복 예외처리
+    private void validateUniqueAddressId(Buyer buyer, AddressRegisterRequest request) {
+        if (Boolean.TRUE.equals(addressRepository.existsAddressByMapIdAndBuyer(request.getMapId(), buyer)))
+            throw new CustomException(AddressErrorCode.DUPLICATE_ADDRESS);
     }
 
     public Boolean checkDuplicationAddress(String mapId) {
         Buyer buyer = JwtToken.user().validBuyer();
-
         return addressRepository.existsAddressByMapIdAndBuyer(mapId, buyer);
     }
 }

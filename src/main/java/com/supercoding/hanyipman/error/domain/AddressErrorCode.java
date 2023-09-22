@@ -7,7 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 public enum AddressErrorCode implements ErrorCode {
 
-    EMPTY_ADDRESS_DATA(HttpStatus.BAD_REQUEST.value(), "주소 데이터가 비어 있습니다."),
+    EMPTY_ADDRESS_DATA(HttpStatus.BAD_REQUEST.value(), "mapId 데이터가 비어 있습니다."),
 
     ADDRESS_DATA_EXCEED_LIMIT(HttpStatus.BAD_REQUEST.value(), "주소 데이터는 최소 1개 이상이여야만 합니다."),
 

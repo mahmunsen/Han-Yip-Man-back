@@ -33,4 +33,17 @@ public class AddressListResponse {
                 .mapId(address.getMapId())
                 .build();
     }
+
+    public static AddressListResponse toNullAddressResponse() {
+        return AddressListResponse.builder()
+                .addressId(null)
+                .address(null)
+                .addressDetail(null)
+                .latitude(null)
+                .longitude(null)
+                .isDefault(null)
+                .roadAddress(null)
+                .mapId(null)
+                .build();
+    }
 }

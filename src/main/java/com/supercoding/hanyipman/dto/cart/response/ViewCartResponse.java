@@ -37,7 +37,7 @@ public class ViewCartResponse {
             this.optionItems = new ArrayList<>();
         }
         price += optionItems.stream()
-                .mapToInt(OptionItemResponse::getOptionPrice)
+                .mapToInt(OptionItemResponse::getOptionItemPrice)
                 .sum();
         this.totalPrice =  price * amount.longValue();
     }

@@ -23,6 +23,7 @@ import com.supercoding.hanyipman.error.domain.PaymentErrorCode;
 import com.supercoding.hanyipman.error.domain.ShopErrorCode;
 import com.supercoding.hanyipman.repository.BuyerRepository;
 import com.supercoding.hanyipman.repository.PaymentRepository;
+import com.supercoding.hanyipman.repository.BuyerCouponRepository;
 import com.supercoding.hanyipman.repository.cart.CartRepository;
 import com.supercoding.hanyipman.repository.cart.EmCartRepository;
 import com.supercoding.hanyipman.repository.order.OrderRepository;
@@ -61,6 +62,8 @@ public class PaymentService {
     private final OrderService orderService;
     private final SseMessageService sseService;
     private final SocketIOServer socketIOServer;
+    private final BuyerCouponRepository buyerCouponRepository;
+
     private static final String API_BASE_URL = "https://api.iamport.kr";
     private static final String KAKAOPAY_BASE_URL = "https://kapi.kakao.com";
 
@@ -323,6 +326,7 @@ public class PaymentService {
         HttpEntity<?> httpEntity = new HttpEntity<>(params, headers);
 
         ResponseEntity<KakaoPayReadyResponse> kakaoPayReadyResponse = kakaoTemplate.exchange(KAKAOPAY_BASE_URL + "/v1/payment/ready", HttpMethod.POST, httpEntity, KakaoPayReadyResponse.class);
+
         if (kakaoPayReadyResponse.getStatusCode() == HttpStatus.OK && kakaoPayReadyResponse.getBody() != null) {
             // 응답값으로 merchant_uid 포함
             kakaoPayReadyResponse.getBody().setMerchant_uid(merchant_uid);
@@ -687,6 +691,11 @@ public class PaymentService {
             cart.setIsDeleted(false);
             cartRepository.save(cart);
         });
+        // buyerCoupon 되살리기
+        BuyerCoupon buyerCoupon = order.getBuyerCoupon();
+        if (order.getBuyerCoupon() != null) {
+            buyerCoupon.setEnabled(true);
+            buyerCouponRepository.save(buyerCoupon);}
     }
 
     private void setOrderSequence(Order order) {
