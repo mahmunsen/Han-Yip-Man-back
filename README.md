@@ -122,16 +122,5 @@
 <br>
 
 
-<style>
-header{
-  display: flex;
-  justify-content: flex-start;
-  flex-flow: row;
-}
-.link{
- margin-right: 30px;
- margin-top: 63px;
-}
 
-</style>
 
